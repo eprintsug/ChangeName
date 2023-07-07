@@ -8,6 +8,7 @@ use     warnings;
 use     File::Basename;
 use     lib dirname(__FILE__).'/../../perl_lib';
 use     Data::Dumper;
+use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
 
@@ -46,7 +47,7 @@ Put description here.
 
 =cut
 
-say ScriptOne->using_objects_and_methods();
+say ScriptOne->justin_example();
 
 =head1 METHODS
 
@@ -103,7 +104,7 @@ sub using_objects_and_methods ($self) {
     my  $repository_id          =   'initial_archive'; # can later be input
     my  $dataset_to_use         =   'eprint';
     my  $compound_name_field    =   'creators_name';
-    my  $search_term            =   'Fam';
+    my  $search_term            =   'Moghadam';
     my  $process_results        =   \&process_results;
 
     #my  @search_values =(
@@ -114,20 +115,19 @@ sub using_objects_and_methods ($self) {
     my  $session        =   EPrints::Repository->new($repository_id);
     my  $dataset        =   $session->dataset($dataset_to_use);
 
-    my  @search_values = (
-        session =>  $session,
-        dataset =>  $dataset,
-    );
+    #my  @search_values = (
+    #    ,
+    #);
 
     #my  %search_options = (
     #    fields  =>  $compound_name_field,
     #    value   =>  $search_term,
     #);
 
-    my  $search         =   EPrints::Search
-                            ->new(@search_values);
+    my  $search         =   EPrints::Search->new(session =>  $session, dataset =>  $dataset);
+
     $search->add_field($dataset->get_field($compound_name_field), $search_term, 'EQ', 'ANY');
-                            #->get_conditions->perform_search;
+
     my  $list_of_results=   $search->perform_search;
                             
  #   $list_of_results->map(sub {
@@ -179,6 +179,41 @@ sub process_results ($session, $dataset, $result, $useful_values) {
         }; 
         
 };
+
+sub justin_example {
+
+    my  ($term, $repoid) = ("Kourosh","initial_archive");
+    my $session = new EPrints::Session( 1 , $repoid , 0 );
+
+    if( !defined $session )
+
+    {
+            print STDERR "Failed to load repository: $repoid\n";
+            exit 1;
+    }
+
+    my $ds = $session->dataset( "eprint" );
+
+    my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
+
+    $searchexp->add_field( $ds->get_field( "creators_name" ), $term );
+
+    my $list = $searchexp->perform_search;
+
+    say "Number of records found: ".$list->count;
+
+    $list->map( sub
+    {
+            my( $session, $dataset, $eprint ) = @_;
+            my @creators_name = @{ $eprint->get_value("creators_name") };
+            foreach my $cn ( @creators_name )
+            {
+                    print "[". $eprint->get_id() . "]\t" . $cn->{given} . " " . $cn->{family} . "\n" if $cn->{family} eq $term;
+            }
+    } );
+
+    $session->terminate();
+}
 
 1;
 
