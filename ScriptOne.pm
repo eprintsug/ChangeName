@@ -113,18 +113,22 @@ sub using_objects_and_methods ($self) {
     my  $session        =   EPrints::Repository->new($repository_id);
     my  $dataset        =   $session->dataset($dataset_to_use);
 
-    my  @search_values =(
+    my  @search_values = (
         session =>  $session,
         dataset =>  $dataset,
     );
 
-    my  $list_of_results=   EPrints::Search
-                            ->new(@search_values)
-                            ->add_field(
-                                fields  =>  $compound_name_field,
-                                value   =>  $search_term,
-                            )
-                            ->perform_search;
+    #my  %search_options = (
+    #    fields  =>  $compound_name_field,
+    #    value   =>  $search_term,
+    #);
+
+    my  $search         =   EPrints::Search
+                            ->new(@search_values);
+    $search->add_field($dataset->get_field($compound_name_field), $search_term);
+                            #->get_conditions->perform_search;
+    my  $list_of_results=   $search->perform_search;
+                            
                             
     
     # Let's dump our dataset to understand its data structure.
