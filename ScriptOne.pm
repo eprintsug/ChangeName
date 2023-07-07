@@ -118,14 +118,17 @@ sub using_objects_and_methods ($self) {
 
     #my  $search         =   EPrints::Search
     #                        ->new($search_values)
-    #                        ->add_field(;
+    #                        ->add_field('creators');
 
     # Let's dump our dataset to understand its data structure.
     
-    return "Dataset follows:\n".
-            Dumper($dataset).
-            "\nDataset ends.";
+#    return "Dataset follows:\n".
+#            Dumper($dataset).
+#            "\nDataset ends.";
            #'Dataset with-held while debugging signatures.';
+    return "Dataset fields follow:\n".
+            Dumper($dataset->fields).
+            "\nDataset fields end.";
 
 }
 
