@@ -47,7 +47,7 @@ Put description here.
 
 =cut
 
-say ScriptOne->justin_example();
+say ScriptOne->my_example();
 
 =head1 METHODS
 
@@ -182,7 +182,7 @@ sub process_results ($session, $dataset, $result, $useful_values) {
 
 sub justin_example {
 
-    my  ($term, $repoid) = ("Madge","initial_archive");
+    my  ($term, $repoid) = ('Fam','initial_archive');
     my $session = EPrints::Session->new( 1 , $repoid , 0 );
 
     if( !defined $session )
@@ -199,7 +199,7 @@ sub justin_example {
     my  @search_values = (
         session =>  $session,
         dataset =>  $ds,
-        satisfy_all => 1,
+        satisfy_all => 0,
     );
 
     my $searchexp = new EPrints::Search(@search_values);
@@ -228,6 +228,42 @@ sub justin_example {
 #    } );
 
     $session->terminate();
+}
+
+sub my_example {
+
+    # Initial Values:
+    my  $repository_id          =   'initial_archive'; # can later be input
+    my  $dataset_to_use         =   'eprint';
+    my  $compound_name_field    =   'creators_name';
+    my  $search_term            =   'Fam';
+    my  $text = {
+        data_count              =>  'Number of dataset records found: ',
+        search_count            =>  'Number of search results found: ',
+    };
+    
+    my  $list_of_results        =   EPrints::Repository
+                                    ->new($repository_id)
+                                    ->dataset($dataset_to_use)
+                                    ->prepare_search(
+                                        satisfy_all     =>  1,
+                                        staff           =>  1,
+                                        limit           =>  10,
+                                        search_fields   =>  [
+                                                                {
+                                                                    meta_fields =>  [ $compound_name_field ],
+                                                                    value       =>  $search_term,
+                                                                },
+                                                            ],
+                                    )
+                                    ->perform_search;
+
+    say $text->{'data_count'}.      $list_of_results->get_dataset->count($list_of_results->get_dataset->repository);
+    say $text->{'search_count'}.    $list_of_results->count;
+
+    $list_of_results->get_dataset->repository->terminate();
+    
+    return "End.";
 }
 
 1;
