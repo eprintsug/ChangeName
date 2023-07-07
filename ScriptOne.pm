@@ -235,8 +235,8 @@ sub my_example {
     # Initial Values:
     my  $repository_id          =   'initial_archive'; # can later be input
     my  $dataset_to_use         =   'eprint';
-    my  $compound_name_field    =   'creators_name';
-    my  $search_term            =   'Fam';
+    my  $meta_field             =   'userid.username';
+    my  $search_term            =   'admin';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
@@ -246,15 +246,17 @@ sub my_example {
                                     ->new($repository_id)
                                     ->dataset($dataset_to_use)
                                     ->prepare_search(
-                                        satisfy_all     =>  1,
-                                        staff           =>  1,
-                                        limit           =>  10,
-                                        search_fields   =>  [
-                                                                {
-                                                                    meta_fields =>  [ $compound_name_field ],
-                                                                    value       =>  $search_term,
-                                                                },
-                                                            ],
+                                        satisfy_all         =>  1,
+                                        staff               =>  1,
+                                        limit               =>  10,
+                                        show_zero_results   =>  0,
+                                        allow_blank         =>  1,
+                                        search_fields       =>  [
+                                                                    {
+                                                                        meta_fields =>  [ $meta_field ],
+                                                                        value       =>  $search_term,
+                                                                    },
+                                                                ],
                                     )
                                     ->perform_search;
 
