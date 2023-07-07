@@ -1,3 +1,5 @@
+#!/usr/bin/perl -I /opt/eprints3/perl_lib
+
 package ScriptOne;
 
 use     strict;
@@ -5,8 +7,12 @@ use     warnings;
 
 use     File::Basename;
 use     lib dirname(__FILE__).'/../../perl_lib';
+use     Data::Dumper;
+use     EPrints::Repository;
+use     EPrints::Search;
 
 use     v5.32;
+use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 
 =pod Name, Version
 
@@ -40,7 +46,7 @@ Put description here.
 
 =cut
 
-say $self->hello();
+say ScriptOne->using_objects_and_methods();
 
 =head1 METHODS
 
@@ -80,15 +86,15 @@ sub using_objects_and_methods ($self) {
 
     # Find and Change name
     
-    my  @fields_name_is_found_in = (
-        creators,
-        contributors,
+    my  @fields_name_is_found_in = qw(
+        creators
+        contributors
     );
     
     my  @sub_fields = (
-        family,     # may be part of a name field within creator or contributor
+        'family',     # may be part of a name field within creator or contributor
         'given',    # may be part of a name field within creator or contributor
-        id,         # id may be a creator or contributor id and not part of a name field
+        'id',         # id may be a creator or contributor id and not part of a name field
     );
     
     # Currently ignorant of data structure, so let's understand that first.
@@ -110,7 +116,15 @@ sub using_objects_and_methods ($self) {
         dataset =>  $dataset,
     );
 
-    my  $search         =   EPrints::Search->new($search_values);
+    #my  $search         =   EPrints::Search
+    #                        ->new($search_values)
+    #                        ->add_field(;
+
+    # Let's dump our dataset to understand its data structure.
+    
+    return #"Dataset is as follows\n".
+           # Dumper($dataset);
+           'Dataset with-held while debugging signatures.';
 
 }
 
