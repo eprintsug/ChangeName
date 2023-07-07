@@ -250,9 +250,10 @@ sub my_example {
                                             value           =>  $search_term,
                                         },
                                     ];
+
     
     # Processing:
-    
+
     my  $list_of_results        =   EPrints::Repository
                                     ->new($repository_id)
                                     ->dataset($dataset_to_use)
@@ -275,7 +276,7 @@ sub my_example {
 
 
     # Output:
-        
+
     say $text->{'data_count'}.      $counts->{'data'};
     say $text->{'search_count'}.    $counts->{'search'};
 
