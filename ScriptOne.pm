@@ -100,8 +100,10 @@ sub using_objects_and_methods ($self) {
     # Currently ignorant of data structure, so let's understand that first.
 
     # Initial Values:
-    my  $repository_id  =   'initial_archive'; # can later be input
-    my  $dataset_to_use =   'eprint';
+    my  $repository_id          =   'initial_archive'; # can later be input
+    my  $dataset_to_use         =   'eprint';
+    my  $compound_name_field    =   'creators_name';
+    my  $search_term            =   'Fam';
 
     #my  @search_values =(
     #    session =>  $session,
@@ -116,19 +118,28 @@ sub using_objects_and_methods ($self) {
         dataset =>  $dataset,
     );
 
-    #my  $search         =   EPrints::Search
-    #                        ->new($search_values)
-    #                        ->add_field('creators');
-
+    my  $list_of_results=   EPrints::Search
+                            ->new(@search_values)
+                            ->add_field(
+                                fields  =>  $compound_name_field,
+                                value   =>  $search_term,
+                            )
+                            ->perform_search;
+                            
+    
     # Let's dump our dataset to understand its data structure.
     
 #    return "Dataset follows:\n".
 #            Dumper($dataset).
 #            "\nDataset ends.";
            #'Dataset with-held while debugging signatures.';
-    return "Dataset fields follow:\n".
-            Dumper($dataset->fields).
-            "\nDataset fields end.";
+#    return "Dataset fields follow:\n".
+#            Dumper($dataset->fields).
+#            "\nDataset fields end.";
+
+    return "Results follow:\n".
+            Dumper($list_of_results).
+            "\nResults end.";
 
 }
 
