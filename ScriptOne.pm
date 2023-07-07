@@ -104,7 +104,7 @@ sub using_objects_and_methods ($self) {
     my  $dataset_to_use         =   'eprint';
     my  $compound_name_field    =   'creators_name';
     my  $search_term            =   'Fam';
-    my  $process_results        =   sub { process_results(@_) };
+    my  $process_results        =   \&process_results;
 
     #my  @search_values =(
     #    session =>  $session,
@@ -126,12 +126,12 @@ sub using_objects_and_methods ($self) {
 
     my  $search         =   EPrints::Search
                             ->new(@search_values);
-    $search->add_field($dataset->get_field($compound_name_field), $search_term);
+    $search->add_field($dataset->get_field($compound_name_field), $search_term, 'EQ', 'ANY');
                             #->get_conditions->perform_search;
     my  $list_of_results=   $search->perform_search;
                             
     $list_of_results->map($process_results, {search_term => $search_term});
-    
+    my  $number_of_search_results = scalar $list_of_results->%*;
     # Let's dump our dataset to understand its data structure.
     
 #    return "Dataset follows:\n".
@@ -144,10 +144,10 @@ sub using_objects_and_methods ($self) {
 
     $session->terminate();
 
-    return #"Results follow:\n".
-           # Dumper($list_of_results).
-           # "\nResults end.";
-           "\nEnd.";
+    return "Number of Results follow:\n".
+            $number_of_search_results.
+            "\nResults end.";
+           #"\nEnd.";
 
 }
 
@@ -156,10 +156,12 @@ sub process_results ($session, $dataset, $result, $useful_values) {
             output_line => "[%s] %s %s", 
         };
 
+        say "In Process Results subroutine.";
+
         foreach my $creators_name ( $result->get_value("creators_name")->@* ) {
 
             #Definition:
-            my  $search_term_found = $creators_name->{'family'} eq $useful_values->{'search_term'};
+            #my  $search_term_found = $creators_name->{'family'} eq $useful_values->{'search_term'};
 
             my  @values = (
                 $result->get_id(),
@@ -167,8 +169,10 @@ sub process_results ($session, $dataset, $result, $useful_values) {
                 $creators_name->{'family'},
             );
                 
-            say         sprintf($text->{'output_line'}, @values)
-                        if $search_term_found;
+            #say         sprintf($text->{'output_line'}, @values)
+            #            if $search_term_found;
+            
+            say "Result: ".Dumper(@values);
         }; 
         
 };
