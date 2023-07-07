@@ -104,6 +104,7 @@ sub using_objects_and_methods ($self) {
     my  $dataset_to_use         =   'eprint';
     my  $compound_name_field    =   'creators_name';
     my  $search_term            =   'Fam';
+    my  $process_results        =   sub { process_results(@_) };
 
     #my  @search_values =(
     #    session =>  $session,
@@ -129,7 +130,7 @@ sub using_objects_and_methods ($self) {
                             #->get_conditions->perform_search;
     my  $list_of_results=   $search->perform_search;
                             
-                            
+    $list_of_results->map($process_results, {search_term => $search_term});
     
     # Let's dump our dataset to understand its data structure.
     
@@ -141,13 +142,36 @@ sub using_objects_and_methods ($self) {
 #            Dumper($dataset->fields).
 #            "\nDataset fields end.";
 
-    return "Results follow:\n".
-            Dumper($list_of_results).
-            "\nResults end.";
+    $session->terminate();
+
+    return #"Results follow:\n".
+           # Dumper($list_of_results).
+           # "\nResults end.";
+           "\nEnd.";
 
 }
 
+sub process_results ($session, $dataset, $result, $useful_values) {
+        my $text={
+            output_line => "[%s] %s %s", 
+        };
 
+        foreach my $creators_name ( $result->get_value("creators_name")->@* ) {
+
+            #Definition:
+            my  $search_term_found = $creators_name->{'family'} eq $useful_values->{'search_term'};
+
+            my  @values = (
+                $result->get_id(),
+                $creators_name->{'given'},
+                $creators_name->{'family'},
+            );
+                
+            say         sprintf($text->{'output_line'}, @values)
+                        if $search_term_found;
+        }; 
+        
+};
 
 1;
 
