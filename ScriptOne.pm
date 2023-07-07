@@ -182,7 +182,7 @@ sub process_results ($session, $dataset, $result, $useful_values) {
 
 sub justin_example {
 
-    my  ($term, $repoid) = ("Kourosh","initial_archive");
+    my  ($term, $repoid) = ("Madge","initial_archive");
     my $session = EPrints::Session->new( 1 , $repoid , 0 );
 
     if( !defined $session )
@@ -196,10 +196,13 @@ sub justin_example {
 
     die "Non-defined dataset!" if (!defined $ds);
 
-
     my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
 
-    #$searchexp->add_field( $ds->get_field( "creators_name" ), $term );
+    my  $field = $ds->get_field( "creators_name" );
+    
+    #say "Field we obtained: ".Dumper($field);
+    
+    $searchexp->add_field( $field, $term );
 
     my $list = $searchexp->perform_search;
 
