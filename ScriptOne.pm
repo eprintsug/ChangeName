@@ -66,6 +66,21 @@ sub hello {
     return $message;
 }
 
+=over
+
+=item using_objects_and_methods();
+
+Getting familiar with the objects and methods from Ed and Justin's examples.
+
+=back
+
+=cut
+
+sub using_objects_and_methods {
+
+
+}
+
 1;
 
 =head1 AUTHOR
