@@ -183,34 +183,39 @@ sub process_results ($session, $dataset, $result, $useful_values) {
 sub justin_example {
 
     my  ($term, $repoid) = ("Kourosh","initial_archive");
-    my $session = new EPrints::Session( 1 , $repoid , 0 );
+    my $session = EPrints::Session->new( 1 , $repoid , 0 );
 
     if( !defined $session )
 
     {
-            print STDERR "Failed to load repository: $repoid\n";
+            say "Failed to load repository: $repoid\n";
             exit 1;
     }
 
     my $ds = $session->dataset( "eprint" );
 
+    die "Non-defined dataset!" if (!defined $ds);
+
+
     my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
 
-    $searchexp->add_field( $ds->get_field( "creators_name" ), $term );
+    #$searchexp->add_field( $ds->get_field( "creators_name" ), $term );
 
     my $list = $searchexp->perform_search;
 
-    say "Number of records found: ".$list->count;
 
-    $list->map( sub
-    {
-            my( $session, $dataset, $eprint ) = @_;
-            my @creators_name = @{ $eprint->get_value("creators_name") };
-            foreach my $cn ( @creators_name )
-            {
-                    print "[". $eprint->get_id() . "]\t" . $cn->{given} . " " . $cn->{family} . "\n" if $cn->{family} eq $term;
-            }
-    } );
+    say "Number of dataset records found: ".$ds->count($session);
+    say "Number of search results found: ".$list->count;
+
+#    $list->map( sub
+#    {
+#            my( $session, $dataset, $eprint ) = @_;
+#            my @creators_name = @{ $eprint->get_value("creators_name") };
+#            foreach my $cn ( @creators_name )
+#            {
+#                    print "[". $eprint->get_id() . "]\t" . $cn->{given} . " " . $cn->{family} . "\n" if $cn->{family} eq $term;
+#            }
+#    } );
 
     $session->terminate();
 }
