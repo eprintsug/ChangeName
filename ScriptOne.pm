@@ -95,6 +95,7 @@ sub using_objects_and_methods ($self) {
 
     # Initial Values:
     my  $repository_id  =   'initial_archive'; # can later be input
+    my  $dataset_to_use =   'eprint';
 
     #my  @search_values =(
     #    session =>  $session,
@@ -102,7 +103,14 @@ sub using_objects_and_methods ($self) {
     #);
 
     my  $session        =   EPrints::Repository->new($repository_id);
-    #my  $search         =   EPrints::Search->new($search_values);
+    my  $dataset        =   $session->dataset($dataset_to_use);
+
+    my  @search_values =(
+        session =>  $session,
+        dataset =>  $dataset,
+    );
+
+    my  $search         =   EPrints::Search->new($search_values);
 
 }
 
