@@ -241,6 +241,16 @@ sub my_example {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
     };
+    my  $search_fields          =   [
+                                        {
+                                            meta_fields     =>  [
+                                                                    $meta_field,
+                                                                ],
+                                            value           =>  $search_term,
+                                        },
+                                    ];
+    
+    # Processing:
     
     my  $list_of_results        =   EPrints::Repository
                                     ->new($repository_id)
@@ -248,23 +258,26 @@ sub my_example {
                                     ->prepare_search(
                                         satisfy_all         =>  1,
                                         staff               =>  1,
-                                        limit               =>  10,
+                                        limit               =>  30,
                                         show_zero_results   =>  0,
                                         allow_blank         =>  1,
-                                        search_fields       =>  [
-                                                                    {
-                                                                        meta_fields =>  [ $meta_field ],
-                                                                        value       =>  $search_term,
-                                                                    },
-                                                                ],
+                                        search_fields       =>  $search_fields,
                                     )
                                     ->perform_search;
-
-    say $text->{'data_count'}.      $list_of_results->get_dataset->count($list_of_results->get_dataset->repository);
-    say $text->{'search_count'}.    $list_of_results->count;
+    my  $counts = {
+        data                    =>  $list_of_results->get_dataset
+                                    ->count($list_of_results->get_dataset->repository),
+        search                  =>  $list_of_results->count,
+    };
 
     $list_of_results->get_dataset->repository->terminate();
-    
+
+
+    # Output:
+        
+    say $text->{'data_count'}.      $counts->{'data'};
+    say $text->{'search_count'}.    $counts->{'search'};
+
     return "End.";
 }
 
