@@ -196,16 +196,23 @@ sub justin_example {
 
     die "Non-defined dataset!" if (!defined $ds);
 
-    my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
+    my  @search_values = (
+        session =>  $session,
+        dataset =>  $ds,
+        satisfy_all => 1,
+    );
+
+    my $searchexp = new EPrints::Search(@search_values);
 
     my  $field = $ds->get_field( "creators_name" );
     
-    #say "Field we obtained: ".Dumper($field);
+    #say "Field Description: ".Dumper($field->render_description); #can't run method as MetaField::Name not Search::Field
     
-    $searchexp->add_field( $field, $term );
+    my $description = $searchexp->add_field( $field, $term )->render_description;
 
     my $list = $searchexp->perform_search;
 
+    say "Field Description: ".Dumper($description); # Blessed coderef setting a number??
 
     say "Number of dataset records found: ".$ds->count($session);
     say "Number of search results found: ".$list->count;
