@@ -83,7 +83,7 @@ Getting familiar with the objects and methods from Ed and Justin's examples.
 =cut
 
 sub using_objects_and_methods ($self) {
-
+    say "Do additional says work?";
     # Find and Change name
     
     my  @fields_name_is_found_in = qw(
@@ -130,8 +130,11 @@ sub using_objects_and_methods ($self) {
                             #->get_conditions->perform_search;
     my  $list_of_results=   $search->perform_search;
                             
-    $list_of_results->map($process_results, {search_term => $search_term});
-    my  $number_of_search_results = scalar $list_of_results->%*;
+ #   $list_of_results->map(sub {
+ #       say "In anon subroutine.";
+ #   },
+ #   {search_term => $search_term});
+    my  $number_of_search_results = $list_of_results->count;
     # Let's dump our dataset to understand its data structure.
     
 #    return "Dataset follows:\n".
