@@ -14,6 +14,7 @@ use     EPrints::Search;
 
 use     v5.32;
 use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
+use     utf8;
 
 =pod Name, Version
 
