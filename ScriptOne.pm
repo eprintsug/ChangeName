@@ -243,11 +243,6 @@ sub my_example {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
     };
-    my  $seperator = {
-        creators                =>  ', ',   # comma, space
-        name_parts              =>  ' ',    # space
-    };
-    my  $id_suffix              =   ': ';
     my  $search_fields          =   [
                                         {
                                             meta_fields     =>  [
@@ -272,42 +267,54 @@ sub my_example {
                                         search_fields       =>  $search_fields,
                                     )
                                     ->perform_search;
+
+    my  $result_processing      =   \&result_processing;
+
+    my  @output                 =   $list_of_results->map($result_processing); 
+    warn 'Output is'.Dumper(@output);                                       
+
     my  $counts = {
         data                    =>  $list_of_results->get_dataset
                                     ->count($list_of_results->get_dataset->repository),
         search                  =>  $list_of_results->count,
     };
 
-
-    $list_of_results->map(
-        sub ($session, $dataset, $result, $useful_info) {
-            say $result->id.$id_suffix.
-                join($seperator->{'creators'},
-                    map {
-                        join $seperator->{'name_parts'}, (
-                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
-                            (),
-                            $ARG->{'given'}?        $ARG->{'given'}:
-                            (),
-                            $ARG->{'family'}?       $ARG->{'family'}:
-                            (),
-                        );
-                    }
-                    $result->get_value('creators_name')->@*
-                );
-        },
-    );
-
     $list_of_results->get_dataset->repository->terminate();
 
 
     # Output:
-
+    say $ARG foreach @output;
     say $text->{'data_count'}.      $counts->{'data'};
     say $text->{'search_count'}.    $counts->{'search'};
 
     return "End.";
 }
+
+sub result_processing ($session, $dataset, $result, $useful_info) {
+
+    my  $seperator = {
+        creators                =>  ', ',   # comma, space
+        name_parts              =>  ' ',    # space
+    };
+    my  $id_suffix              =   ': ';
+
+    return
+        $result->id.$id_suffix.
+        join($seperator->{'creators'},
+            map {
+                join $seperator->{'name_parts'}, (
+                    $ARG->{'honourific'}?   $ARG->{'honourific'}:
+                    (),
+                    $ARG->{'given'}?        $ARG->{'given'}:
+                    (),
+                    $ARG->{'family'}?       $ARG->{'family'}:
+                    (),
+                );
+            }
+            $result->get_value('creators_name')->@*
+        );
+}
+
 
 1;
 
