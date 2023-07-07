@@ -122,9 +122,10 @@ sub using_objects_and_methods ($self) {
 
     # Let's dump our dataset to understand its data structure.
     
-    return #"Dataset is as follows\n".
-           # Dumper($dataset);
-           'Dataset with-held while debugging signatures.';
+    return "Dataset follows:\n".
+            Dumper($dataset).
+            "\nDataset ends.";
+           #'Dataset with-held while debugging signatures.';
 
 }
 
