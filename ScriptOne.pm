@@ -251,7 +251,9 @@ sub my_example {
                                             value           =>  $search_term,
                                         },
                                     ];
-
+    my  $output = {
+                        lines  =>  [],
+    };
     
     # Processing:
 
@@ -270,8 +272,7 @@ sub my_example {
 
     my  $result_processing      =   \&result_processing;
 
-    my  @output                 =   $list_of_results->map($result_processing); 
-    warn 'Output is'.Dumper(@output);                                       
+    $list_of_results->map($result_processing,$output); 
 
     my  $counts = {
         data                    =>  $list_of_results->get_dataset
@@ -283,14 +284,14 @@ sub my_example {
 
 
     # Output:
-    say $ARG foreach @output;
+    say $ARG for $output->{'lines'}->@*;
     say $text->{'data_count'}.      $counts->{'data'};
     say $text->{'search_count'}.    $counts->{'search'};
 
     return "End.";
 }
 
-sub result_processing ($session, $dataset, $result, $useful_info) {
+sub result_processing ($session, $dataset, $result, $output) {
 
     my  $seperator = {
         creators                =>  ', ',   # comma, space
@@ -298,7 +299,7 @@ sub result_processing ($session, $dataset, $result, $useful_info) {
     };
     my  $id_suffix              =   ': ';
 
-    return
+    push $output->{'lines'}->@*,
         $result->id.$id_suffix.
         join($seperator->{'creators'},
             map {
