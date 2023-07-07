@@ -15,6 +15,7 @@ use     EPrints::Search;
 use     v5.32;
 use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 use     utf8;
+use     English;
 
 =pod Name, Version
 
@@ -242,6 +243,11 @@ sub my_example {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
     };
+    my  $seperator = {
+        creators                =>  ', ',   # comma, space
+        name_parts              =>  ' ',    # space
+    };
+    my  $id_suffix              =   ': ';
     my  $search_fields          =   [
                                         {
                                             meta_fields     =>  [
@@ -271,6 +277,26 @@ sub my_example {
                                     ->count($list_of_results->get_dataset->repository),
         search                  =>  $list_of_results->count,
     };
+
+
+    $list_of_results->map(
+        sub ($session, $dataset, $result, $useful_info) {
+            say $result->id.$id_suffix.
+                join($seperator->{'creators'},
+                    map {
+                        join $seperator->{'name_parts'}, (
+                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
+                            (),
+                            $ARG->{'given'}?        $ARG->{'given'}:
+                            (),
+                            $ARG->{'family'}?       $ARG->{'family'}:
+                            (),
+                        );
+                    }
+                    $result->get_value('creators_name')->@*
+                );
+        },
+    );
 
     $list_of_results->get_dataset->repository->terminate();
 
