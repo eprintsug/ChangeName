@@ -40,7 +40,7 @@ Put description here.
 
 =cut
 
-say hello();
+say $self->hello();
 
 =head1 METHODS
 
@@ -76,10 +76,37 @@ Getting familiar with the objects and methods from Ed and Justin's examples.
 
 =cut
 
-sub using_objects_and_methods {
+sub using_objects_and_methods ($self) {
 
+    # Find and Change name
+    
+    my  @fields_name_is_found_in = (
+        creators,
+        contributors,
+    );
+    
+    my  @sub_fields = (
+        family,     # may be part of a name field within creator or contributor
+        'given',    # may be part of a name field within creator or contributor
+        id,         # id may be a creator or contributor id and not part of a name field
+    );
+    
+    # Currently ignorant of data structure, so let's understand that first.
+
+    # Initial Values:
+    my  $repository_id  =   'initial_archive'; # can later be input
+
+    #my  @search_values =(
+    #    session =>  $session,
+    #    dataset =>  
+    #);
+
+    my  $session        =   EPrints::Repository->new($repository_id);
+    #my  $search         =   EPrints::Search->new($search_values);
 
 }
+
+
 
 1;
 
