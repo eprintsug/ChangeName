@@ -123,14 +123,13 @@ sub my_example {
                                     ];
     my  $result_processing      =   \&result_processing;
     my  $matches_search_term    =   qr/
-                                        \Q              # Quotemeta for string safety
-                                        $search_term    # String - will match anything if empty.
-                                        \E              # End Quotemeta
+                                        \Q$search_term\E    # Quotemeta'd String for safety - note it will will match anything if empty. 
                                     /x;
     my  $output = {
         lines                   =>  [],
         matches_search_term     =>  $matches_search_term,
         search_fields           =>  \@fields_to_search,
+        name_parts              =>  \@name_parts,
     };
     
     # Processing:
@@ -217,9 +216,27 @@ sub result_processing ($session, $dataset, $result, $output) {
 #        $field->name
 #    }
     foreach my $search_field ($output->{'search_fields'}->@*) {
-        push $output->{'lines'}->@*, "Result $search_field value this time is a ". Dumper($result->get_value($search_field));
+        warn "In search fields.\n";
+        for my $value ($result->get_value($search_field)->@*) {
+            warn "In value.\n";        
+            for my $name_part ($output->{'name_parts'}->@*) {
+                warn "In name part with name part $name_part being ".$value->{"$name_part"}."\n";
+                # Definition:
+                my  $matched  =  ($value->{"$name_part"} =~ $output->{'matches_search_term'});
+                warn "Search is ".Dumper($output->{'matches_search_term'});
+
+                if ($matched) {
+                    warn "In match.\n";
+                    warn 'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched.";
+                };
+                
+            }
+
+        }
+        push $output->{'lines'}->@*, "Result $search_field value this time is an array whose first item is a... ". ref $result->get_value($search_field)->[0];
     }
     
+
     
     
     # Add to Display Output:
