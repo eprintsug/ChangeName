@@ -101,6 +101,12 @@ sub my_example {
                                         creators_name
                                         contributors_name
                                     );
+    my  @name_parts             =   (
+                                        'given',
+                                        'family',
+                                        # 'honourific',
+                                        # 'lineage',
+                                    );
     my  $search_term            =   'Wilco';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
