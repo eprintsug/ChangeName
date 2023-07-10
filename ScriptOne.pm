@@ -145,7 +145,9 @@ sub my_example {
     die "Type of First Result is: ".ref($list_of_results->item(0));
 
     # Process Search Results:
-    $list_of_results->map($result_processing,$output); 
+#    $list_of_results->map($result_processing,$output); 
+
+    foreach$list_of_results->get_records;
 
     # Get counts:
     my  $counts = {
@@ -201,6 +203,13 @@ an anonymous sub / coderef within my_example method.
 =cut
 
 sub result_processing ($session, $dataset, $result, $output) {
+
+    results_display(@_);
+    
+    results_display(@_);
+}
+
+sub results_display ($session, $dataset, $result, $output) {
 
     my  $seperator = {
         creators                =>  ', ',   # comma, space
