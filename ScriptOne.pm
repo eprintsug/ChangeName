@@ -107,7 +107,7 @@ sub my_example {
                                         # 'honourific',
                                         # 'lineage',
                                     );
-    my  $search_term            =   'Wilco';
+    my  $search_term            =   'Greene';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
@@ -121,10 +121,17 @@ sub my_example {
                                             value           =>  $search_term,
                                         },
                                     ];
-    my  $output = {
-                        lines   =>  [],
-    };
     my  $result_processing      =   \&result_processing;
+    my  $matches_search_term    =   qr/
+                                        \Q              # Quotemeta for string safety
+                                        $search_term    # String - will match anything if empty.
+                                        \E              # End Quotemeta
+                                    /x;
+    my  $output = {
+        lines                   =>  [],
+        matches_search_term     =>  $matches_search_term,
+        search_fields           =>  \@fields_to_search,
+    };
     
     # Processing:
 
@@ -142,12 +149,10 @@ sub my_example {
                                     )
                                     ->perform_search;
 
-    die "Type of First Result is: ".ref($list_of_results->item(0));
+    warn "Type of First Result is: ".ref($list_of_results->item(0));
 
     # Process Search Results:
-#    $list_of_results->map($result_processing,$output); 
-
-    foreach$list_of_results->get_records;
+    $list_of_results->map($result_processing,$output); 
 
     # Get counts:
     my  $counts = {
@@ -204,36 +209,51 @@ an anonymous sub / coderef within my_example method.
 
 sub result_processing ($session, $dataset, $result, $output) {
 
-    results_display(@_);
+    # Initial Values:
+    my  $format_output_line = \&format_outputline;
+
+#    my @fields = $result->get_searchfields()->fields;
+#    foreach my $field (@fields) {
+#        $field->name
+#    }
+    foreach my $search_field ($output->{'search_fields'}->@*) {
+        push $output->{'lines'}->@*, "Result $search_field value this time is a ". ref $result->get_value($search_field);
+    }
     
-    results_display(@_);
+    
+    
+    # Add to Display Output:
+    push $output->{'lines'}->@*, $format_output_line->($result);
+#   push $output->{'lines'}->@*, "Before: ".$format_output_line->($result);
+#   push $output->{'lines'}->@*, "After: ".$format_output_line->($result);
 }
 
-sub results_display ($session, $dataset, $result, $output) {
+sub format_outputline ($result) {
 
+    # Initial Values:
     my  $seperator = {
         creators                =>  ', ',   # comma, space
         name_parts              =>  ' ',    # space
     };
     my  $id_suffix              =   ': ';
 
-    push $output->{'lines'}->@*,
-        $result->id.$id_suffix.
-        join($seperator->{'creators'},
-            map {
-                join $seperator->{'name_parts'}, (
-                    $ARG->{'honourific'}?   $ARG->{'honourific'}:
-                    (),
-                    $ARG->{'given'}?        $ARG->{'given'}:
-                    (),
-                    $ARG->{'family'}?       $ARG->{'family'}:
-                    (),
-                );
-            }
-            $result->get_value('creators_name')->@*
-        );
-}
+    my  @order_and_omit_blanks  =   map {
+                                        join $seperator->{'name_parts'}, (
+                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
+                                            (),
+                                            $ARG->{'given'}?        $ARG->{'given'}:
+                                            (),
+                                            $ARG->{'family'}?       $ARG->{'family'}:
+                                            (),
+                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
+                                            (),
+                                        )
+                                    }
+                                    $result->get_value('creators_name')->@*;
 
+    return                          $result->id.$id_suffix.
+                                    join($seperator->{'creators'}, @order_and_omit_blanks);
+}
 
 1;
 
