@@ -142,6 +142,8 @@ sub my_example {
                                     )
                                     ->perform_search;
 
+    die "Type of First Result is: ".ref($list_of_results->item(0));
+
     # Process Search Results:
     $list_of_results->map($result_processing,$output); 
 
