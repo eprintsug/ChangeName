@@ -40,7 +40,8 @@ our $VERSION    =   'v2.0.0';
 
 =head1 DESCRIPTION
 
-Put description here.
+Calls a subroutine.
+Currently set to call L</my_example();>.
 
     # Run from the command line:
     perl ./ScriptOne.pm
@@ -80,7 +81,12 @@ sub hello {
     # Run from command line:
     perl ./ScriptOne.pl
 
-Add description here.
+Input set internally.
+Searches EPrints according to internally set search criteria,
+then calls L</result_processing( $session, $dataset, $result, $output);>
+for processing of the search results for output purposes.
+Returns a multi-line string that can be used with say or print,
+to display the output returned from the result processing.
 
 =back
 
