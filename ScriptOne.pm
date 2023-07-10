@@ -236,7 +236,7 @@ sub result_processing ($session, $dataset, $result, $output) {
                     $clone->[$i]->{"$name_part"} = "Browne"; # Read up on references.
                     push $output->{'lines'}->@*, 'Changing Wilco match to Browne';
                     $result->set_value($search_field, $clone);
-#                    $result->commit();
+                    $result->commit();
                     #$result->set_value($search_field, $result->get_value($search_field)->[$i]);
                     
                 };
