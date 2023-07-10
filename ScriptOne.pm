@@ -218,7 +218,7 @@ sub result_processing ($session, $dataset, $result, $output) {
     foreach my $search_field ($output->{'search_fields'}->@*) {
         #warn "In search fields.\n";
 
-        for my $i (0..$#$result->get_value($search_field)->@*) {
+        for my $i (0..$#{$result->get_value($search_field)}) {
             #warn "In value.\n";        
             for my $name_part ($output->{'name_parts'}->@*) {
                 #warn "In name part with name part $name_part being ".$value->{"$name_part"}."\n";
@@ -232,7 +232,11 @@ sub result_processing ($session, $dataset, $result, $output) {
                     #my $whole_thing = $value;
                     #my $part_to_change = $value->{"$name_part"}
                     #$value->{"$name_part"} = "Browne";
-                    $result->get_value($search_field)->[$i]->{"$name_part"} = "Browne"; # Read up on references.
+                    my $clone = $result->get_value($search_field);
+                    $clone->[$i]->{"$name_part"} = "Browne"; # Read up on references.
+                    push $output->{'lines'}->@*, 'Changing Wilco match to Browne';
+                    $result->set_value($search_field, $clone);
+#                    $result->commit();
                     #$result->set_value($search_field, $result->get_value($search_field)->[$i]);
                     
                 };
