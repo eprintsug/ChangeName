@@ -217,7 +217,7 @@ sub result_processing ($session, $dataset, $result, $output) {
 #        $field->name
 #    }
     foreach my $search_field ($output->{'search_fields'}->@*) {
-        push $output->{'lines'}->@*, "Result $search_field value this time is a ". ref $result->get_value($search_field);
+        push $output->{'lines'}->@*, "Result $search_field value this time is a ". Dumper($result->get_value($search_field));
     }
     
     
