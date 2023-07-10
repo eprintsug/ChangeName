@@ -107,7 +107,7 @@ sub my_example {
                                         # 'honourific',
                                         # 'lineage',
                                     );
-    my  $search_term            =   'Greene';
+    my  $search_term            =   'Wilco';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
@@ -124,7 +124,7 @@ sub my_example {
     my  $result_processing      =   \&result_processing;
     my  $matches_search_term    =   qr/
                                         \Q$search_term\E    # Quotemeta'd String for safety - note it will will match anything if empty. 
-                                    /x;
+                                    /ix;
     my  $output = {
         lines                   =>  [],
         matches_search_term     =>  $matches_search_term,
@@ -216,24 +216,31 @@ sub result_processing ($session, $dataset, $result, $output) {
 #        $field->name
 #    }
     foreach my $search_field ($output->{'search_fields'}->@*) {
-        warn "In search fields.\n";
-        for my $value ($result->get_value($search_field)->@*) {
-            warn "In value.\n";        
+        #warn "In search fields.\n";
+
+        for my $i (0..$#$result->get_value($search_field)->@*) {
+            #warn "In value.\n";        
             for my $name_part ($output->{'name_parts'}->@*) {
-                warn "In name part with name part $name_part being ".$value->{"$name_part"}."\n";
+                #warn "In name part with name part $name_part being ".$value->{"$name_part"}."\n";
                 # Definition:
-                my  $matched  =  ($value->{"$name_part"} =~ $output->{'matches_search_term'});
-                warn "Search is ".Dumper($output->{'matches_search_term'});
+                my  $matched  =  ($result->get_value($search_field)->[$i]->{"$name_part"} =~ $output->{'matches_search_term'});
+                #warn "Search is ".Dumper($output->{'matches_search_term'});
 
                 if ($matched) {
-                    warn "In match.\n";
-                    warn 'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched.";
+                    #warn "In match.\n";
+                    push $output->{'lines'}->@*, 'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched.";
+                    #my $whole_thing = $value;
+                    #my $part_to_change = $value->{"$name_part"}
+                    #$value->{"$name_part"} = "Browne";
+                    $result->get_value($search_field)->[$i]->{"$name_part"} = "Browne"; # Read up on references.
+                    #$result->set_value($search_field, $result->get_value($search_field)->[$i]);
+                    
                 };
                 
             }
 
         }
-        push $output->{'lines'}->@*, "Result $search_field value this time is an array whose first item is a... ". ref $result->get_value($search_field)->[0];
+        push $output->{'lines'}->@*, "Result $search_field value this time is an array as follows... ". Dumper($result->get_value($search_field));
     }
     
 
