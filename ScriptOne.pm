@@ -97,8 +97,8 @@ sub my_example {
     # Initial Values:
     my  $repository_id          =   'initial_archive'; # can later be input
     my  $dataset_to_use         =   'eprint';
-    my  $meta_field             =   'userid.username';
-    my  $search_term            =   'admin';
+    my  $meta_field             =   'creators_name';
+    my  $search_term            =   'Ingrid';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
