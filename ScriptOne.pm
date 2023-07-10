@@ -113,11 +113,13 @@ sub my_example {
                                         },
                                     ];
     my  $output = {
-                        lines  =>  [],
+                        lines   =>  [],
     };
+    my  $result_processing      =   \&result_processing;
     
     # Processing:
 
+    # Search:
     my  $list_of_results        =   EPrints::Repository
                                     ->new($repository_id)
                                     ->dataset($dataset_to_use)
@@ -131,16 +133,20 @@ sub my_example {
                                     )
                                     ->perform_search;
 
-    my  $result_processing      =   \&result_processing;
-
+    # Process Search Results:
     $list_of_results->map($result_processing,$output); 
 
+    # Get counts:
     my  $counts = {
+
         data                    =>  $list_of_results->get_dataset
                                     ->count($list_of_results->get_dataset->repository),
+
         search                  =>  $list_of_results->count,
+
     };
 
+    # End Session:
     $list_of_results->get_dataset->repository->terminate();
 
 
