@@ -101,7 +101,7 @@ sub my_example {
                                         creators_name
                                         contributors_name
                                     );
-    my  $search_term            =   'Ingrid';
+    my  $search_term            =   'Wilco';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
