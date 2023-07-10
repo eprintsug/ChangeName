@@ -97,7 +97,10 @@ sub my_example {
     # Initial Values:
     my  $repository_id          =   'initial_archive'; # can later be input
     my  $dataset_to_use         =   'eprint';
-    my  $meta_field             =   'creators_name';
+    my  @fields_to_search       =   qw(
+                                        creators_name
+                                        contributors_name
+                                    );
     my  $search_term            =   'Ingrid';
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
@@ -107,7 +110,7 @@ sub my_example {
     my  $search_fields          =   [
                                         {
                                             meta_fields     =>  [
-                                                                    $meta_field,
+                                                                    @fields_to_search,
                                                                 ],
                                             value           =>  $search_term,
                                         },
