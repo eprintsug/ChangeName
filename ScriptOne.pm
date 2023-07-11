@@ -13,6 +13,10 @@ use     EPrints::Search;
 use     v5.32;
 use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 use     utf8;
+use		warnings (
+			'FATAL',	#makes anything in this list fatal
+			'utf8',		#utf8 is a warnings category. There is no FATAL UTF-8
+		); 
 use     English;
 
 =pod Name, Version
@@ -48,7 +52,12 @@ Currently set to call L</my_example();>.
 
 =cut
 
-say ScriptOne->my_example();
+#UTF-8 the default on standard input and output:
+my  $our_encoding   =   ":encoding(UTF-8)";
+binmode STDIN,  $our_encoding;
+binmode STDOUT, $our_encoding;
+
+say ScriptOne->test_input();
 
 =head1 METHODS
 
@@ -206,6 +215,28 @@ an anonymous sub / coderef within my_example method.
 =back
 
 =cut
+
+sub test_input {
+
+    my $prompt = {
+        1   =>  "Your name: ",
+        2   =>  "Your age: ",
+        3   =>  "Your choice of moped: ",
+        4   =>  "Your preferred tumbleweed when in a desert: ",
+        5   =>  "Your preferred custard when in a dessert: ",
+    };
+    
+    say "Hello World";
+    
+    for my $i (1..5) {
+        say $prompt->{"$i"};
+        my $answer = <STDIN>;
+        say $answer;
+    };
+            
+    say "Goodbye World";
+    
+}
 
 sub result_processing ($session, $dataset, $result, $output) {
 
