@@ -212,16 +212,28 @@ sub result_processing ($session, $dataset, $result, $output) {
     # Initial Values:
     my  $format_output_line = \&format_outputline;
 
-    unless ($output->{'said_already'}) {
+    #unless ($output->{'said_already'}) { # redundant - it already only does this once, as we're outside of the foreach loops below.#####
     warn 'Here is some useful info once:'.
                     "\n".
-                    'Under Construction: '. $result->{under_construction}.
+                    'Under Construction: '. (exists $result->{under_construction}?
+                                                defined $result->{under_construction}?
+                                                    $result->{under_construction}?
+                                                        $result->{under_construction}:
+                                                    'False.':
+                                                'Undefined':
+                                            'Doesn\'t exist.').
                     "\n".
-                    'Change: '. $result->{changed}->%*.
+                    'Change: '. (exists $result->{changed}?
+                                    defined $result->{changed}?
+                                        $result->{changed}->%*?
+                                            Dumper($result->{changed}->%*):
+                                        'False, presumaby empty Hashref':
+                                    'Undefined':
+                                'Doesn\'t exist.').
                     "\n".
                     'Non volatile Change: '. $result->{non_volatile_change}.
                     "\n";
-    }
+    #}
 
 
     foreach my $search_field ($output->{'search_fields'}->@*) {
