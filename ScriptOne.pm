@@ -211,23 +211,20 @@ sub result_processing ($session, $dataset, $result, $output) {
     # Initial Values:
     my  $format_output_line = \&format_outputline;
 
-#    my @fields = $result->get_searchfields()->fields;
-#    foreach my $field (@fields) {
-#        $field->name
-#    }
+
     foreach my $search_field ($output->{'search_fields'}->@*) {
-        #warn "In search fields.\n";
+        warn "In search fields.\n";
 
         for my $i (0..$#{$result->get_value($search_field)}) {
-            #warn "In value.\n";        
+            warn "In value.\n";        
             for my $name_part ($output->{'name_parts'}->@*) {
-                #warn "In name part with name part $name_part being ".$value->{"$name_part"}."\n";
+                warn "In name part with name part $name_part being ".$result->get_value($search_field)->[$i]->{"$name_part"}."\n";
                 # Definition:
                 my  $matched  =  ($result->get_value($search_field)->[$i]->{"$name_part"} =~ $output->{'matches_search_term'});
                 #warn "Search is ".Dumper($output->{'matches_search_term'});
 
                 if ($matched) {
-                    #warn "In match.\n";
+                    warn "In match.\n";
                     push $output->{'lines'}->@*, 'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched.";
                     #my $whole_thing = $value;
                     #my $part_to_change = $value->{"$name_part"}
