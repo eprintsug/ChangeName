@@ -93,7 +93,7 @@ to display the output returned from the result processing.
 =cut
 
 sub my_example {
-
+    #die "End prematurely";
     # Initial Values:
     my  $repository_id          =   'initial_archive'; # can later be input
     my  $dataset_to_use         =   'eprint';
@@ -130,6 +130,7 @@ sub my_example {
         matches_search_term     =>  $matches_search_term,
         search_fields           =>  \@fields_to_search,
         name_parts              =>  \@name_parts,
+        said_already            =>  0,
     };
     
     # Processing:
@@ -211,6 +212,17 @@ sub result_processing ($session, $dataset, $result, $output) {
     # Initial Values:
     my  $format_output_line = \&format_outputline;
 
+    unless ($output->{'said_already'}) {
+    warn 'Here is some useful info once:'.
+                    "\n".
+                    'Under Construction: '. $result->{under_construction}.
+                    "\n".
+                    'Change: '. $result->{changed}->%*.
+                    "\n".
+                    'Non volatile Change: '. $result->{non_volatile_change}.
+                    "\n";
+    }
+
 
     foreach my $search_field ($output->{'search_fields'}->@*) {
         warn "In search fields.\n";
@@ -229,11 +241,13 @@ sub result_processing ($session, $dataset, $result, $output) {
                     #my $whole_thing = $value;
                     #my $part_to_change = $value->{"$name_part"}
                     #$value->{"$name_part"} = "Browne";
-                    my @clone = $result->get_value($search_field)->@*;
-                    $clone[$i]->{"$name_part"} = "Browne"; 
+                    $result->get_value($search_field)->[$i]->{"$name_part"} = "Browne"; 
+                    warn "Woooooooo!";
                     push $output->{'lines'}->@*, 'Changing Wilco match to Browne';
-                    $result->set_value($search_field, \@clone);
-                    $result->commit();
+                    
+                    push $output->{'lines'}->@*, 'This is what we\'re about to set:'."\n".Dumper ($result->get_value($search_field));
+                    $result->set_value($search_field, $result->get_value($search_field));
+                    $result->commit([1]);
                     #$result->set_value($search_field, $result->get_value($search_field)->[$i]);
                     
                 };
