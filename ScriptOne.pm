@@ -231,10 +231,10 @@ sub test_input {
     for my $i (1..5) {
         say $prompt->{"$i"};
         my $answer = <STDIN>;
-        say $answer;
+        say 'Your Answer: '.$answer;
     };
             
-    say "Goodbye World";
+    return "Goodbye World";
     
 }
 
