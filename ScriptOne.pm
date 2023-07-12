@@ -16,6 +16,9 @@ use		warnings (
 use     English;
 
 use     Data::Dumper;
+use     List::Util  qw(
+            pairmap
+        );
 use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
@@ -118,16 +121,25 @@ sub simple_version {
                                         # 'honourific',
                                         # 'lineage',
                                     );
-    my  $search_terms           =   {
+    my  @search_terms           =   (
                                         'given' =>  'Behzadian Moghadam',
                                         family  =>  'Kourosh',
-                                    };
-    my  $search_term_seperator  =   ' ';
-    my  $search_term            =   join $search_term_seperator, (
-                                        $search_terms->{'given'},
-                                        $search_terms->{'family'},
                                     );
-    my  $regex_search_term      =   join
+    my  @replacement_terms      =   (
+                                        'given' =>  'Behzadian',
+                                        #family  =>  'Kourosh',
+                                    );
+    my  $match_terms            =   {
+                                        pairmap {
+                                            #my @key_value = (
+                                                $a  =>  qr/^\Q$b\E$/,
+                                            #)
+                                        }
+                                        @search_terms
+                                    };
+    die                             "Match terms:".Dumper($match_terms);
+    my  $search_term_seperator  =   ' ';
+    my  $search_term            =   join $search_term_seperator, @search_terms;
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
@@ -143,9 +155,7 @@ sub simple_version {
                                         },
                                     ];
     my  $result_processing      =   \&result_processing;
-    my  $matches_search_term    =   qr/
-                                        \Q$search_term\E    # Quotemeta'd String for safety - note it will will match anything if empty. 
-                                    /ix;
+    my  $matches_search_term    =   qr/^$/i;
     my  $output = {
         lines                   =>  [],
         matches_search_term     =>  $matches_search_term,
