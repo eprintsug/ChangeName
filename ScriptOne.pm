@@ -57,7 +57,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->test_input();
+say ScriptOne->test_commandline_arguments(@ARGV);
 
 =head1 METHODS
 
@@ -101,10 +101,10 @@ to display the output returned from the result processing.
 
 =cut
 
-sub my_example {
-    #die "End prematurely";
+sub simple_version {
+
     # Initial Values:
-    my  $repository_id          =   'initial_archive'; # can later be input
+    my  $repository_id          =   $ARGV[0]; # can later be input
     my  $dataset_to_use         =   'eprint';
     my  @fields_to_search       =   qw(
                                         creators_name
@@ -236,6 +236,27 @@ sub test_input {
             
     return "Goodbye World";
     
+}
+
+sub test_commandline_arguments {
+
+    my  ($self, $input) = @_;
+    
+    until ($input) {
+        say "Please specify an Archive ID: ";
+        chomp($input  =   <STDIN>);
+    };
+
+    my  $output =   "You provided a command line input of: $input";
+
+    return $output;
+    
+}
+
+sub get_input {
+    say "Please specify an Archive ID: ";
+    my $input = <STDIN>;
+    return $input;
 }
 
 sub result_processing ($session, $dataset, $result, $output) {
