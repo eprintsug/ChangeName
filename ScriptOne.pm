@@ -104,7 +104,7 @@ to display the output returned from the result processing.
 sub simple_version {
 
     # Initial Values:
-    my  $repository_id          =   $ARGV[0]; # can later be input
+    my  ($self, $repository_id) =   @_;
     my  $dataset_to_use         =   'eprint';
     my  @fields_to_search       =   qw(
                                         creators_name
@@ -120,6 +120,7 @@ sub simple_version {
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
+        archive_id              =>  'Please specify an Archive ID: ',
     };
     my  $line_delimiter         =   "\n";
     my  $search_fields          =   [
@@ -141,6 +142,13 @@ sub simple_version {
         name_parts              =>  \@name_parts,
         said_already            =>  0,
     };
+    
+    # Check repo_id provided:
+    until ($repository_id) {
+        say $text->{'archive_id'};
+        chomp($repository_id  =   <STDIN>);
+    };
+
     
     # Processing:
 
