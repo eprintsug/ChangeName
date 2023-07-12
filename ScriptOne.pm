@@ -5,19 +5,21 @@ package ScriptOne;
 use     strict;
 use     warnings;
 
-use     Data::Dumper;
-use     EPrints;
-use     EPrints::Repository;
-use     EPrints::Search;
-
-use     v5.32;
-use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
+#use     v5.16;
+use     v5.16;
+#use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 use     utf8;
 use		warnings (
 			'FATAL',	#makes anything in this list fatal
 			'utf8',		#utf8 is a warnings category. There is no FATAL UTF-8
 		); 
 use     English;
+
+use     Data::Dumper;
+use     EPrints;
+use     EPrints::Repository;
+use     EPrints::Search;
+
 
 =pod Name, Version
 
@@ -174,8 +176,6 @@ sub simple_version {
                                     )
                                     ->perform_search;
 
-    warn "Type of First Result is: ".ref($list_of_results->item(0));
-
     # Process Search Results:
     $list_of_results->map($result_processing,$output);
 
@@ -277,13 +277,15 @@ sub get_input {
     return $input;
 }
 
-sub get_unique_creator_hashes ($session, $dataset, $result, $output) {
-
+sub get_unique_creator_hashes {
+    my  ($session, $dataset, $result, $output)  =   @_;
+    return "Nothing here yet";
 }
 
-sub result_processing ($session, $dataset, $result, $output) {
+sub result_processing {
 
     # Initial Values:
+    my  ($session, $dataset, $result, $output)  =   @_;
     my  $format_output_line = \&format_outputline;
     my  $debugging          = 0;
     
@@ -362,17 +364,15 @@ sub result_processing ($session, $dataset, $result, $output) {
                                                     if $debugging;
     }
     
-
-    
-    
     # Add to Display Output:
     push $output->{'lines'}->@*, $format_output_line->($result);
 
 }
 
-sub format_outputline ($result) {
+sub format_outputline {
 
     # Initial Values:
+    my  $result                 =   shift;
     my  $seperator = {
         creators                =>  ', ',   # comma, space
         name_parts              =>  ' ',    # space
