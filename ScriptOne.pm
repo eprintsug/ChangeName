@@ -57,7 +57,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->test_commandline_arguments(@ARGV);
+say ScriptOne->simple_version(@ARGV);
 
 =head1 METHODS
 
@@ -106,9 +106,9 @@ sub simple_version {
     # Initial Values:
     my  ($self, $repository_id) =   @_;
     my  $dataset_to_use         =   'eprint';
-    my  @fields_to_search       =   qw(
-                                        creators_name
-                                        contributors_name
+    my  @fields_to_search       =   (
+                                        'creators_name',
+                                        'contributors_name',
                                     );
     my  @name_parts             =   (
                                         'given',
@@ -116,7 +116,16 @@ sub simple_version {
                                         # 'honourific',
                                         # 'lineage',
                                     );
-    my  $search_term            =   'Wilco';
+    my  $search_terms           =   {
+                                        'given' =>  'Behzadian Moghadam',
+                                        family  =>  'Kourosh',
+                                    };
+    my  $search_term_seperator  =   ' ';
+    my  $search_term            =   join $search_term_seperator, (
+                                        $search_terms->{'given'},
+                                        $search_terms->{'family'},
+                                    );
+    my  $regex_search_term      =   join
     my  $text = {
         data_count              =>  'Number of dataset records found: ',
         search_count            =>  'Number of search results found: ',
@@ -148,7 +157,6 @@ sub simple_version {
         say $text->{'archive_id'};
         chomp($repository_id  =   <STDIN>);
     };
-
     
     # Processing:
 
@@ -169,7 +177,9 @@ sub simple_version {
     warn "Type of First Result is: ".ref($list_of_results->item(0));
 
     # Process Search Results:
-    $list_of_results->map($result_processing,$output); 
+    $list_of_results->map($result_processing,$output);
+
+
 
     # Get counts:
     my  $counts = {
@@ -267,67 +277,89 @@ sub get_input {
     return $input;
 }
 
+sub get_unique_creator_hashes ($session, $dataset, $result, $output) {
+
+}
+
 sub result_processing ($session, $dataset, $result, $output) {
 
     # Initial Values:
     my  $format_output_line = \&format_outputline;
-
-    #unless ($output->{'said_already'}) { # redundant - it already only does this once, as we're outside of the foreach loops below.#####
-    warn 'Here is some useful info once:'.
-                    "\n".
-                    'Under Construction: '. (exists $result->{under_construction}?
-                                                defined $result->{under_construction}?
-                                                    $result->{under_construction}?
-                                                        $result->{under_construction}:
-                                                    'False.':
-                                                'Undefined':
-                                            'Doesn\'t exist.').
-                    "\n".
-                    'Change: '. (exists $result->{changed}?
-                                    defined $result->{changed}?
-                                        $result->{changed}->%*?
-                                            Dumper($result->{changed}->%*):
-                                        'False, presumaby empty Hashref':
-                                    'Undefined':
-                                'Doesn\'t exist.').
-                    "\n".
-                    'Non volatile Change: '. $result->{non_volatile_change}.
-                    "\n";
-    #}
+    my  $debugging          = 0;
+    
+    if ($debugging) {
+        warn    'Here is some useful info:'.
+                "\n".
+                'Under Construction: '. (exists $result->{under_construction}?
+                                            defined $result->{under_construction}?
+                                                $result->{under_construction}?
+                                                    $result->{under_construction}:
+                                                'False.':
+                                            'Undefined':
+                                        'Doesn\'t exist.').
+                "\n".
+                'Change: '. (exists $result->{changed}?
+                                defined $result->{changed}?
+                                    $result->{changed}->%*?
+                                        Dumper($result->{changed}->%*):
+                                    'False, presumaby empty Hashref':
+                                'Undefined':
+                            'Doesn\'t exist.').
+                "\n".
+                'Non volatile Change: '. $result->{non_volatile_change}.
+                "\n";
+    }
 
 
     foreach my $search_field ($output->{'search_fields'}->@*) {
-        warn "In search fields.\n";
+        warn "In search fields.\n" if $debugging;
+        my  $entries        =   $result->get_value($search_field);
+        my  @entry_range    =   (0..$entries->$#*);
 
-        for my $i (0..$#{$result->get_value($search_field)}) {
-            warn "In value.\n";        
+        for my $i (@entry_range) {
+
+            warn    "In entries.\n"
+                    if $debugging;
+
             for my $name_part ($output->{'name_parts'}->@*) {
-                warn "In name part with name part $name_part being ".$result->get_value($search_field)->[$i]->{"$name_part"}."\n";
+
+                my $value = $entries->[$i];
+                
+                warn    "In name part with name part $name_part being value ".$value->{"$name_part"}."\n"
+                        if $debugging;
+
                 # Definition:
-                my  $matched  =  ($result->get_value($search_field)->[$i]->{"$name_part"} =~ $output->{'matches_search_term'});
-                #warn "Search is ".Dumper($output->{'matches_search_term'});
+                my  $matched  =  ($value->{"$name_part"} =~ $output->{'matches_search_term'});
 
                 if ($matched) {
-                    warn "In match.\n";
-                    push $output->{'lines'}->@*, 'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched.";
-                    #my $whole_thing = $value;
-                    #my $part_to_change = $value->{"$name_part"}
-                    #$value->{"$name_part"} = "Browne";
-                    $result->get_value($search_field)->[$i]->{"$name_part"} = "Browne"; 
-                    warn "Woooooooo!";
-                    push $output->{'lines'}->@*, 'Changing Wilco match to Browne';
+                    warn    "In match.\n"
+                            if $debugging;
+
+                    push $output->{'lines'}->@* ,   'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched."
+                                                    if $debugging;
+                                                    
+                    $value->{"$name_part"}      =   "Browne";
+
+                    push $output->{'lines'}->@* ,    'Changing Wilco match to Browne'
+                                                    if $debugging;
                     
-                    push $output->{'lines'}->@*, 'This is what we\'re about to set:'."\n".Dumper ($result->get_value($search_field));
-                    $result->set_value($search_field, $result->get_value($search_field));
-                    $result->commit([1]);
-                    #$result->set_value($search_field, $result->get_value($search_field)->[$i]);
+                    push $output->{'lines'}->@* ,    'This is what we\'re about to set:'."\n".
+                                                    Dumper($value)
+                                                    if $debugging;
+
+                    $result->set_value($search_field, $value);
+
+                    # Commit commented in/out:
+                    #$result->commit([1]);
                     
                 };
                 
             }
 
         }
-        push $output->{'lines'}->@*, "Result $search_field value this time is an array as follows... ". Dumper($result->get_value($search_field));
+        push $output->{'lines'}->@*             ,   "Result $search_field value this time is an array as follows... ".
+                                                    Dumper($entries)
+                                                    if $debugging;
     }
     
 
@@ -335,8 +367,7 @@ sub result_processing ($session, $dataset, $result, $output) {
     
     # Add to Display Output:
     push $output->{'lines'}->@*, $format_output_line->($result);
-#   push $output->{'lines'}->@*, "Before: ".$format_output_line->($result);
-#   push $output->{'lines'}->@*, "After: ".$format_output_line->($result);
+
 }
 
 sub format_outputline ($result) {
@@ -526,3 +557,12 @@ sub justin_example {
 
     $session->terminate();
 }
+
+======
+
+__END__
+
+So multiple maps might be:
+
+    $list_of_results->map($result_processing,$output);
+    $list_of_results->map($result_processing,$output);
