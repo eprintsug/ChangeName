@@ -92,7 +92,7 @@ sub hello {
 
 sub version_from_pdl {
 
-    # Set Defaults
+    # Input:
     my  $self                               =   shift;
 	my  $live                               =   q{};
     Getopt::Long::Parser->new->getoptionsfromarray(
@@ -125,6 +125,42 @@ sub version_from_pdl {
         search_count            =>  'Number of search results found: ',
     };
     my  $line_delimiter         =   "\n";
+    my  $search_fields          =   [
+                                        {
+                                            meta_fields     =>  [
+                                                                    @fields_to_search,
+                                                                ],
+                                            value           =>  $find,
+                                        },
+                                    ];
+    my  $useful_info            =   {};
+    my  $get_useful_frequency_counts    =   \&get_useful_info;
+    my  $useful_info = {
+        search_fields           =>  \@fields_to_search,
+        name_parts              =>  \@name_parts,
+    };
+
+    # Processing:
+    
+    # Search:
+    my  $list_of_results        =   EPrints::Repository
+                                    ->new($archive)
+                                    ->dataset($dataset_to_use)
+                                    ->prepare_search(
+                                        satisfy_all         =>  1,
+                                        staff               =>  1,
+                                        limit               =>  30,
+                                        show_zero_results   =>  0,
+                                        allow_blank         =>  1,
+                                        search_fields       =>  $search_fields,
+                                    )
+                                    ->perform_search;
+
+    # Process Search Results:
+    $list_of_results->map($get_useful_frequency_counts,$useful_info);
+    
+    
+    # Output:
     
     return Dumper([
         repo_is         =>  $archive,
@@ -136,6 +172,52 @@ sub version_from_pdl {
     ]);
     
 }
+
+#sub get_useful_info {
+#    my  ($session, $dataset, $result, $useful_info)  =   @_;
+#
+#    my  $given_names
+#        foreach my $search_field ($output->{'search_fields'}->@*) {
+#        warn "In search fields.\n" if $debugging;
+#        my  $entries        =   $result->get_value($search_field);
+#        my  @entry_range    =   (0..$entries->$#*);
+#
+#        for my $i (@entry_range) {
+#    
+#}
+
+sub get_useful_frequency_counts {
+    my  ($session, $dataset, $result, $useful_info)  =   @_;
+
+#    my  $compound_names     =   {};
+#    my  $given_names        =   {};
+#    my  $family_names       =   {};
+
+    foreach my $search_field ($useful_info->{'search_fields'}->@*) {
+
+        my  $entries        =   $result->get_value($search_field);
+        my  @entry_range    =   (0..$entries->$#*);
+
+        for my $i (@entry_range) {
+
+            my $value           =   $entries->[$i];        
+            my  $compound_name  =   "";
+
+            for my $name_part ($useful_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+                $compound_name  .=  $name_part.$value->{"$name_part"};
+
+            }
+
+            #push # What structure do we want for the data we're returning?
+
+            $useful_info->{'compound_names'} ->{"$compound_name"     }++;
+            $useful_info->{'given_names'}    ->{"$value->{'given'}"  }++;
+            $useful_info->{'family_names'}   ->{"$value->{'family'}" }++;
+        }
+    }
+}
+
 
 sub validate {
     my  $self                           =   shift;
@@ -282,6 +364,8 @@ sub simple_version {
 
     # Process Search Results:
     $list_of_results->map($result_processing,$output);
+    
+
 
 
 
