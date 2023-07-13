@@ -13,10 +13,6 @@ use     EPrints::Search;
 use     v5.16;
 #use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 use     utf8;
-use		warnings (
-			'FATAL',	#makes anything in this list fatal
-			'utf8',		#utf8 is a warnings category. There is no FATAL UTF-8
-		); 
 use     English;
 
 use     Encode;
@@ -66,23 +62,6 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN, $our_encoding;
 binmode STDOUT, $our_encoding;
 
-my  @encoding_details = (
-    "\n",
-    'Standard input:',
-    PerlIO::get_layers(STDIN, details => 1),
-    "\n",
-    'Standard output:',
-    PerlIO::get_layers(STDOUT, output => 1, details => 1),
-    "\n",
-);
-
-for my $current (@encoding_details) {
-    print   $current? $current."\n":
-            "undef\n";
-}
-
-say 'Presents…';
-
 say ChangeName->version_from_pdl(@ARGV);
 
 =head1 METHODS
@@ -113,7 +92,7 @@ sub presentable_compound_name {
     my  $self           =   shift;
     my  $compound_name  =   shift;
     my  @name_parts     =   @_;
-    warn 'Name_parts: '.Dumper(@name_parts);
+
     my  $true_arguments =   $self && $compound_name && (scalar @_);
     die                     "Insufficient or false arguments for presentable_compound_name subroutine, "
                             unless $true_arguments;
@@ -137,24 +116,29 @@ sub presentable_compound_name {
 sub fix_encoding_after_eprints {
 
     # Initial Values:
-    my  $self   =   shift;
-    my  @input  =   @_;
-    my  @output =   ();
-    my  $encoding  =   "UTF-8";
+    my  $self       =   shift;
+    my  @input      =   @_;
+    my  @output     =   ();
+    my  $encoding   =   "UTF-8";
+ 
 
     # Processing:
     foreach my $input (@input) {
+        no warnings;
         my  $has_value  =   defined($input) && $input;
-        warn "Doesn't have value." unless $has_value;
+        my  $decoded    =   decode($encoding, $input);
         push @output    ,   $has_value?
-                                decode("UTF-8", $input):
+                                $decoded:
                             ($input eq "0")?
                                 0:
                             defined($input)?
                                 q{}:
                             undef;
+            use		warnings;
+
     };
     
+	
     # Output:
     return @output;
     
@@ -163,60 +147,20 @@ sub fix_encoding_after_eprints {
 sub version_from_pdl {
 
     # Input:
-    warn Dumper(@_);
     my  $self                               =   shift;
 	my  $live                               =   q{};
-    Getopt::Long::Parser->new->getoptionsfromarray(
+    Getopt::Long::Parser->new
+    ->getoptionsfromarray(
         \@_,
         'live!'                             =>  \$live
                                                 # if --live present, 	set live to 1,
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my ($archive, $find, $replace, $part)    =   $self->validate(@_);
-    warn "Replace after validate: ".$replace;
+    my  ($archive, $find, $replace, $part)  =   $self->validate(@_);
         $archive                            //= $self->prompt_for('archive');
-    my  $repository                         =   EPrints::Repository->new('initial_archive');
-    
-    my  @encoding_details = (
-    "\n",
-    'Standard input:',
-    PerlIO::get_layers(STDIN, details => 1),
-    "\n",
-    'Standard output:',
-    PerlIO::get_layers(STDOUT, output => 1, details => 1),
-    "\n",
-);
-
-    for my $current (@encoding_details) {
-        print   $current? $current."\n":
-                "undef\n";
-    }
-
-    say 'Presents…';
-    
-    warn "Replace after Eprints: ".$replace;
-    ($archive, $find, $replace, $part)   =   $self->fix_encoding_after_eprints(($archive, $find, $replace, $part));
-    utf8::upgrade( $replace );
-        no warnings 'redefine';
-    local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
-        use warnings;
-#    local $Data::Dumper::Useqq      =   0;
-    local $Data::Dumper::Useperl    =   1;
-    warn "After restore: ".Dumper(($archive, $find, $replace, $part));
-    warn "archive After restore: ".$archive;
-    warn "After restore: ".$archive;
-#    my ($archive $find, $replace, $part)    =   $self->validate(@_);
-
-    die;
-
-    #utf8::upgrade( $replace );
-    #warn "Replace after utf8upgrade: ".$replace;
-
-    $replace = decode("UTF-8", $replace);
-#    open(INPUT,
-    warn "Replace after encode: ".$replace;
-    
+    my  $repository                         =   EPrints::Repository->new($archive);
+        ($archive, $find, $replace, $part)  =   $self->fix_encoding_after_eprints(($archive, $find, $replace, $part));
         $find                               //= $self->prompt_for('search');
     my  $part_search                        =   $part? 1:
                                                 0;
@@ -268,7 +212,6 @@ sub version_from_pdl {
     # Processing:
     
     # Search:
-
     my  $list_of_results                    =   $repository
                                                 ->dataset($dataset_to_use)
                                                 ->prepare_search(
@@ -280,29 +223,21 @@ sub version_from_pdl {
                                                     search_fields       =>  $search_fields,
                                                 )
                                                 ->perform_search;
-    warn "Replace after search: ".$replace;
+
     # Process Search Results:
-    warn "Replace before map: ".$replace;
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
-    warn "Replace after map: ".$replace;
-    warn "Find after map: ".$find;
+
     unless ($part_search) {
         $part                       =   $self->prompt_for('part', $useful_info);
         # shouldn't we validate part is one of the accepted @name_parts?
         my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
                                         ();
         $find                       =   $self->prompt_for('find', @presentable_part_name);
-        warn "Replace before default: ".$replace;
         $replace                    //= $self->prompt_for('replace');
-        warn "Replace after default: ".$replace;
         $part_search                =   $part && $find && defined($replace)? 1:
                                         undef;
-
     };
     
-    warn "Replace before processing: ".$replace;
-    warn "Find before processing: ".$find;
-    die;    
     if ($part_search) {
 
         for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
@@ -332,11 +267,8 @@ sub version_from_pdl {
         }
     };
  
-
-    
     # Output:
-    warn "Replace before output: ".$replace;
-    say "Replace before output with say: ".$replace;
+
     return Dumper([
         repo_is         =>  $archive,
         find_is         =>  $find,
@@ -495,13 +427,12 @@ sub get_useful_frequency_counts {
 sub validate {
     my  $self                           =   shift;
     my  @input                          =   @_;
-    warn "Validate input: ".Dumper($input[1]);
-    my  $matches_four_byte_character    =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
+    my  $matches_four_byte_character    =   qr/[^\N{U+10000}-\N{U+7FFFFFFF}]/;
     
     for my $input (@input) {
-        #die                                 "This script does not support ".
-         #                                   "four byte characters in input."
-          #                                  if ($input =~ $matches_four_byte_character);
+        die                                 "This script does not support ".
+                                            "four byte characters in input."
+                                            if ($input =~ $matches_four_byte_character);
     };
     
     return @input;
