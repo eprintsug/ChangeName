@@ -134,13 +134,18 @@ sub version_from_pdl {
     my ($archive, $find, $replace, $part)   =   $self->validate(@_);
     warn "Replace after validate: ".$replace;
         $archive                            //= $self->prompt_for('archive');
-    my  $repository;#                         =   EPrints::Repository->new($archive);
+    my  $repository                         =   EPrints::Repository->new($archive);
     my  $our_encoding   =   ":encoding(UTF-8)";
     binmode STDIN, $our_encoding;
     binmode STDOUT, $our_encoding;
     use utf8;
     use v5.16;
     warn "Replace after Eprints: ".$replace;
+    utf8::upgrade( $replace );
+    warn "Replace after utf8upgrade: ".$replace;
+    use Encode;
+    $replace = decode("UTF-8", $replace);
+    warn "Replace after encode: ".$replace;
     
         $find                               //= $self->prompt_for('search');
     my  $part_search                        =   $part? 1:
