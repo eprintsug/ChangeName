@@ -134,7 +134,6 @@ sub version_from_pdl {
                                                     },
                                                 ];
     my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
-    my  $compound_match                     =   \&compound_match;
     my  $part_match                         =   \&part_match;
     my  @common_info = (
         search_fields                       =>  \@fields_to_search,
@@ -146,11 +145,10 @@ sub version_from_pdl {
         given_names                         =>  {},
         family_names                        =>  {},
     };
-    my  $compound_match_info = {
-        @common_info,    
-    };
+
     my  $part_match_info = {
-        @common_info,    
+        @common_info,
+        live                                =>  $live,
     };
 
 
@@ -179,8 +177,15 @@ sub version_from_pdl {
                             undef;
     };
  
-#    $list_of_results->map($compound_match,$compound_match_info) if $part_search;    
-#    $list_of_results->map($part_match,$part_match_info) if $part_search;
+    if ($part_search) {
+        for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
+            $part_match_info->{'matches_compound_name'} = qr/^\Q$compound_name\E$/;
+            $list_of_results->map($part_match,$part_match_info);
+            # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
+
+            # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
+        }
+    };
     
     # Output:
     
@@ -212,8 +217,10 @@ sub version_from_pdl {
 #    
 #}
 
-sub do_a_compound_match {
-    my  ($session, $dataset, $result, $useful_info)  =   @_;
+
+
+sub do_a_part_match {
+    my  ($session, $dataset, $result, $part_match_info)  =   @_;
 }
 
 sub get_useful_frequency_counts {
