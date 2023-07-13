@@ -63,7 +63,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->test_increment(@ARGV);
+say ScriptOne->version_from_pdl(@_);
 
 =head1 METHODS
 
@@ -101,24 +101,50 @@ sub version_from_pdl {
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my ($archive, $find, $replace, $part)   =   $self->validate(@_);
+    my ($archive, $find, $replace, $part)   =   $self->validate(@ARGV);
 
-    $repository_id                          //= $self->prompt_for('archive');
+    $archive                                //= $self->prompt_for('archive');
     $find                                   //= $self->prompt_for('search');
     $replace                                //= $self->prompt_for('replace');
     my $part_search                         =   $part? 1:
                                                 0;
+    my  $dataset_to_use         =   'eprint';
+    my  @fields_to_search       =   (
+                                        'creators_name',
+                                        'contributors_name',
+                                    );
+    my  @name_parts             =   (
+                                        'given',
+                                        'family',
+                                        'honourific',
+                                        'lineage',
+                                    );
+    my  $text = {
+        data_count              =>  'Number of dataset records found: ',
+        search_count            =>  'Number of search results found: ',
+    };
+    my  $line_delimiter         =   "\n";
+    
+    return Dumper([
+        repo_is         =>  $archive,
+        find_is         =>  $find,
+        replace_is      =>  $replace,
+        part_search_is  =>  $part_search,
+        dataset_is      =>  $dataset_to_use,
+        live_is         =>  $live,
+    ]);
+    
 }
 
 sub validate {
     my  $self                           =   shift;
-    my  @input                          =   @_;
-    my  $matches_four_byte_character    =   qr/[\N{U+0000}-\N{U+FFFF}]/;
+    my  @input                          =   @ARGV;
+    my  $matches_four_byte_character    =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
     
     for my $input (@input) {
         die                                 "This script does not support ".
                                             "four byte characters in input."
-                                            if ($input ~= $matches_four_byte_character);
+                                            if ($input =~ $matches_four_byte_character);
     };
     
     return @input;
@@ -140,11 +166,12 @@ sub prompt_for {
     if ($prompt->{"$prompt_type"}) {
         until ($input) {
             say $prompt->{"$prompt_type"};
-            chomp($input  =   <STDIN>);
+            chomp(my $typed_input   =   <STDIN>);
+            ($input)                =   $self->validate( ($typed_input) );
         };
+        
     };
     
-    my ($input)         =   $self->validate( ($input) ); # Should this be moved into the until loop? #####
     return $input;
 
 }
@@ -642,3 +669,17 @@ So multiple maps might be:
 
     $list_of_results->map($result_processing,$output);
     $list_of_results->map($result_processing,$output);
+    
+    =====
+    
+    
+my  $search_fields          =   [
+                                        {
+                                            meta_fields     =>  [
+                                                                    @fields_to_search,
+                                                                ],
+                                            value           =>  $search_term,
+                                        },
+                                    ];
+
+    my  $matches_search_term    =   qr/^\Q$search_term\E$/i; # Exact match, case insensitive.
