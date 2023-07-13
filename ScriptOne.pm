@@ -106,7 +106,6 @@ sub version_from_pdl {
 
     $archive                                //= $self->prompt_for('archive');
     $find                                   //= $self->prompt_for('search');
-    $replace                                //= $self->prompt_for('replace');
     my $part_search                         =   $part? 1:
                                                 0;
     my  $dataset_to_use                     =   'eprint';
@@ -123,6 +122,7 @@ sub version_from_pdl {
     my  $text = {
         data_count                          =>  'Number of dataset records found: ',
         search_count                        =>  'Number of search results found: ',
+        part_suffix                         =>  ' Name',
     };
     my  $line_delimiter                     =   "\n";
     my  $search_fields                      =   [
@@ -172,20 +172,27 @@ sub version_from_pdl {
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
     
     unless ($part_search) {
-        $part           =   $self->prompt_for('part', $useful_info);
-        $part_search    =   $part? 1:
-                            undef;
+        $part                       =   $self->prompt_for('part', $useful_info);
+        my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
+                                        ();
+        $find                       =   $self->prompt_for('find', @presentable_part_name);
+        $replace                    //= $self->prompt_for('replace');
+        $part_search                =   $part && $find && defined($replace)? 1:
+                                        undef;
     };
  
-    if ($part_search) {
-        for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
-            $part_match_info->{'matches_compound_name'} = qr/^\Q$compound_name\E$/;
-            $list_of_results->map($part_match,$part_match_info);
+#    if ($part_search) {
+        # WE NEED TO UPDATE FIND!
+#        for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
+#            $part_match_info->{'matches_compound_name'} = qr/^\Q$compound_name\E$/;
+#            $list_of_results->map($part_match,$part_match_info);
             # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
 
             # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
-        }
-    };
+#        }
+#    };
+ 
+
     
     # Output:
     
@@ -222,7 +229,7 @@ sub version_from_pdl {
 sub part_match {
     my  ($session, $dataset, $result, $part_match_info)  =   @_;
     
-    foreach my $search_field ($useful_info->{'search_fields'}->@*) {
+    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
 
         my  $names          =   $result->get_value($search_field);
         my  @range_of_names =   (0..$names->$#*);
@@ -232,17 +239,12 @@ sub part_match {
             my  $name           =   $names->[$current];        
             my  $compound_name  =   "";
 
-            for my $name_part ($useful_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+            for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
 
                 $compound_name  .=  $name_part.$name->{"$name_part"};
 
             }
 
-            #push # What structure do we want for the data we're returning?
-
-            $useful_info->{'compound_names'} ->{"$compound_name"     }++;
-            $useful_info->{'given_names'}    ->{"$name->{'given'}"  }++;
-            $useful_info->{'family_names'}   ->{"$name->{'family'}" }++;
         }
     }
 
@@ -300,15 +302,26 @@ sub prompt_for {
 
     # Definitions:
     my  $part_prompt    =   ($prompt_type eq 'part' && $useful_info);
-
+    my  $replace_prompt =   ($prompt_type eq 'replace');
     my $prompt = {
-        archive =>  "Please specify an Archive ID: ",
-        search  =>  "Please specify a Search Term: ",
-        replace =>  "Please specify a Replace Term: ",
+        archive         =>  'Please specify an Archive ID: ',
+        search          =>  'Please specify a Search Term: ',
+        replace         =>  'Please specify a Replace Term: ',
+        find            =>  "Your change will be performed using find and replace,\n".
+                            "(looking to find full and not partial matches, and with case insensitivity).\n".
+                            'What is your find value'.
+                            ($useful_info?  " when matching within $useful_info":
+                                            '').    
+                            '? ',
+        replace_blank   =>  'Did you mean for the replace value to be a blank/null value, '.
+                            'that if later confirmed would effectively be clearing the field? '.
+                            'Enter Y for Yes, or anything else for No: ',
     };
 
     if ($part_prompt) {
+    
         my  $number;
+    
         say "\nFrom your search we found the following given names...\n";
         say join(', ',keys $useful_info->{'given_names'}->%*)."\n";
         say "...and the following family names...\n";
@@ -316,25 +329,43 @@ sub prompt_for {
         say "Which do you wish to perform your change on first?";
         say "\t1) Given Name";
         say "\t2) Family Name";
+    
         until ($number && ($number eq "1" || $number eq "2")) {
+
             say "Please enter 1 or 2.";
             chomp($number   =   <STDIN>)
+
         };
-        $input  =   $number?
-                        ($number eq "1")?
-                            'given':
-                        ($number eq "2")?
-                            'family':
-                        undef:
+    
+        $input  =   $number?    ($number eq "1")?   'given':
+                                ($number eq "2")?   'family':
+                                undef:
                     undef;
     }    
     
     if ($prompt->{"$prompt_type"}) {
+    
         until ($input) {
+    
             say $prompt->{"$prompt_type"};
-            chomp(my $typed_input   =   <STDIN>);
-            
-            ($input)                =   $self->validate( ($typed_input) );
+            chomp(my $typed_input           =   <STDIN>);
+            ($input)                        =   $self->validate( ($typed_input) );
+    
+            if ($prompt->{"$prompt_type\_blank"}) {
+    
+                say $prompt->{"$prompt_type\_blank"};
+                chomp(my $typed_input2      =  <STDIN>);
+                
+                # Definition:
+                my  $blank_input_desired    =   (fc $typed_input2 eq fc 'y');
+
+                if ($blank_input_desired) {
+                    $input = q{};
+                    last;
+                };
+                
+            };
+
         };
         
     };
