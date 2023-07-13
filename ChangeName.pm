@@ -5,6 +5,10 @@ package ChangeName;
 use     strict;
 use     warnings;
 
+use     EPrints;
+use     EPrints::Repository;
+use     EPrints::Search;
+
 #use     v5.32;
 use     v5.16;
 #use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
@@ -15,14 +19,12 @@ use		warnings (
 		); 
 use     English;
 
+use     Encode;
 use     Data::Dumper;
 use     List::Util  qw(
             pairmap
             mesh
         );
-use     EPrints;
-use     EPrints::Repository;
-use     EPrints::Search;
 use     Getopt::Long;
 
 
@@ -63,6 +65,23 @@ Currently set to call L</my_example();>.
 my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN, $our_encoding;
 binmode STDOUT, $our_encoding;
+
+my  @encoding_details = (
+    "\n",
+    'Standard input:',
+    PerlIO::get_layers(STDIN, details => 1),
+    "\n",
+    'Standard output:',
+    PerlIO::get_layers(STDOUT, output => 1, details => 1),
+    "\n",
+);
+
+for my $current (@encoding_details) {
+    print   $current? $current."\n":
+            "undef\n";
+}
+
+say 'Presents…';
 
 say ChangeName->version_from_pdl(@ARGV);
 
@@ -115,16 +134,35 @@ sub presentable_compound_name {
     return $presentable_compound_name;
 }
 
-#sub fix_encoding_after_eprints
+sub fix_encoding_after_eprints {
+
+    # Initial Values:
+    my  $self   =   shift;
+    my  @input  =   @_;
+    my  @output =   ();
+    my  $encoding  =   "UTF-8";
+
+    # Processing:
+    foreach my $input (@input) {
+        my  $has_value  =   defined($input) && $input;
+        warn "Doesn't have value." unless $has_value;
+        push @output    ,   $has_value?
+                                decode("UTF-8", $input):
+                            ($input eq "0")?
+                                0:
+                            defined($input)?
+                                q{}:
+                            undef;
+    };
+    
+    # Output:
+    return @output;
+    
+}
 
 sub version_from_pdl {
 
     # Input:
-    my  $our_encoding   =   ":encoding(UTF-8)";
-    binmode STDIN, $our_encoding;
-    binmode STDOUT, $our_encoding;
-    use utf8;
-    use v5.16;
     warn Dumper(@_);
     my  $self                               =   shift;
 	my  $live                               =   q{};
@@ -135,27 +173,46 @@ sub version_from_pdl {
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my ($archive)                           =   $self->validate((shift));
-
-        $archive                            //= $self->prompt_for('archive');
-    my  $repository;
-    {
-      $repository                           =   EPrints::Repository->new($archive);
-    }
-    binmode STDIN, $our_encoding;
-    binmode STDOUT, $our_encoding;
-    use utf8;
-    use v5.16;
-    my ($find, $replace, $part)             =   $self->validate(@_);
+    my ($archive, $find, $replace, $part)    =   $self->validate(@_);
     warn "Replace after validate: ".$replace;
-    binmode STDIN, $our_encoding;
-    binmode STDOUT, $our_encoding;
-    use utf8;
-    use v5.16;
+        $archive                            //= $self->prompt_for('archive');
+    my  $repository                         =   EPrints::Repository->new('initial_archive');
+    
+    my  @encoding_details = (
+    "\n",
+    'Standard input:',
+    PerlIO::get_layers(STDIN, details => 1),
+    "\n",
+    'Standard output:',
+    PerlIO::get_layers(STDOUT, output => 1, details => 1),
+    "\n",
+);
+
+    for my $current (@encoding_details) {
+        print   $current? $current."\n":
+                "undef\n";
+    }
+
+    say 'Presents…';
+    
     warn "Replace after Eprints: ".$replace;
+    ($archive, $find, $replace, $part)   =   $self->fix_encoding_after_eprints(($archive, $find, $replace, $part));
+    utf8::upgrade( $replace );
+        no warnings 'redefine';
+    local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
+        use warnings;
+#    local $Data::Dumper::Useqq      =   0;
+    local $Data::Dumper::Useperl    =   1;
+    warn "After restore: ".Dumper(($archive, $find, $replace, $part));
+    warn "archive After restore: ".$archive;
+    warn "After restore: ".$archive;
+#    my ($archive $find, $replace, $part)    =   $self->validate(@_);
+
+    die;
+
     #utf8::upgrade( $replace );
     #warn "Replace after utf8upgrade: ".$replace;
-    use Encode;
+
     $replace = decode("UTF-8", $replace);
 #    open(INPUT,
     warn "Replace after encode: ".$replace;
@@ -436,11 +493,6 @@ sub get_useful_frequency_counts {
 
 
 sub validate {
-    my  $our_encoding   =   ":encoding(UTF-8)";
-    binmode STDIN, $our_encoding;
-    binmode STDOUT, $our_encoding;
-    use utf8;
-    use v5.16;
     my  $self                           =   shift;
     my  @input                          =   @_;
     warn "Validate input: ".Dumper($input[1]);
@@ -456,9 +508,7 @@ sub validate {
 }
 
 sub prompt_for {
-    my  $our_encoding   =   ":encoding(UTF-8)";
-    binmode STDIN, $our_encoding;
-    binmode STDOUT, $our_encoding;
+
     my  $self           =   shift;
     my  $prompt_type    =   shift;
     my  ($useful_info)  =   @_;
