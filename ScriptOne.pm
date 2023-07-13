@@ -109,52 +109,54 @@ sub version_from_pdl {
     $replace                                //= $self->prompt_for('replace');
     my $part_search                         =   $part? 1:
                                                 0;
-    my  $dataset_to_use         =   'eprint';
-    my  @fields_to_search       =   (
-                                        'creators_name',
-                                        'contributors_name',
-                                    );
-    my  @name_parts             =   (
-                                        'given',
-                                        'family',
-                                        'honourific',
-                                        'lineage',
-                                    );
+    my  $dataset_to_use                     =   'eprint';
+    my  @fields_to_search                   =   (
+                                                    'creators_name',
+                                                    'contributors_name',
+                                                );
+    my  @name_parts                         =   (
+                                                    'honourific',
+                                                    'given',
+                                                    'family',
+                                                    'lineage',
+                                                );
     my  $text = {
-        data_count              =>  'Number of dataset records found: ',
-        search_count            =>  'Number of search results found: ',
+        data_count                          =>  'Number of dataset records found: ',
+        search_count                        =>  'Number of search results found: ',
     };
-    my  $line_delimiter         =   "\n";
-    my  $search_fields          =   [
-                                        {
-                                            meta_fields     =>  [
-                                                                    @fields_to_search,
-                                                                ],
-                                            value           =>  $find,
-                                        },
-                                    ];
-    my  $useful_info            =   {};
-    my  $get_useful_frequency_counts    =   \&get_useful_info;
+    my  $line_delimiter                     =   "\n";
+    my  $search_fields                      =   [
+                                                  {
+                                                        meta_fields     =>  [
+                                                                                @fields_to_search,
+                                                                            ],
+                                                        value           =>  $find,
+                                                    },
+                                                ];
+    my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
     my  $useful_info = {
-        search_fields           =>  \@fields_to_search,
-        name_parts              =>  \@name_parts,
+        search_fields                       =>  \@fields_to_search,
+        name_parts                          =>  \@name_parts,
+        compound_names                      =>  {},
+        given_names                         =>  {},
+        family_names                        =>  {},
     };
 
     # Processing:
     
     # Search:
-    my  $list_of_results        =   EPrints::Repository
-                                    ->new($archive)
-                                    ->dataset($dataset_to_use)
-                                    ->prepare_search(
-                                        satisfy_all         =>  1,
-                                        staff               =>  1,
-                                        limit               =>  30,
-                                        show_zero_results   =>  0,
-                                        allow_blank         =>  1,
-                                        search_fields       =>  $search_fields,
-                                    )
-                                    ->perform_search;
+    my  $list_of_results                    =   EPrints::Repository
+                                                ->new($archive)
+                                                ->dataset($dataset_to_use)
+                                                ->prepare_search(
+                                                    satisfy_all         =>  1,
+                                                    staff               =>  1,
+                                                    limit               =>  30,
+                                                    show_zero_results   =>  0,
+                                                    allow_blank         =>  1,
+                                                    search_fields       =>  $search_fields,
+                                                )
+                                                ->perform_search;
 
     # Process Search Results:
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
@@ -169,6 +171,9 @@ sub version_from_pdl {
         part_search_is  =>  $part_search,
         dataset_is      =>  $dataset_to_use,
         live_is         =>  $live,
+        given_list_is   =>  join(', ',keys $useful_info->{'given_names'}->%*),
+        family_list_is  =>  join(', ',keys $useful_info->{'family_names'}->%*),
+        compound_list_is=>  join(', ',keys $useful_info->{'compound_names'}->%*),
     ]);
     
 }
@@ -188,10 +193,6 @@ sub version_from_pdl {
 
 sub get_useful_frequency_counts {
     my  ($session, $dataset, $result, $useful_info)  =   @_;
-
-#    my  $compound_names     =   {};
-#    my  $given_names        =   {};
-#    my  $family_names       =   {};
 
     foreach my $search_field ($useful_info->{'search_fields'}->@*) {
 
