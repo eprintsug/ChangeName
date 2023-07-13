@@ -63,7 +63,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->version_from_pdl(@_);
+say ScriptOne->version_from_pdl(@ARGV);
 
 =head1 METHODS
 
@@ -95,13 +95,14 @@ sub version_from_pdl {
     # Set Defaults
     my  $self                               =   shift;
 	my  $live                               =   q{};
-    GetOptions(
+    Getopt::Long::Parser->new->getoptionsfromarray(
+        \@_,
         'live!'                             =>  \$live
                                                 # if --live present, 	set live to 1,
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my ($archive, $find, $replace, $part)   =   $self->validate(@ARGV);
+    my ($archive, $find, $replace, $part)   =   $self->validate(@_);
 
     $archive                                //= $self->prompt_for('archive');
     $find                                   //= $self->prompt_for('search');
@@ -138,7 +139,7 @@ sub version_from_pdl {
 
 sub validate {
     my  $self                           =   shift;
-    my  @input                          =   @ARGV;
+    my  @input                          =   @_;
     my  $matches_four_byte_character    =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
     
     for my $input (@input) {
