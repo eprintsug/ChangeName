@@ -115,12 +115,16 @@ sub presentable_compound_name {
     return $presentable_compound_name;
 }
 
+#sub fix_encoding_after_eprints
+
 sub version_from_pdl {
 
     # Input:
     my  $our_encoding   =   ":encoding(UTF-8)";
     binmode STDIN, $our_encoding;
     binmode STDOUT, $our_encoding;
+    use utf8;
+    use v5.16;
     warn Dumper(@_);
     my  $self                               =   shift;
 	my  $live                               =   q{};
@@ -131,20 +135,29 @@ sub version_from_pdl {
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my ($archive, $find, $replace, $part)   =   $self->validate(@_);
-    warn "Replace after validate: ".$replace;
+    my ($archive)                           =   $self->validate((shift));
+
         $archive                            //= $self->prompt_for('archive');
-    my  $repository                         =   EPrints::Repository->new($archive);
-    my  $our_encoding   =   ":encoding(UTF-8)";
+    my  $repository;
+    {
+      $repository                           =   EPrints::Repository->new($archive);
+    }
+    binmode STDIN, $our_encoding;
+    binmode STDOUT, $our_encoding;
+    use utf8;
+    use v5.16;
+    my ($find, $replace, $part)             =   $self->validate(@_);
+    warn "Replace after validate: ".$replace;
     binmode STDIN, $our_encoding;
     binmode STDOUT, $our_encoding;
     use utf8;
     use v5.16;
     warn "Replace after Eprints: ".$replace;
-    utf8::upgrade( $replace );
-    warn "Replace after utf8upgrade: ".$replace;
+    #utf8::upgrade( $replace );
+    #warn "Replace after utf8upgrade: ".$replace;
     use Encode;
     $replace = decode("UTF-8", $replace);
+#    open(INPUT,
     warn "Replace after encode: ".$replace;
     
         $find                               //= $self->prompt_for('search');
@@ -210,12 +223,12 @@ sub version_from_pdl {
                                                     search_fields       =>  $search_fields,
                                                 )
                                                 ->perform_search;
-
+    warn "Replace after search: ".$replace;
     # Process Search Results:
     warn "Replace before map: ".$replace;
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
     warn "Replace after map: ".$replace;
-    die;
+    warn "Find after map: ".$find;
     unless ($part_search) {
         $part                       =   $self->prompt_for('part', $useful_info);
         # shouldn't we validate part is one of the accepted @name_parts?
@@ -227,10 +240,12 @@ sub version_from_pdl {
         warn "Replace after default: ".$replace;
         $part_search                =   $part && $find && defined($replace)? 1:
                                         undef;
+
     };
     
     warn "Replace before processing: ".$replace;
-    
+    warn "Find before processing: ".$find;
+    die;    
     if ($part_search) {
 
         for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
@@ -424,15 +439,17 @@ sub validate {
     my  $our_encoding   =   ":encoding(UTF-8)";
     binmode STDIN, $our_encoding;
     binmode STDOUT, $our_encoding;
+    use utf8;
+    use v5.16;
     my  $self                           =   shift;
     my  @input                          =   @_;
-    warn "Validate input: ".Dumper($input[2]);
+    warn "Validate input: ".Dumper($input[1]);
     my  $matches_four_byte_character    =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
     
     for my $input (@input) {
-        die                                 "This script does not support ".
-                                            "four byte characters in input."
-                                            if ($input =~ $matches_four_byte_character);
+        #die                                 "This script does not support ".
+         #                                   "four byte characters in input."
+          #                                  if ($input =~ $matches_four_byte_character);
     };
     
     return @input;
