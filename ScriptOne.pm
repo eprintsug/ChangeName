@@ -89,6 +89,26 @@ sub hello {
     return $message;
 }
 
+sub present_compound_name {
+    my  $self           =   shift;
+    my  $compound_name  =   shift;
+    my  @name_parts     =   @_;
+    my  $regex_friendly =   join(
+                                "|",                # Or
+                                map {
+                                    quotemeta($ARG) # Safe
+                                }
+                                @name_parts
+                            );
+    my  $keys           =   \@name_parts;
+    my  $values         =   [split /$regex_friendly/, $compound_name];
+    my  $hash           =   {mesh $keys, $values};
+    my  $presentable_compound_name  =   "Honorary: $hash->{'honourary'}\n".
+                                        "Given:    $hash->{'given'}\n".
+                                        "Family:   $hash->{'family'}\n".
+                                        "Lineage:  $hash->{'lineage'}";
+    return $presentable_compound_name;
+}
 
 sub version_from_pdl {
 
@@ -173,6 +193,7 @@ sub version_from_pdl {
     
     unless ($part_search) {
         $part                       =   $self->prompt_for('part', $useful_info);
+        # shouldn't we validate part is one of the accepted @name_parts?
         my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
                                         ();
         $find                       =   $self->prompt_for('find', @presentable_part_name);
@@ -181,10 +202,12 @@ sub version_from_pdl {
                                         undef;
     };
  
-#    if ($part_search) {
-        # WE NEED TO UPDATE FIND!
+#    if ($part_search) { ####
+#        # WE NEED TO UPDATE FIND! # We have now updated find.
 #        for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
-#            $part_match_info->{'matches_compound_name'} = qr/^\Q$compound_name\E$/;
+#            $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
+#            $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
+#            $part_match_info->{'part'}                  =   $part;
 #            $list_of_results->map($part_match,$part_match_info);
             # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
 
@@ -225,6 +248,96 @@ sub version_from_pdl {
 #}
 
 
+sub display_records {
+
+    my  ($session, $dataset, $result, $part_match_info)  =   @_;
+
+
+
+    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
+
+        my  $names                      =   $result->get_value($search_field);
+        my  @range_of_names             =   (0..$names->$#*);
+
+        for my $current (@range_of_names) {
+
+            my  $name                   =   $names->[$current];        
+            my  $compound_name          =   "";
+            my  $find_matched           =   $name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'};
+
+            if ($find_matched) {
+
+                for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+                    $compound_name      .=  $name_part.$name->{"$name_part"};
+
+                };
+                
+                my  $compound_matched   =  $compound_name   =~  $part_match_info->{'matches_compound_name'};
+                
+                if ($compound_matched) {
+
+                    push $part_match_info->{display}->@*, format_single_line_for_display($result, $search_field);
+
+                }
+                
+            };
+            
+        }
+    }
+    
+}
+
+
+sub format_single_line_for_display {
+
+    # Initial Values:
+    my  ($result, $field)       =   @_;
+    my  $seperator = {
+        fields                  =>  ', ',   # comma, space
+        name_parts              =>  ' ',    # space
+    };
+    my  $id_suffix              =   ': ';
+
+    my  @order_and_omit_blanks  =   map {
+                                        join $seperator->{'name_parts'}, (
+                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
+                                            (),
+                                            $ARG->{'given'}?        $ARG->{'given'}:
+                                            (),
+                                            $ARG->{'family'}?       $ARG->{'family'}:
+                                            (),
+                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
+                                            (),
+                                        )
+                                    }
+                                    $result->get_value("$field")->@*;
+
+    return                          $result->id.$id_suffix.
+                                    join($seperator->{'fields'}, @order_and_omit_blanks);
+}
+
+
+    # Initial Values:
+    my  $result                 =   shift;
+
+
+    my  @order_and_omit_blanks  =   map {
+                                        join $seperator->{'name_parts'}, (
+                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
+                                            (),
+                                            $ARG->{'given'}?        $ARG->{'given'}:
+                                            (),
+                                            $ARG->{'family'}?       $ARG->{'family'}:
+                                            (),
+                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
+                                            (),
+                                        )
+                                    }
+                                    $result->get_value('creators_name')->@*;
+
+    return                          $result->id.$id_suffix.
+                                    join($seperator->{'creators'}, @order_and_omit_blanks);
 
 sub part_match {
     my  ($session, $dataset, $result, $part_match_info)  =   @_;
@@ -238,7 +351,10 @@ sub part_match {
 
             my  $name           =   $names->[$current];        
             my  $compound_name  =   "";
-
+            my  $matched        =   $name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'};
+            
+            
+            
             for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
 
                 $compound_name  .=  $name_part.$name->{"$name_part"};
