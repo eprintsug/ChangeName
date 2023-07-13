@@ -134,13 +134,25 @@ sub version_from_pdl {
                                                     },
                                                 ];
     my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
-    my  $useful_info = {
+    my  $compound_match                     =   \&compound_match;
+    my  $part_match                         =   \&part_match;
+    my  @common_info = (
         search_fields                       =>  \@fields_to_search,
         name_parts                          =>  \@name_parts,
+    );
+    my  $useful_info = {
+        @common_info,
         compound_names                      =>  {},
         given_names                         =>  {},
         family_names                        =>  {},
     };
+    my  $compound_match_info = {
+        @common_info,    
+    };
+    my  $part_match_info = {
+        @common_info,    
+    };
+
 
     # Processing:
     
@@ -166,7 +178,9 @@ sub version_from_pdl {
         $part_search    =   $part? 1:
                             undef;
     };
-    
+ 
+#    $list_of_results->map($compound_match,$compound_match_info) if $part_search;    
+#    $list_of_results->map($part_match,$part_match_info) if $part_search;
     
     # Output:
     
@@ -197,6 +211,10 @@ sub version_from_pdl {
 #        for my $i (@entry_range) {
 #    
 #}
+
+sub do_a_compound_match {
+    my  ($session, $dataset, $result, $useful_info)  =   @_;
+}
 
 sub get_useful_frequency_counts {
     my  ($session, $dataset, $result, $useful_info)  =   @_;
