@@ -91,22 +91,37 @@ sub hello {
 
 
 sub version_from_pdl {
-    my ($self, $archive, $find, $replace, $part)  =   @_;
+
     # Set Defaults
-    $repository_id                      //= $self->prompt_for('archive');
-    $find                               //= $self->prompt_for('search');
-    $replace                            //= $self->prompt_for('replace');
-    my $part_search                     =   $part? 1:
-                                            0;
-	my $live                            =   q{};
+    my  $self                               =   shift;
+	my  $live                               =   q{};
     GetOptions(
-        'live!'                         =>  \$live
-                                            # if --live present, 	set live to 1,
-						                    # if --nolive present, 	set live to 0.
+        'live!'                             =>  \$live
+                                                # if --live present, 	set live to 1,
+						                        # if --nolive present, 	set live to 0.
     );
 
+    my ($archive, $find, $replace, $part)   =   $self->validate(@_);
+
+    $repository_id                          //= $self->prompt_for('archive');
+    $find                                   //= $self->prompt_for('search');
+    $replace                                //= $self->prompt_for('replace');
+    my $part_search                         =   $part? 1:
+                                                0;
+}
+
+sub validate {
+    my  $self                           =   shift;
+    my  @input                          =   @_;
+    my  $matches_four_byte_character    =   qr/[\N{U+0000}-\N{U+FFFF}]/;
     
+    for my $input (@input) {
+        die                                 "This script does not support ".
+                                            "four byte characters in input."
+                                            if ($input ~= $matches_four_byte_character);
+    };
     
+    return @input;
 }
 
 sub prompt_for {
@@ -129,6 +144,7 @@ sub prompt_for {
         };
     };
     
+    my ($input)         =   $self->validate( ($input) ); # Should this be moved into the until loop? #####
     return $input;
 
 }
