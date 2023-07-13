@@ -22,6 +22,7 @@ use     List::Util  qw(
 use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
+use     Getopt::Long;
 
 
 =pod Name, Version
@@ -62,7 +63,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->simple_version(@ARGV);
+say ScriptOne->test_increment(@ARGV);
 
 =head1 METHODS
 
@@ -86,6 +87,57 @@ Returns a string containing a greeting.
 sub hello {
     my  $message = "Hello World";
     return $message;
+}
+
+
+sub version_from_pdl {
+    my ($self, $archive, $find, $replace, $part)  =   @_;
+    # Set Defaults
+    $repository_id                      //= $self->prompt_for('archive');
+    $find                               //= $self->prompt_for('search');
+    $replace                            //= $self->prompt_for('replace');
+    my $part_search                     =   $part? 1:
+                                            0;
+	my $live                            =   q{};
+    GetOptions(
+        'live!'                         =>  \$live
+                                            # if --live present, 	set live to 1,
+						                    # if --nolive present, 	set live to 0.
+    );
+
+    
+    
+}
+
+sub prompt_for {
+
+    my  $self           =   shift;
+    my  $prompt_type    =   shift;
+
+    my  $input          =   undef;
+
+    my $prompt = {
+        archive =>  "Please specify an Archive ID: ",
+        search  =>  "Please specify a Search Term: ",
+        replace =>  "Please specify a Replace Term: ",
+    };
+    
+    if ($prompt->{"$prompt_type"}) {
+        until ($input) {
+            say $prompt->{"$prompt_type"};
+            chomp($input  =   <STDIN>);
+        };
+    };
+    
+    return $input;
+
+}
+
+sub test_increment {
+    my %hash = ();
+    $hash{keyname}++; # 1
+    $hash{keyname}++; # 2
+    return "Keyname is [".$hash{keyname}."]";
 }
 
 =over
@@ -131,9 +183,7 @@ sub simple_version {
                                     );
     my  $match_terms            =   {
                                         pairmap {
-                                            #my @key_value = (
-                                                $a  =>  qr/^\Q$b\E$/,
-                                            #)
+                                            ($a  =>  qr/^\Q$b\E$/)
                                         }
                                         @search_terms
                                     };
