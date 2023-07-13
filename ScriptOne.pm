@@ -161,6 +161,12 @@ sub version_from_pdl {
     # Process Search Results:
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
     
+    unless ($part_search) {
+        $part           =   $self->prompt_for('part', $useful_info);
+        $part_search    =   $part? 1:
+                            undef;
+    };
+    
     
     # Output:
     
@@ -168,6 +174,7 @@ sub version_from_pdl {
         repo_is         =>  $archive,
         find_is         =>  $find,
         replace_is      =>  $replace,
+        part_is         =>  $part,
         part_search_is  =>  $part_search,
         dataset_is      =>  $dataset_to_use,
         live_is         =>  $live,
@@ -238,19 +245,46 @@ sub prompt_for {
 
     my  $self           =   shift;
     my  $prompt_type    =   shift;
+    my  ($useful_info)  =   @_;
 
     my  $input          =   undef;
+
+    # Definitions:
+    my  $part_prompt    =   ($prompt_type eq 'part' && $useful_info);
 
     my $prompt = {
         archive =>  "Please specify an Archive ID: ",
         search  =>  "Please specify a Search Term: ",
         replace =>  "Please specify a Replace Term: ",
     };
+
+    if ($part_prompt) {
+        my  $number;
+        say "\nFrom your search we found the following given names...\n";
+        say join(', ',keys $useful_info->{'given_names'}->%*)."\n";
+        say "...and the following family names...\n";
+        say join(', ',keys $useful_info->{'family_names'}->%*)."\n";
+        say "Which do you wish to perform your change on first?";
+        say "\t1) Given Name";
+        say "\t2) Family Name";
+        until ($number && ($number eq "1" || $number eq "2")) {
+            say "Please enter 1 or 2.";
+            chomp($number   =   <STDIN>)
+        };
+        $input  =   $number?
+                        ($number eq "1")?
+                            'given':
+                        ($number eq "2")?
+                            'family':
+                        undef:
+                    undef;
+    }    
     
     if ($prompt->{"$prompt_type"}) {
         until ($input) {
             say $prompt->{"$prompt_type"};
             chomp(my $typed_input   =   <STDIN>);
+            
             ($input)                =   $self->validate( ($typed_input) );
         };
         
