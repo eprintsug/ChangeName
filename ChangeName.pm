@@ -1,11 +1,11 @@
 #!/usr/bin/perl -I /opt/eprints3/perl_lib
 
-package ScriptOne;
+package ChangeName;
 
 use     strict;
 use     warnings;
 
-#use     v5.16;
+#use     v5.32;
 use     v5.16;
 #use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
 use     utf8;
@@ -31,7 +31,7 @@ use     Getopt::Long;
 
 =head1 NAME
 
-Script One.
+Change Name.
 
 =head1 VERSION
 
@@ -46,7 +46,7 @@ our $VERSION    =   'v2.0.0';
 =head1 SYNOPSIS
 
     # Run at the command line:
-    perl ./ScriptOne.pm
+    perl ./ChangeName.pm
 
 =head1 DESCRIPTION
 
@@ -54,7 +54,7 @@ Calls a subroutine.
 Currently set to call L</my_example();>.
 
     # Run from the command line:
-    perl ./ScriptOne.pm
+    perl ./ChangeName.pm
 
 =cut
 
@@ -63,7 +63,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN,  $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ScriptOne->version_from_pdl(@ARGV);
+say ChangeName->version_from_pdl(@ARGV);
 
 =head1 METHODS
 
@@ -71,12 +71,12 @@ say ScriptOne->version_from_pdl(@ARGV);
 
 =item hello();
 
-    use ScriptOne qw(hello);
+    use ChangeName qw(hello);
     my  $greeting = hello();
     
     # Alternatively:
-    use ScriptOne;
-    my  $greeting = ScriptOne->hello();
+    use ChangeName;
+    my  $greeting = ChangeName->hello();
 
 Returns a string containing a greeting.
 
@@ -210,14 +210,21 @@ sub version_from_pdl {
             $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
             $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
             $part_match_info->{'part'}                  =   $part;
+            $part_match_info->{'display_lines'}         =   [];
 
             # Processing:
             $list_of_results->map($display_records,$part_match_info);
             
             # Output:
-            say "For the unique name combination...";
+            say "For the unique name combination...\n";
+            say q{}; # Does it deliver a line return?
             say presentable_compound_name($compound_name);
-            
+            say "...the following matching records were found:\n";
+            say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
+            say q{};
+            say '------';
+            say q{};
+                        
             # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
 
             # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
@@ -286,7 +293,7 @@ sub display_records {
                 
                 if ($compound_matched) {
 
-                    push $part_match_info->{display}->@*, format_single_line_for_display($result, $search_field);
+                    push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
 
                 }
                 
@@ -511,7 +518,7 @@ sub test_increment {
 =item my_example();
 
     # Run from command line:
-    perl ./ScriptOne.pl
+    perl ./ChangeName.pl
 
 Input set internally.
 Searches EPrints according to internally set search criteria,
