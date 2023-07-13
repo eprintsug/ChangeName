@@ -219,8 +219,34 @@ sub version_from_pdl {
 
 
 
-sub do_a_part_match {
+sub part_match {
     my  ($session, $dataset, $result, $part_match_info)  =   @_;
+    
+    foreach my $search_field ($useful_info->{'search_fields'}->@*) {
+
+        my  $names          =   $result->get_value($search_field);
+        my  @range_of_names =   (0..$names->$#*);
+
+        for my $current (@range_of_names) {
+
+            my  $name           =   $names->[$current];        
+            my  $compound_name  =   "";
+
+            for my $name_part ($useful_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+                $compound_name  .=  $name_part.$name->{"$name_part"};
+
+            }
+
+            #push # What structure do we want for the data we're returning?
+
+            $useful_info->{'compound_names'} ->{"$compound_name"     }++;
+            $useful_info->{'given_names'}    ->{"$name->{'given'}"  }++;
+            $useful_info->{'family_names'}   ->{"$name->{'family'}" }++;
+        }
+    }
+
+    
 }
 
 sub get_useful_frequency_counts {
@@ -228,25 +254,23 @@ sub get_useful_frequency_counts {
 
     foreach my $search_field ($useful_info->{'search_fields'}->@*) {
 
-        my  $entries        =   $result->get_value($search_field);
-        my  @entry_range    =   (0..$entries->$#*);
+        my  $names          =   $result->get_value($search_field);
+        my  @range_of_names =   (0..$names->$#*);
 
-        for my $i (@entry_range) {
+        for my $current (@range_of_names) {
 
-            my $value           =   $entries->[$i];        
+            my  $name           =   $names->[$current];
             my  $compound_name  =   "";
 
             for my $name_part ($useful_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
 
-                $compound_name  .=  $name_part.$value->{"$name_part"};
+                $compound_name  .=  $name_part.$name->{"$name_part"};
 
             }
 
-            #push # What structure do we want for the data we're returning?
-
-            $useful_info->{'compound_names'} ->{"$compound_name"     }++;
-            $useful_info->{'given_names'}    ->{"$value->{'given'}"  }++;
-            $useful_info->{'family_names'}   ->{"$value->{'family'}" }++;
+            $useful_info->{'compound_names'} ->{"$compound_name"    }++;
+            $useful_info->{'given_names'}    ->{"$name->{'given'}"  }++;
+            $useful_info->{'family_names'}   ->{"$name->{'family'}" }++;
         }
     }
 }
