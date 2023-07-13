@@ -18,6 +18,7 @@ use     English;
 use     Data::Dumper;
 use     List::Util  qw(
             pairmap
+            mesh
         );
 use     EPrints;
 use     EPrints::Repository;
@@ -60,7 +61,7 @@ Currently set to call L</my_example();>.
 
 #UTF-8 the default on standard input and output:
 my  $our_encoding   =   ":encoding(UTF-8)";
-binmode STDIN,  $our_encoding;
+binmode STDIN, $our_encoding;
 binmode STDOUT, $our_encoding;
 
 say ChangeName->version_from_pdl(@ARGV);
@@ -93,6 +94,10 @@ sub presentable_compound_name {
     my  $self           =   shift;
     my  $compound_name  =   shift;
     my  @name_parts     =   @_;
+    warn 'Name_parts: '.Dumper(@name_parts);
+    my  $true_arguments =   $self && $compound_name && (scalar @_);
+    die                     "Insufficient or false arguments for presentable_compound_name subroutine, "
+                            unless $true_arguments;
     my  $regex_friendly =   join(
                                 "|",                # Or
                                 map {
@@ -113,6 +118,10 @@ sub presentable_compound_name {
 sub version_from_pdl {
 
     # Input:
+    my  $our_encoding   =   ":encoding(UTF-8)";
+    binmode STDIN, $our_encoding;
+    binmode STDOUT, $our_encoding;
+    warn Dumper(@_);
     my  $self                               =   shift;
 	my  $live                               =   q{};
     Getopt::Long::Parser->new->getoptionsfromarray(
@@ -123,10 +132,10 @@ sub version_from_pdl {
     );
 
     my ($archive, $find, $replace, $part)   =   $self->validate(@_);
-
-    $archive                                //= $self->prompt_for('archive');
-    $find                                   //= $self->prompt_for('search');
-    my $part_search                         =   $part? 1:
+        $archive                            //= $self->prompt_for('archive');
+    my  $repository                         =   EPrints::Repository->new($archive);
+        $find                               //= $self->prompt_for('search');
+    my  $part_search                        =   $part? 1:
                                                 0;
     my  $dataset_to_use                     =   'eprint';
     my  @fields_to_search                   =   (
@@ -154,6 +163,7 @@ sub version_from_pdl {
                                                     },
                                                 ];
     my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
+    my  $display_records                    =   \&display_records;
     my  $part_match                         =   \&part_match;
     my  @common_info = (
         search_fields                       =>  \@fields_to_search,
@@ -175,8 +185,8 @@ sub version_from_pdl {
     # Processing:
     
     # Search:
-    my  $list_of_results                    =   EPrints::Repository
-                                                ->new($archive)
+
+    my  $list_of_results                    =   $repository
                                                 ->dataset($dataset_to_use)
                                                 ->prepare_search(
                                                     satisfy_all         =>  1,
@@ -218,7 +228,7 @@ sub version_from_pdl {
             # Output:
             say "For the unique name combination...\n";
             say q{}; # Does it deliver a line return?
-            say presentable_compound_name($compound_name);
+            say $self->presentable_compound_name($compound_name,@name_parts);
             say "...the following matching records were found:\n";
             say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
             say q{};
@@ -334,26 +344,6 @@ sub format_single_line_for_display {
 }
 
 
-    # Initial Values:
-    my  $result                 =   shift;
-
-
-    my  @order_and_omit_blanks  =   map {
-                                        join $seperator->{'name_parts'}, (
-                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
-                                            (),
-                                            $ARG->{'given'}?        $ARG->{'given'}:
-                                            (),
-                                            $ARG->{'family'}?       $ARG->{'family'}:
-                                            (),
-                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
-                                            (),
-                                        )
-                                    }
-                                    $result->get_value('creators_name')->@*;
-
-    return                          $result->id.$id_suffix.
-                                    join($seperator->{'creators'}, @order_and_omit_blanks);
 
 sub part_match {
     my  ($session, $dataset, $result, $part_match_info)  =   @_;
@@ -411,9 +401,13 @@ sub get_useful_frequency_counts {
 
 
 sub validate {
+    my  $our_encoding   =   ":encoding(UTF-8)";
+    binmode STDIN, $our_encoding;
+    binmode STDOUT, $our_encoding;
     my  $self                           =   shift;
     my  @input                          =   @_;
-    my  $matches_four_byte_character    =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
+    warn "Validate input: ".Dumper($input[2]);
+    my  $matches_four_byte_character    =   qr/[^\N{U+10000}-\N{U+7FFFFFFF}]/;
     
     for my $input (@input) {
         die                                 "This script does not support ".
@@ -425,7 +419,9 @@ sub validate {
 }
 
 sub prompt_for {
-
+    my  $our_encoding   =   ":encoding(UTF-8)";
+    binmode STDIN, $our_encoding;
+    binmode STDOUT, $our_encoding;
     my  $self           =   shift;
     my  $prompt_type    =   shift;
     my  ($useful_info)  =   @_;
@@ -454,9 +450,11 @@ sub prompt_for {
     
         my  $number;
     
-        say "\nFrom your search we found the following given names...\n";
+        say "\nFrom your search we found matching records with the following given names associated...\n";
+        say 'Given Names: ';
         say join(', ',keys $useful_info->{'given_names'}->%*)."\n";
-        say "...and the following family names...\n";
+        say "...and the following family names associated...\n";
+        say 'Family Names: ';
         say join(', ',keys $useful_info->{'family_names'}->%*)."\n";
         say "Which do you wish to perform your change on first?";
         say "\t1) Given Name";
