@@ -150,6 +150,9 @@ sub change_name {
     # Input:
     my  $self                               =   shift;
 	my  $live                               =   q{};
+	my  @force_or_not                       =   (
+	                                                [1] # Comment out line to disable force commits.
+	                                            );
     Getopt::Long::Parser->new
     ->getoptionsfromarray(
         \@_,
@@ -278,8 +281,10 @@ sub change_name {
             
             # Change-specific values:
             $part_match_info->{'replace'}               =   $replace;            
+            $part_match_info->{'force_or_not'}          =   \@force_or_not;
             $part_match_info->{'dry_run'}               =   $live? 0:
                                                             1;
+
             #Processing:
             $list_of_results->map($change_records,$part_match_info);
             
@@ -403,11 +408,37 @@ sub change_records {
                     say                     format_single_line_for_display($result, $search_field);
                     say                     q{};
                     say                     '...?';
-                    say                     "Enter 'Y' for Yes,";
-                    say                     "Enter 'ALL' for Yes to All for this unique name combination.";
-                    
-                    
+                    my  $confirmation   =   ChangeName->prompt_for('change');
                     say                     q{};
+
+                    say                     'Changing...';
+                    say                     q{};
+                    say                     format_single_line_for_display($result, $search_field);
+                    say                     q{};
+                    say                     '...to...';
+
+                    # Change:                                  
+                    $name->{"$part_match_info->{'part'}"}      =   $part_match_info->{'replace'};
+                    $result->set_value($search_field, $names);
+
+                    say                     q{};
+                    say                     format_single_line_for_display($result, $search_field);
+                    say                     q{};
+
+                    if ($part_match_info->{'dry_run'}) {
+                        say "Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.";
+                        say q{};
+                    }
+                    else {
+                        $result->commit($part_match_info->{'force_or_not'}->@*);
+                        say "Done.";
+                        say q{};
+                    }
+
+                    
+                    #$result->commit([1]);
+                    
+                    #commit($part_match_info->{'force_or_not'}->@*)
                     #push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
                     #$part_match_info->{'display'} = 'Yes';
 
@@ -540,6 +571,7 @@ sub prompt_for {
     # Definitions:
     my  $part_prompt    =   ($prompt_type eq 'part' && $useful_info);
     my  $replace_prompt =   ($prompt_type eq 'replace');
+    my  $change_prompt  =   ($prompt_type eq 'change');
     my $prompt = {
         archive         =>  'Please specify an Archive ID: ',
         search          =>  'Please specify a Search Term: ',
@@ -581,6 +613,21 @@ sub prompt_for {
                                 undef:
                     undef;
     }    
+
+    if  ($change_prompt) {
+    
+            my  $confirmation;
+    
+            until ( $confirmation && ($confirmation =~ m/^Y|ALL|N|NONE$/i) ) {
+                say "Enter 'Y' for Yes,";
+                say "Enter 'N' for No,";
+                say "Enter 'ALL' for Yes to All for this unique name combination.";
+                say "Enter 'NONE' for No to All for this unique name combination.";
+                chomp($confirmation   =   <STDIN>)
+            };
+            
+            $input = $confirmation;
+    }
     
     if ($prompt->{"$prompt_type"}) {
     
