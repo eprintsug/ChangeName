@@ -62,7 +62,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN, $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ChangeName->version_from_pdl(@ARGV);
+say ChangeName->change_name(@ARGV);
 
 =head1 METHODS
 
@@ -106,10 +106,10 @@ sub presentable_compound_name {
     my  $keys           =   \@name_parts;
     my  $values         =   [split /$regex_friendly/, $compound_name];
     my  $hash           =   {mesh $keys, $values};
-    my  $presentable_compound_name  =   "Honorary: $hash->{'honourary'}\n".
-                                        "Given:    $hash->{'given'}\n".
-                                        "Family:   $hash->{'family'}\n".
-                                        "Lineage:  $hash->{'lineage'}";
+    my  $presentable_compound_name  =   "Honorary: ".($hash->{'honourary'}? $hash->{'honourary'}: '')."\n".
+                                        "Given:    ".($hash->{'given'}? $hash->{'given'}: '')."\n".
+                                        "Family:   ".($hash->{'family'}? $hash->{'family'}: '')."\n".
+                                        "Lineage:  ".($hash->{'lineage'}? $hash->{'lineage'}: '');###
     return $presentable_compound_name;
 }
 
@@ -120,31 +120,32 @@ sub fix_encoding_after_eprints {
     my  @input      =   @_;
     my  @output     =   ();
     my  $encoding   =   "UTF-8";
- 
 
     # Processing:
     foreach my $input (@input) {
-        no warnings;
-        my  $has_value  =   defined($input) && $input;
-        my  $decoded    =   decode($encoding, $input);
+        
+        # Initial Values:
+        my  $defined    =   defined($input);
+        my  $has_value  =   $defined && $input;
+        my  $zero       =   $defined && $input eq "0";
+
+        #Processing & Output:
         push @output    ,   $has_value?
-                                $decoded:
-                            ($input eq "0")?
+                                decode($encoding, $input):
+                            $zero?
                                 0:
-                            defined($input)?
+                            defined?
                                 q{}:
                             undef;
-            use		warnings;
 
     };
     
-	
     # Output:
     return @output;
     
 }
 
-sub version_from_pdl {
+sub change_name {
 
     # Input:
     my  $self                               =   shift;
@@ -161,6 +162,8 @@ sub version_from_pdl {
         $archive                            //= $self->prompt_for('archive');
     my  $repository                         =   EPrints::Repository->new($archive);
         ($archive, $find, $replace, $part)  =   $self->fix_encoding_after_eprints(($archive, $find, $replace, $part));
+#        warn "Find and Replace: $find and $replace";
+ #       die;
         $find                               //= $self->prompt_for('search');
     my  $part_search                        =   $part? 1:
                                                 0;
@@ -174,7 +177,7 @@ sub version_from_pdl {
                                                     'given',
                                                     'family',
                                                     'lineage',
-                                                );
+                                                ); # Is this the correct order?
     my  $text = {
         data_count                          =>  'Number of dataset records found: ',
         search_count                        =>  'Number of search results found: ',
@@ -191,7 +194,7 @@ sub version_from_pdl {
                                                 ];
     my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
     my  $display_records                    =   \&display_records;
-    my  $part_match                         =   \&part_match;
+    my  $change_records                     =   \&change_records;
     my  @common_info = (
         search_fields                       =>  \@fields_to_search,
         name_parts                          =>  \@name_parts,
@@ -228,8 +231,10 @@ sub version_from_pdl {
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
 
     unless ($part_search) {
+
         $part                       =   $self->prompt_for('part', $useful_info);
         # shouldn't we validate part is one of the accepted @name_parts?
+        
         my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
                                         ();
         $find                       =   $self->prompt_for('find', @presentable_part_name);
@@ -237,7 +242,7 @@ sub version_from_pdl {
         $part_search                =   $part && $find && defined($replace)? 1:
                                         undef;
     };
-    
+#    warn "Part is earlier: $part";
     if ($part_search) {
 
         for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
@@ -246,21 +251,38 @@ sub version_from_pdl {
             $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
             $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
             $part_match_info->{'part'}                  =   $part;
+#            warn "Part is: $part and stored part is $part_match_info->{'part'}";
             $part_match_info->{'display_lines'}         =   [];
+            $part_match_info->{'display'}               =   undef;
 
             # Processing:
             $list_of_results->map($display_records,$part_match_info);
-            
+
             # Output:
-            say "For the unique name combination...\n";
-            say q{}; # Does it deliver a line return?
-            say $self->presentable_compound_name($compound_name,@name_parts);
-            say "...the following matching records were found:\n";
-            say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
-            say q{};
-            say '------';
-            say q{};
-                        
+            if ($part_match_info->{'display'}) {
+                say "For the unique name combination...";
+                say q{}; # Does it deliver a line return? Yes it does
+                say $self->presentable_compound_name($compound_name,@name_parts);
+                say q{}; # Does it deliver a line return? Yes it does
+                say "...the following matching records were found:";
+                say q{}; # Does it deliver a line return? Yes it does
+                say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
+                say q{};
+                say '------';
+                say q{};
+            };
+
+            # Reset Values:
+            $part_match_info->{'display_lines'}         =   [];
+            $part_match_info->{'display'}               =   undef;
+            
+            # Change-specific values:
+            $part_match_info->{'replace'}               =   $replace;            
+            $part_match_info->{'dry_run'}               =   $live? 0:
+                                                            1;
+            #Processing:
+            $list_of_results->map($change_records,$part_match_info);
+            
             # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
 
             # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
@@ -302,8 +324,6 @@ sub display_records {
 
     my  ($session, $dataset, $result, $part_match_info)  =   @_;
 
-
-
     foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
 
         my  $names                      =   $result->get_value($search_field);
@@ -313,7 +333,8 @@ sub display_records {
 
             my  $name                   =   $names->[$current];        
             my  $compound_name          =   "";
-            my  $find_matched           =   $name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'};
+
+            my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
 
             if ($find_matched) {
 
@@ -323,11 +344,12 @@ sub display_records {
 
                 };
                 
-                my  $compound_matched   =  $compound_name   =~  $part_match_info->{'matches_compound_name'};
+                my  $compound_matched   =  $compound_name && ($compound_name =~ $part_match_info->{'matches_compound_name'});
                 
                 if ($compound_matched) {
-
+                    
                     push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
+                    $part_match_info->{'display'} = 'Yes';
 
                 }
                 
@@ -338,7 +360,67 @@ sub display_records {
     
 }
 
+sub change_records {
 
+    my  ($session, $dataset, $result, $part_match_info)  =   @_;
+
+    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
+
+        my  $names                      =   $result->get_value($search_field);
+        my  @range_of_names             =   (0..$names->$#*);
+
+        for my $current (@range_of_names) {
+
+            my  $name                   =   $names->[$current];        
+            my  $compound_name          =   "";
+
+            my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
+
+            if ($find_matched) {
+
+                for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+                    $compound_name      .=  $name_part.$name->{"$name_part"};
+
+                };
+                
+                my  $compound_matched   =   $compound_name && ($compound_name =~ $part_match_info->{'matches_compound_name'});
+                
+                if ($compound_matched) {
+                    say                     "Confirm to change ".$part_match_info->{'part'}.
+                                            " name from...";
+                    say                     q{};
+                    say                     "'".$name->{"$part_match_info->{'part'}"}."'";
+                    say                     q{};
+                    say                     "...to...";
+                    say                     q{};
+                    say                     "'".$part_match_info->{'replace'}."'";
+                    say                     q{};
+                    say                     "...for name ".($current+1).
+                                            ' in field '.$search_field.
+                                            ' in the following record... ';
+                    say                     q{};
+                    say                     format_single_line_for_display($result, $search_field);
+                    say                     q{};
+                    say                     '...?';
+                    say                     "Enter 'Y' for Yes,";
+                    say                     "Enter 'ALL' for Yes to All for this unique name combination.";
+                    
+                    
+                    say                     q{};
+                    #push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
+                    #$part_match_info->{'display'} = 'Yes';
+
+                }
+                
+            };
+            
+        }
+    }
+    
+}
+
+####
 sub format_single_line_for_display {
 
     # Initial Values:
@@ -427,12 +509,21 @@ sub get_useful_frequency_counts {
 sub validate {
     my  $self                           =   shift;
     my  @input                          =   @_;
-    my  $matches_four_byte_character    =   qr/[^\N{U+10000}-\N{U+7FFFFFFF}]/;
+    
+    # No longer seem to stop out of range input? Why?
+    my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
+    my  $matches_eprints_corrupted_4bc  =   qr/[\x{10000}-\x{7FFFFFFF}]/;
+    my  $is_a_safe_character            =   qr/[\N{U+0000}-\N{U+FFFF}]/;    
+    my  $is_not_a_safe_character        =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
     
     for my $input (@input) {
         die                                 "This script does not support ".
                                             "four byte characters in input."
-                                            if ($input =~ $matches_four_byte_character);
+                                            if ($input && ($input =~ $matches_four_byte_character 
+                                            || $input =~ $matches_eprints_corrupted_4bc
+                                            || $input !~ $is_a_safe_character
+                                            || $input =~ $is_not_a_safe_character));
+
     };
     
     return @input;
@@ -498,7 +589,8 @@ sub prompt_for {
             say $prompt->{"$prompt_type"};
             chomp(my $typed_input           =   <STDIN>);
             ($input)                        =   $self->validate( ($typed_input) );
-    
+            
+            last if $input;
             if ($prompt->{"$prompt_type\_blank"}) {
     
                 say $prompt->{"$prompt_type\_blank"};
