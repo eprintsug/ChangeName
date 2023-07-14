@@ -62,7 +62,7 @@ my  $our_encoding   =   ":encoding(UTF-8)";
 binmode STDIN, $our_encoding;
 binmode STDOUT, $our_encoding;
 
-say ChangeName->change_name(@ARGV);
+say ChangeName->start(@ARGV);
 
 =head1 METHODS
 
@@ -145,7 +145,7 @@ sub fix_encoding_after_eprints {
     
 }
 
-sub change_name {
+sub start {
 
     # Input:
     my  $self                               =   shift;
@@ -541,7 +541,7 @@ sub validate {
     my  $self                           =   shift;
     my  @input                          =   @_;
     
-    # No longer seem to stop out of range input? Why?
+    # No longer seems to stop out of range input? Why?
     my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
     my  $matches_eprints_corrupted_4bc  =   qr/[\x{10000}-\x{7FFFFFFF}]/;
     my  $is_a_safe_character            =   qr/[\N{U+0000}-\N{U+FFFF}]/;    
