@@ -108,38 +108,6 @@ sub presentable_compound_name {
     return $presentable_compound_name;
 }
 
-sub fix_encoding_after_eprints {
-
-    # Initial Values:
-    my  $self       =   shift;
-    my  @input      =   @_;
-    my  @output     =   ();
-    my  $encoding   =   "UTF-8";
-
-    # Processing:
-    foreach my $input (@input) {
-        
-        # Initial Values:
-        my  $defined    =   defined($input);
-        my  $has_value  =   $defined && $input;
-        my  $zero       =   $defined && $input eq "0";
-
-        #Processing & Output:
-        push @output    ,   $has_value?
-                                decode($encoding, $input):
-                            $zero?
-                                0:
-                            defined?
-                                q{}:
-                            undef;
-
-    };
-    
-    # Output:
-    return @output;
-    
-}
-
 sub start {
 
     # Input:
@@ -156,12 +124,9 @@ sub start {
 						                        # if --nolive present, 	set live to 0.
     );
 
-    my  ($archive, $find, $replace, $part)  =   $self->validate(@_);
-        $archive                            //= $self->prompt_for('archive');
-    my  $repository                         =   EPrints::Repository->new($archive);
-        ($archive, $find, $replace, $part)  =   $self->fix_encoding_after_eprints(($archive, $find, $replace, $part));
-#        warn "Find and Replace: $find and $replace";
- #       die;
+    my  ($archive_id,$find,$replace,$part)  =   $self->validate(@_);
+        $archive_id                         //= $self->prompt_for('archive');
+    my  $repository                         =   EPrints::Repository->new($archive_id);
         $find                               //= $self->prompt_for('search');
     my  $part_search                        =   $part? 1:
                                                 0;
@@ -292,7 +257,7 @@ sub start {
     # Output:
 
     return Dumper([
-        repo_is         =>  $archive,
+        repo_is         =>  $archive_id,
         find_is         =>  $find,
         replace_is      =>  $replace,
         part_is         =>  $part,
@@ -318,7 +283,7 @@ sub display_records {
         for my $current (@range_of_names) {
 
             my  $name                   =   $names->[$current];        
-            my  $compound_name          =   "";
+            my  $compound_name          =   q{};
 
             my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
 
@@ -358,7 +323,7 @@ sub change_records {
         for my $current (@range_of_names) {
 
             my  $name                   =   $names->[$current];        
-            my  $compound_name          =   "";
+            my  $compound_name          =   q{};
 
             my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
 
@@ -461,34 +426,6 @@ sub format_single_line_for_display {
                                     join($seperator->{'fields'}, @order_and_omit_blanks);
 }
 
-sub part_match {
-    my  ($session, $dataset, $result, $part_match_info)  =   @_;
-    
-    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
-
-        my  $names          =   $result->get_value($search_field);
-        my  @range_of_names =   (0..$names->$#*);
-
-        for my $current (@range_of_names) {
-
-            my  $name           =   $names->[$current];        
-            my  $compound_name  =   "";
-            my  $matched        =   $name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'};
-            
-            
-            
-            for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
-
-                $compound_name  .=  $name_part.$name->{"$name_part"};
-
-            }
-
-        }
-    }
-
-    
-}
-
 sub get_useful_frequency_counts {
     my  ($session, $dataset, $result, $useful_info)  =   @_;
 
@@ -521,17 +458,14 @@ sub validate {
     
     # No longer seems to stop out of range input? Why?
     my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
-    my  $matches_eprints_corrupted_4bc  =   qr/[\x{10000}-\x{7FFFFFFF}]/;
-    my  $is_a_safe_character            =   qr/[\N{U+0000}-\N{U+FFFF}]/;    
-    my  $is_not_a_safe_character        =   qr/[^\N{U+0000}-\N{U+FFFF}]/;
     
     for my $input (@input) {
         die                                 "This script does not support ".
                                             "four byte characters in input."
-                                            if ($input && ($input =~ $matches_four_byte_character 
-                                            || $input =~ $matches_eprints_corrupted_4bc
-                                            || $input !~ $is_a_safe_character
-                                            || $input =~ $is_not_a_safe_character));
+                                            if (
+                                                $input
+                                                && ($input =~ $matches_four_byte_character)
+                                            );
 
     };
     
@@ -622,7 +556,7 @@ sub prompt_for {
                 chomp(my $typed_input2      =  <STDIN>);
                 
                 # Definition:
-                my  $blank_input_desired    =   (fc $typed_input2 eq fc 'y');
+                my  $blank_input_desired    =   (fc $typed_input2 eq fc 'y'); # fc supported in Perl 5.16 onwards.
 
                 if ($blank_input_desired) {
                     $input = q{};
@@ -686,126 +620,7 @@ an anonymous sub / coderef within my_example method.
 
 =cut
 
-sub get_input {
-    say "Please specify an Archive ID: ";
-    my $input = <STDIN>;
-    return $input;
-}
 
-sub result_processing {
-
-    # Initial Values:
-    my  ($session, $dataset, $result, $output)  =   @_;
-    my  $format_output_line = \&format_outputline;
-    my  $debugging          = 0;
-    
-    if ($debugging) {
-        warn    'Here is some useful info:'.
-                "\n".
-                'Under Construction: '. (exists $result->{under_construction}?
-                                            defined $result->{under_construction}?
-                                                $result->{under_construction}?
-                                                    $result->{under_construction}:
-                                                'False.':
-                                            'Undefined':
-                                        'Doesn\'t exist.').
-                "\n".
-                'Change: '. (exists $result->{changed}?
-                                defined $result->{changed}?
-                                    $result->{changed}->%*?
-                                        Dumper($result->{changed}->%*):
-                                    'False, presumaby empty Hashref':
-                                'Undefined':
-                            'Doesn\'t exist.').
-                "\n".
-                'Non volatile Change: '. $result->{non_volatile_change}.
-                "\n";
-    }
-
-
-    foreach my $search_field ($output->{'search_fields'}->@*) {
-        warn "In search fields.\n" if $debugging;
-        my  $entries        =   $result->get_value($search_field);
-        my  @entry_range    =   (0..$entries->$#*);
-
-        for my $i (@entry_range) {
-
-            warn    "In entries.\n"
-                    if $debugging;
-
-            for my $name_part ($output->{'name_parts'}->@*) {
-
-                my $value = $entries->[$i];
-                
-                warn    "In name part with name part $name_part being value ".$value->{"$name_part"}."\n"
-                        if $debugging;
-
-                # Definition:
-                my  $matched  =  ($value->{"$name_part"} =~ $output->{'matches_search_term'});
-
-                if ($matched) {
-                    warn    "In match.\n"
-                            if $debugging;
-
-                    push $output->{'lines'}->@* ,   'Record ID: '.$result->id."'s search field $search_field with name part $name_part matched."
-                                                    if $debugging;
-                                                    
-                    $value->{"$name_part"}      =   "Browne";
-
-                    push $output->{'lines'}->@* ,    'Changing Wilco match to Browne'
-                                                    if $debugging;
-                    
-                    push $output->{'lines'}->@* ,    'This is what we\'re about to set:'."\n".
-                                                    Dumper($value)
-                                                    if $debugging;
-
-                    $result->set_value($search_field, $value);
-
-                    # Commit commented in/out:
-                    #$result->commit([1]);
-                    
-                };
-                
-            }
-
-        }
-        push $output->{'lines'}->@*             ,   "Result $search_field value this time is an array as follows... ".
-                                                    Dumper($entries)
-                                                    if $debugging;
-    }
-    
-    # Add to Display Output:
-    push $output->{'lines'}->@*, $format_output_line->($result);
-
-}
-
-sub format_outputline {
-
-    # Initial Values:
-    my  $result                 =   shift;
-    my  $seperator = {
-        creators                =>  ', ',   # comma, space
-        name_parts              =>  ' ',    # space
-    };
-    my  $id_suffix              =   ': ';
-
-    my  @order_and_omit_blanks  =   map {
-                                        join $seperator->{'name_parts'}, (
-                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
-                                            (),
-                                            $ARG->{'given'}?        $ARG->{'given'}:
-                                            (),
-                                            $ARG->{'family'}?       $ARG->{'family'}:
-                                            (),
-                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
-                                            (),
-                                        )
-                                    }
-                                    $result->get_value('creators_name')->@*;
-
-    return                          $result->id.$id_suffix.
-                                    join($seperator->{'creators'}, @order_and_omit_blanks);
-}
 
 1;
 
