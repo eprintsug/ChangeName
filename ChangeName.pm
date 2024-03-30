@@ -1,17 +1,17 @@
-#!/usr/bin/perl -I /opt/eprints3/perl_lib
+#!/usr/bin/env perl
 
 package ChangeName;
 
 use     strict;
 use     warnings;
 
+use     lib '/opt/eprints3/perl_lib';
 use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
 
-#use     v5.32;
 use     v5.16;
-#use     feature 'signatures'; # Not activated by default until the 5.36 bundle.
+#use     feature 'signatures'; # Not activated by default until the "use v5.36" feature bundle. Only available from Perl 5.20 onwards.
 use     utf8;
 use     English;
 
@@ -38,7 +38,7 @@ v2.0.0
 
 =cut
 
-our $VERSION    =   'v2.0.0';
+our $VERSION    =   'v2.0.1';
 
 =pod Synopsis, Description
 
