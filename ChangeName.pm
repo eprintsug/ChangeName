@@ -23,6 +23,7 @@ use     List::Util  qw(
         );
 use     Getopt::Long;
 
+use     open ':std',   ':encoding(UTF-8)';
 
 =pod Name, Version
 
@@ -58,11 +59,14 @@ Currently set to call L</my_example();>.
 =cut
 
 #UTF-8 the default on standard input and output:
-my  $our_encoding   =   ":encoding(UTF-8)";
-binmode STDIN, $our_encoding;
-binmode STDOUT, $our_encoding;
+my  $our_encoding                       =   ':encoding(UTF-8)';
+binmode STDIN                           ,   $our_encoding;
+binmode STDOUT                          ,   $our_encoding;
+binmode STDERR                          ,   $our_encoding;
+$ENV{'PERL_UNICODE'}                    =   'AS';   # A = Expect @ARGV values to be UTF-8 strings.
+                                                    # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
 
-say ChangeName->start(@ARGV);
+say ChangeName->start(@ARGV) unless caller;
 
 =head1 METHODS
 
@@ -82,6 +86,46 @@ Returns a string containing a greeting.
 =back
 
 =cut
+
+sub utf8_input_check {
+
+    # Imported from encoding_change and needs to be improved...
+    my $self = shift;
+    if (@ARG) {
+
+        # Definition:
+        my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
+                                            &&
+                                            (${^UNICODE} <= '63');
+
+
+        if ($acceptable_utf8_options) {
+            say 'UTF-8 commandline arguments enabled.';
+        }
+        else {
+            say 'UTF-8 commandline arguments do not appear to be enabled.';
+            say '';
+            say 'To enable UTF-8 arguments,';
+            say 'please run the script again with, for example, -CAS after perl as such...';
+            say '';
+            say '    perl -CAS encoding_change.pm';
+            say '';
+            say 'To learn more,';
+            say 'you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D';
+            say 'or run...';
+            say '';
+            say '    perldoc perlrun';
+            say '';
+            say '...and scroll to the Command Switches section,';
+            say 'and read the -C switch section within that.';
+        };
+
+    }
+    else {
+        say 'No arguments.';
+    }
+
+};
 
 sub presentable_compound_name {
     my  $self           =   shift;
@@ -112,6 +156,7 @@ sub start {
 
     # Input:
     my  $self                               =   shift;
+    $self->utf8_input_check(@ARG); # This will do for now.
 	my  $live                               =   q{};
 	my  @force_or_not                       =   (
 	                                                [1] # Comment out line to disable force commits.
