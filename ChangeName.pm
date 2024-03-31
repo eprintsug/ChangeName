@@ -108,7 +108,7 @@ sub utf8_input_check {
             say 'To enable UTF-8 arguments,';
             say 'please run the script again with, for example, -CAS after perl as such...';
             say '';
-            say '    perl -CAS encoding_change.pm';
+            say '    perl -CAS ChangeName.pm';
             say '';
             say 'To learn more,';
             say 'you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D';
