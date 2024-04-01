@@ -238,6 +238,10 @@ sub start {
                                                 # Search interprets 'ó' as matching 'O.' and 'à' as matching 'A'
                                                 # This is an EPrints API behaviour.
                                                 # These are not direct matches, and so could be filtered out by us.
+                                                # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
+                                                # - which is beneficial if someone doesn't have the correct keyboard.
+                                                # So let's leave this in.
+                                                
 
     say 'Find             '.Dumper ($find);
     say 'Find             '.$find;
