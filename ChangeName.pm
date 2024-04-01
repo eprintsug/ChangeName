@@ -235,13 +235,14 @@ sub start {
                                                     search_fields       =>  $search_fields,
                                                 )
                                                 ->perform_search;
-                                                # Search interprets 'ó' as matching 'O.' and 'à' as matching 'A'
+                                                # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
                                                 # This is an EPrints API behaviour.
                                                 # These are not direct matches, and so could be filtered out by us.
                                                 # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
                                                 # - which is beneficial if someone doesn't have the correct keyboard.
                                                 # So let's leave this in.
                                                 
+    my  @record_ids_to_search              =   $list_of_results->{ids}->@*;
 
     say 'Find             '.Dumper ($find);
     say 'Find             '.$find;
@@ -260,67 +261,73 @@ sub start {
     say 'IDs              '.Dumper ($list_of_results->{ids});
     say 'Useful info      '.Dumper ($useful_info);
 
-    unless ($part_search) {
+    if (@record_ids_to_search) {
+        unless ($part_search) {
 
-        $part                       =   $self->prompt_for('part', $useful_info);
-        # shouldn't we validate part is one of the accepted @name_parts?
-        
-        my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
-                                        ();
-        $find                       =   $self->prompt_for('find', @presentable_part_name);
-        $replace                    //= $self->prompt_for('replace');
-        $part_search                =   $part && $find && defined($replace)? 1:
-                                        undef;
+            $part                       =   $self->prompt_for('part', $useful_info);
+            # shouldn't we validate part is one of the accepted @name_parts?
+
+            my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
+                                            ();
+            $find                       =   $self->prompt_for('find', @presentable_part_name);
+            $replace                    //= $self->prompt_for('replace');
+            $part_search                =   $part && $find && defined($replace)? 1:
+                                            undef;
+        };
+    #    warn "Part is earlier: $part";
+        if ($part_search) {
+
+            for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
+
+                # Initial Values:
+                $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
+                $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
+                $part_match_info->{'part'}                  =   $part;
+    #            warn "Part is: $part and stored part is $part_match_info->{'part'}";
+                $part_match_info->{'display_lines'}         =   [];
+                $part_match_info->{'display'}               =   undef;
+
+                # Processing:
+                $list_of_results->map($display_records,$part_match_info);
+
+                # Output:
+                if ($part_match_info->{'display'}) {
+                    say "For the unique name combination...";
+                    say q{}; # Does it deliver a line return? Yes it does
+                    say $self->presentable_compound_name($compound_name,@name_parts);
+                    say q{}; # Does it deliver a line return? Yes it does
+                    say "...the following matching records were found:";
+                    say q{}; # Does it deliver a line return? Yes it does
+                    say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
+                    say q{};
+                    say '------';
+                    say q{};
+                };
+
+                # Reset Values:
+                $part_match_info->{'display_lines'}         =   [];
+                $part_match_info->{'display'}               =   undef;
+
+                # Initial values for implementing a change:
+                $part_match_info->{'replace'}               =   $replace;
+                $part_match_info->{'force_or_not'}          =   \@force_or_not;
+                $part_match_info->{'dry_run'}               =   $live? 0:
+                                                                1;
+
+                #Processing:
+                $list_of_results->map($change_records,$part_match_info);
+
+                # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
+
+                # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
+            }
+        };
+
+    }
+    else {
+        say "No search results.";
     };
-#    warn "Part is earlier: $part";
-    if ($part_search) {
 
-        for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
-
-            # Initial Values:
-            $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
-            $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
-            $part_match_info->{'part'}                  =   $part;
-#            warn "Part is: $part and stored part is $part_match_info->{'part'}";
-            $part_match_info->{'display_lines'}         =   [];
-            $part_match_info->{'display'}               =   undef;
-
-            # Processing:
-            $list_of_results->map($display_records,$part_match_info);
-
-            # Output:
-            if ($part_match_info->{'display'}) {
-                say "For the unique name combination...";
-                say q{}; # Does it deliver a line return? Yes it does
-                say $self->presentable_compound_name($compound_name,@name_parts);
-                say q{}; # Does it deliver a line return? Yes it does
-                say "...the following matching records were found:";
-                say q{}; # Does it deliver a line return? Yes it does
-                say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
-                say q{};
-                say '------';
-                say q{};
-            };
-
-            # Reset Values:
-            $part_match_info->{'display_lines'}         =   [];
-            $part_match_info->{'display'}               =   undef;
-            
-            # Initial values for implementing a change:
-            $part_match_info->{'replace'}               =   $replace;            
-            $part_match_info->{'force_or_not'}          =   \@force_or_not;
-            $part_match_info->{'dry_run'}               =   $live? 0:
-                                                            1;
-
-            #Processing:
-            $list_of_results->map($change_records,$part_match_info);
-            
-            # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
-
-            # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
-        }
-    };
- 
     # Output:
 
     return Dumper([
