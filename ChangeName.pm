@@ -165,8 +165,8 @@ sub start {
     ->getoptionsfromarray(
         \@_,
         'live!'                             =>  \$live
-                                                # if --live present, 	set live to 1,
-						                        # if --nolive present, 	set live to 0.
+                                                # if --live present,    set $live to 1,
+                                                # if --nolive present,  set $live to 0.
     );
 
     my  ($archive_id,$find,$replace,$part)  =   $self->validate(@_);
@@ -284,7 +284,7 @@ sub start {
             $part_match_info->{'display_lines'}         =   [];
             $part_match_info->{'display'}               =   undef;
             
-            # Change-specific values:
+            # Initial values for implementing a change:
             $part_match_info->{'replace'}               =   $replace;            
             $part_match_info->{'force_or_not'}          =   \@force_or_not;
             $part_match_info->{'dry_run'}               =   $live? 0:
