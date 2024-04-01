@@ -17,6 +17,7 @@ use     English;
 
 use     Encode;
 use     Data::Dumper;
+$Data::Dumper::Useperl = 1;
 use     List::Util  qw(
             pairmap
             mesh
@@ -234,9 +235,26 @@ sub start {
                                                     search_fields       =>  $search_fields,
                                                 )
                                                 ->perform_search;
+                                                # Search interprets 'ó' as matching 'O.' and 'à' as matching 'A'
+                                                # This is an EPrints API behaviour.
+                                                # These are not direct matches, and so could be filtered out by us.
+
+    say 'Find             '.Dumper ($find);
+    say 'Find             '.$find;
+    say 'Search fields:   '.Dumper ($search_fields);
+    say 'List of Results: '.Dumper (keys $list_of_results->%*);
+    say 'IDs              '.Dumper ($list_of_results->{ids});
 
     # Process Search Results:
     $list_of_results->map($get_useful_frequency_counts,$useful_info);
+
+
+    say 'Find             '.Dumper ($find);
+    say 'Find             '.$find;
+    say 'Search fields:   '.Dumper ($search_fields);
+    say 'List of Results: '.Dumper (keys $list_of_results->%*);
+    say 'IDs              '.Dumper ($list_of_results->{ids});
+    say 'Useful info      '.Dumper ($useful_info);
 
     unless ($part_search) {
 
