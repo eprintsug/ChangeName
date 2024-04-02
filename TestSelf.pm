@@ -96,15 +96,21 @@ sub start {
 sub new {
     my  $class      =   shift;
     my  $params     =   {@ARG};
-    my  $self       =   {};
+    my  $self       =   {find => 'default',};
     
     bless $self, $class;
+
+    say 'Called new method.';
+    say Dumper($self);
+
     $self->_set_attributes($params);
     
     return $self;
 }
 
 sub _set_attributes {
+
+    say 'Setting attributes.';
 
     # Set Initial Values:
     my  $self   =   shift;
@@ -113,10 +119,11 @@ sub _set_attributes {
 
     );
 
-    $self   =   {
+    $self->%*   =   (
+        $self->%*,
         $params->%*,
         new_key =>  'new value',
-    };
+    );
 
 #    $self->{data} = {
 #        repository  =>  EPrints::Repository->new($archive_id),
