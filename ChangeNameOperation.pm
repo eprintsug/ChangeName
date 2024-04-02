@@ -107,7 +107,7 @@ sub utf8_input_check {
             say 'To enable UTF-8 arguments,';
             say 'please run the script again with, for example, -CAS after perl as such...';
             say '';
-            say '    perl -CAS ChangeName.pm';
+            say '    perl -CAS ChangeNameOperation.pm';
             say '';
             say 'To learn more,';
             say 'you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D';
@@ -154,14 +154,24 @@ sub presentable_compound_name {
 sub start {
 
     my  $class      =   shift;
-
     $class->utf8_input_check(@ARG);
+
+    # Command Line Options:
+    my  $live       =   q{};
+    Getopt::Long::Parser->new
+    ->getoptions(
+        'live!'     =>  \$live
+                        # if --live present,    set $live to 1,
+                        # if --nolive present,  set $live to 0.
+    );
+
 
     my  @params     =   (
         archive_id  =>  shift,
         find        =>  shift,
         replace     =>  shift,
         part        =>  shift,
+        live        =>  $live,
     );
                     
     ChangeNameOperation->new(@params)->search->display->confirm->change->finish;
@@ -174,6 +184,10 @@ sub new {
     my  $self       =   {};
     
     bless $self, $class;
+
+    say 'Called new method.';
+    say Dumper($self);
+
     $self->_set_attributes($params);
     
     return $self;
@@ -181,18 +195,39 @@ sub new {
 
 sub _set_attributes {
 
+    say 'Setting attributes.';
+
     # Set Initial Values:
-    my  $self   =   shift;
-    my  $params =   $params;
-    my  @data   =   (
+    my  $self               =   shift;
+    my  $params             =   shift;
+
+    $self->%*               =   (
+        $self->%*,
+        $self->_validate(values $params->%*),
+        force_or_not        =>	[
+                                    [1] # Comment out line to disable force commits.
+	                            ],
+	    dataset_to_use      =>  'eprint',
+	    fields_to_search    =>  [
+                                    'creators_name',
+                                    'contributors_name',
+	                            ],
+	    name_parts          =>  [
+                                    'honourific',
+                                    'given',
+                                    'family',
+                                    'lineage',
+	                            ],
+	                            # Remember to change presentable compound name method to accept an array ref instead of an array.
 
     );
+    $self->{archive_id}     //= $self->prompt_for('archive');
+    $self->{find}           //= $self->prompt_for('search');
+    $self->{part_search}    =   $self->{part}?  1:
+                                0;
+                                # Whether we have yet chosen which part of a name to search.
 
-
-#    $self->{data} = {
-#        repository  =>  EPrints::Repository->new($archive_id),
-#    }
-    # Check Not
+    return $self
 
 }
 
@@ -387,6 +422,60 @@ sub start_old {
     ]);
     
 }
+
+sub _validate {
+    my  $self                           =   shift;
+    my  @input                          =   @_;
+
+    # No longer seems to stop out of range input? Why?
+    my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
+
+    for my $input (@input) {
+        die                                 "This script does not support ".
+                                            "four byte characters in input."
+                                            if (
+                                                $input
+                                                && ($input =~ $matches_four_byte_character)
+                                            );
+
+    };
+
+    return @input;
+}
+
+sub search {
+    my  $self   =   shift;
+    say "Called search method.";
+    say Dumper($self);
+    return $self;
+}
+
+sub display {
+    my  $self   =   shift;
+    say "Called display method.";
+    return $self;
+}
+
+sub confirm {
+    my  $self   =   shift;
+    say "Called confirm method.";
+    return $self;
+}
+
+sub change {
+    my  $self   =   shift;
+    say "Called change method.";
+    return $self;
+}
+
+sub finish {
+    my  $self   =   shift;
+    say "At the finish. Thank you for using this test script.";
+    return $self;
+}
+
+
+
 
 sub display_records {
 
