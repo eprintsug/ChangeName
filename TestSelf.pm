@@ -113,11 +113,10 @@ sub _set_attributes {
 
     );
 
-    $self->%*   =   (
-        $self->%*,
+    $self   =   {
         $params->%*,
         new_key =>  'new value',
-    );
+    };
 
 #    $self->{data} = {
 #        repository  =>  EPrints::Repository->new($archive_id),
