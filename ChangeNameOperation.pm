@@ -157,10 +157,11 @@ sub start {
     $class->utf8_input_check(@ARG);
 
     # Command Line Options:
-    my  $live       =   q{};
+    my  $live       =   q{};    # Default empty string.
     Getopt::Long::Parser->new
-    ->getoptions(
-        'live!'     =>  \$live
+    ->getoptionsfromarray(
+        \@ARG,
+        'live!'     =>  \$live,
                         # if --live present,    set $live to 1,
                         # if --nolive present,  set $live to 0.
     );
@@ -203,29 +204,72 @@ sub _set_attributes {
 
     $self->%*               =   (
         $self->%*,
-        $self->_validate(values $params->%*),
-        force_or_not        =>	[
+        archive_id          =>  $self->_validate($params->{archive_id}),
+        find                =>  $self->_validate($params->{find}),
+        replace             =>  $self->_validate($params->{replace}),
+        part                =>  $self->_validate($params->{part}),
+        live                =>  $params->{live},
+        force_or_not        =>  [
                                     [1] # Comment out line to disable force commits.
-	                            ],
-	    dataset_to_use      =>  'eprint',
-	    fields_to_search    =>  [
+                                ],
+        dataset_to_use      =>  'eprint',
+        fields_to_search    =>  [
                                     'creators_name',
                                     'contributors_name',
-	                            ],
-	    name_parts          =>  [
+                                ],
+        name_parts          =>  [
                                     'honourific',
                                     'given',
                                     'family',
                                     'lineage',
-	                            ],
-	                            # Remember to change presentable compound name method to accept an array ref instead of an array.
-
+                                ],
+                                # Remember to change presentable compound name method to accept an array ref instead of an array.
+        text                =>  {
+                                    data_count      =>  'Number of dataset records found: ',
+                                    search_count    =>  'Number of search results found: ',
+                                    part_suffix     =>  ' Name',
+                                },
+        line_delimiter      =>  "\n",
+        get_useful_frequency_counts        =>   sub { $self->get_useful_frequency_counts(@ARG) },
+        display_records                    =>   sub { $self->display_records            (@ARG) },
+        change_records                     =>   sub { $self->change_records             (@ARG) },
     );
     $self->{archive_id}     //= $self->prompt_for('archive');
     $self->{find}           //= $self->prompt_for('search');
     $self->{part_search}    =   $self->{part}?  1:
                                 0;
                                 # Whether we have yet chosen which part of a name to search.
+    #$self->{repository}     =   EPrints::Repository->new($self->{archive_id});
+    $self->{search_fields}  =   [
+                                  {
+                                        meta_fields     =>  $self->{fields_to_search},
+                                        value           =>  $self->{find},
+                                    },
+                                ];
+    my  @common_info = (
+        search_fields                       =>  $self->{fields_to_search},
+        name_parts                          =>  $self->{name_parts},
+    ); # Why do we need this? Can we not access it via $self?
+    $self->%*               =   (
+        $self->%*,
+        useful_info         =>  {
+                                    @common_info,
+                                    compound_names                      =>  {},
+                                    given_names                         =>  {},
+                                    family_names                        =>  {},
+                                },
+        part_match_info     =>  {
+                                    @common_info,
+                                    live    =>  $self->{live}, # Is this necessary?
+                                },
+        search_settings     =>  {   satisfy_all         =>  1,
+                                    staff               =>  1,
+                                    limit               =>  30,
+                                    show_zero_results   =>  0,
+                                    allow_blank         =>  1,
+                                    search_fields       =>  $self->{search_fields},
+                                },
+    );
 
     return $self
 
@@ -236,10 +280,10 @@ sub start_old {
     # Input:
     my  $self                               =   shift;
     $self->utf8_input_check(@ARG); # This will do for now.
-	my  $live                               =   q{};
-	my  @force_or_not                       =   (
-	                                                [1] # Comment out line to disable force commits.
-	                                            );
+    my  $live                               =   q{};
+    my  @force_or_not                       =   (
+                                                    [1] # Comment out line to disable force commits.
+                                                );
     Getopt::Long::Parser->new
     ->getoptionsfromarray(
         \@_,
