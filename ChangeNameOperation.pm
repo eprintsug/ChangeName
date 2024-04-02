@@ -158,10 +158,10 @@ sub start {
     $class->utf8_input_check(@ARG);
 
     my  @params     =   (
-        archive_id  =>  $self->validate(shift),
-        find        =>  $self->validate(shift),
-        replace     =>  $self->validate(shift),
-        part        =>  $self->validate(shift),
+        archive_id  =>  shift,
+        find        =>  shift,
+        replace     =>  shift,
+        part        =>  shift,
     );
                     
     ChangeNameOperation->new(@params)->search->display->confirm->change->finish;
@@ -179,7 +179,22 @@ sub new {
     return $self;
 }
 
-sub 
+sub _set_attributes {
+
+    # Set Initial Values:
+    my  $self   =   shift;
+    my  $params =   $params;
+    my  @data   =   (
+
+    );
+
+
+#    $self->{data} = {
+#        repository  =>  EPrints::Repository->new($archive_id),
+#    }
+    # Check Not
+
+}
 
 sub start_old {
 
