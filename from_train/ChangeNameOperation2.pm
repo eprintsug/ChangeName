@@ -13,7 +13,7 @@ use     v5.16;
 use     English;
 use     Locale::Maketext;
 
-try_or_die('en-GB');
+ChangeNameOperation::Languages->try_or_die('en-GB');
 
 sub try_or_die {
 
@@ -23,7 +23,7 @@ sub try_or_die {
         language            =>  'Trouble finding a language to use.',
     };
 
-    return  $self->get_handle($language)
+    return  Locale::Maketext->get_handle($language)
             #ChangeNameOperation::Languages::en_gb->new()
             || die  $error->{'language'};
 }
@@ -33,4 +33,6 @@ sub try_or_die {
 #}
 
 1;
+
+
 
