@@ -379,7 +379,7 @@ sub _set_yaml {
     my  $filepath       =   shift // $self->default_yaml_filepath;
 
     $self->{yaml}       =   # External YAML file:
-                            (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
+                            #(defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
                     
                             # Internal YAML __DATA__:
                             Load(                                           # Will die on any load error.
@@ -575,28 +575,26 @@ sub prompt_for {
 
 sub log_verbose {
     my  $self   =   shift;
-    say 'in log verbose';
+    #say 'in log verbose';
     # Premature Exit:
     return $self unless ($self->{verbose} || $self->{debug});
-    say 'still in log verbose';
-    $self->_log('verbose',@ARG);
-    return $self;
+    #say 'still in log verbose';
+    return $self->_log('verbose',@ARG);
 }
 
 sub log_debug {
     my  $self   =   shift;
-    say 'in log debug';
+    #say 'in log debug';
     # Premature Exit:
     return $self unless $self->{debug};
-    say 'still in log debug';
-    $self->_log('debug',@ARG);
-    return $self;
+    #say 'still in log debug';
+    return $self->_log('debug',@ARG);
 }
 
 sub dumper {
     my  $self   =   shift;
     
-    return $self unless ($self->{verbose} > 1 || $self->{debug});
+    return $self unless ($self->{debug} || $self->{verbose} > 1);
 
     # Default Params if no arguments passed in...
     my  $exclude    =   join(
@@ -612,6 +610,8 @@ sub dumper {
                                 repository
                             )
                         );
+                        
+    say 'exclude'.Dumper($exclude);
     my  $class_only =   join(
 
                             # Join by regex OR...
@@ -629,27 +629,27 @@ sub dumper {
                                 list_of_results
                             )
                         );
-                        
-    my  @default    =   map
-                        {
-                            $ARG =~ /^[($class_only)]$/
-                            && Scalar::Util::blessed($ARG)? $ARG->isa:
-                            $ARG;
-                        }
-                        map {$self->{$ARG}}
-                        map {/^[^($exclude)]$/}
+   say 'class_only'.Dumper($class_only);                     
+    my  @default    =   
+                        map {$ARG =~ m/^($exclude)$/? ():($ARG)}
                         keys $self->%*;
-
+    my  $default    =   {@default};
+say 'default'.Dumper($default->%*);
     # Set params:
     my  @params     =   @ARG?   @ARG:
-                        @default;
+                        ($default);
+say 'p-ram';
+Dumper(@params);
+say 'self';
+Dumper(reftype $self);
+#say join "\n", keys $self->%*;
+#say join "\n", %default;
 
     return $self->_log('dumper',@params); 
 }
 
 sub localise {
-        my  ($self, $say)   =   @ARG;
-        return $self->{language}->maketext($say);
+        return shift->{language}->maketext(@ARG);
 }
 
 # Private subs:
@@ -774,17 +774,6 @@ sub _set_attributes {
     my  $matches_yes        =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
 
     $self->%*               =   (
-        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
-    );
-    $self->_set_repository      ($params->{archive_id})
-    ->log_verbose               ('Language set to [_1]', $self->{language})
-    ->log_debug                 ('Set archive attribute when setting repository. Language, archive, and repository, are required for log methods.')
-    ->log_debug                 ('Now setting additional instance attributes from params...')
-    ->_set_search               ($params->{find})
-    ->_set_replace              ($params->{replace},'no_prompt') # Optional on initialisation
-    ->_set_part                 ($params->{part},'no_prompt') # Optional on initialisation
-    ->_set_yaml                 ($params->{yaml})
-    ->%*                    =   (
 
         # Existing values in $self:
         $self->%*,
@@ -798,11 +787,23 @@ sub _set_attributes {
                                     || ($params->{debug} && $params->{verbose})
                                     || ($params->{debug} && $params->{trace})
                                 ),
+        # Internationalisation:
+        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
 
     );
 
-    $self->dumper
-    ->log_debug('Setting self-referential instance attributes...')
+    $self->_set_repository      ($params->{archive_id})
+    ->log_verbose               ('Language set to [_1].', $self->{language}->language_tag)
+    ->log_debug                 ('Set initial instance attributes using params or defaults.')
+    ->log_debug                 ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+    ->log_debug                 ('Now setting additional instance attributes from params...')
+    ->_set_search               ($params->{find})
+    ->_set_replace              ($params->{replace},'no_prompt') # Optional on initialisation
+    ->_set_part                 ($params->{part},'no_prompt') # Optional on initialisation
+    ->_set_yaml                 ($params->{yaml})
+    ->dumper;
+    
+    $self->log_debug('Setting self-referential instance attributes...')
     ->%*                    =   (
 
         # Existing values in $self:
@@ -810,24 +811,24 @@ sub _set_attributes {
 
         # From YAML Configuration:
         force_or_not        =>  [
-                                    $self->{yaml}->{'Force commit changes to database'} =~ $matches_yes?    [1]:
+                                    ($self->{yaml}->{'Force commit changes to database'} =~ $matches_yes)?    [1]:
                                     ()
                                 ],
         dataset_to_use      =>  $self->{yaml}->{'Dataset to use'},
-        fields_to_search    =>  [
-                                    $self->{yaml}->{'Fields to search'}
-                                ],        
-        # Eprints:
-        repository          =>  EPrints::Repository->new($self->{archive_id}),
-        
+        fields_to_search    =>  $self->{yaml}->{'Fields to search'},
+    );
+
+    $self->log_verbose('Set YAML configurations.')->dumper
+    ->%*                    =   (
         # Search:
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
                                     value           =>  $self->{find},
                                 }],
+        
     );
 
-    $self->dumper
+    $self->log_debug->('Set search-fields.')->dumper
     ->log_debug('Setting further self-referential attributes...')
     ->%*                    =   (
 
@@ -1082,7 +1083,7 @@ sub _match {
 
 sub _set_or_prompt_for {
     my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
-
+    #say 'in set and prompt_for';
     $self->{"$attribute"}   =   defined $value?                                 $self->_validate($value):
                                 defined $self->{"$attribute"}?                  $self->{"$attribute"}:
                                 $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
@@ -1154,7 +1155,7 @@ sub _validate {
 }
 
 sub _log {
-    say 'In _log';
+    #say 'In _log';
     my  $self       =   shift;
 
     # Premature exit:
@@ -1164,10 +1165,13 @@ sub _log {
     # Initial Values:
     my  $type       =   shift;
     my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
+    #Dumper(((caller 2)[3]));
+    #Dumper(scalar localtime);
+    #Dumper(uc($type));
     my  $prefix     =   $use_prefix?    sprintf(
                                             '[%s] [%s] [%s] - ',
 
-                                            localtime,      # Human readable system time and date - linux's ctime(3).
+                                            scalar localtime,      # Human readable system time and date - linux's ctime(3).
 
                                             ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
                                                             # and get the 3rd array index value 
@@ -1178,6 +1182,9 @@ sub _log {
                         q{};
 
     # Log:
+    #say 'dumping';
+    #say Dumper(@ARG);
+    #say $self->localise(@ARG);
     $self->{repository}->log(
         $prefix.(
             $type eq 'dumper'?  Dumper(@ARG):
@@ -1186,7 +1193,22 @@ sub _log {
     );
     
     # Stack trace:
-    EPrints->trace if $self->{trace};
+    if ($self->{trace}) {
+        $self->{repository}->log(
+            sprintf(
+                                                '[%s] [%s] [%s] - ',
+
+                                                scalar localtime,      # Human readable system time and date - linux's ctime(3).
+
+                                                ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
+                                                                # and get the 3rd array index value 
+                                                                # - the perl module and subroutine name.
+
+                                                'TRACE',      # Log type - LOG / DEBUG / DUMPER
+                                            )
+        );
+        EPrints->trace;
+    };
     
     return $self;
 }
@@ -1497,7 +1519,11 @@ my  @phrases = (
     'Constructed New Object Instance'   =>  'Constructed New Object Instance',
     'Commandline Params are...'         =>  'Commandline Params are...',
     'Commandline Input is...'           =>  'Commandline Input is...',
-    'Language set to [_1]'              =>  'Language set to [_1]',
+    'Language set to [_1].'             =>  'Language set to [_1].',
+    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
+    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
+    'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
+    'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
 );
 
 our %Lexicon = (
