@@ -29,10 +29,12 @@ TestLoop->start(@ARGV) unless caller;
 sub start {
 
     my  $class      =   shift;
-
-    for my $number (0..9) {
+    my  $max        =   10;
+    for my $number (0..100) {
         say $number;
-        $number += 2; # Will 0 jump by 2 digits, skipping 1?
+#        for my $inner_number ($offset..$max) {
+ #       }
+        say $number += 2; # Will 0 jump by 2 digits, skipping 1?
     };
 
 }
