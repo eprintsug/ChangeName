@@ -510,7 +510,7 @@ sub prompt_for {
         until ( $input && ($input =~ $matches_acceptable_input) ) {
 
             say $self->localise('prompt_for.1or2');
-            chomp($number   =   <STDIN>)
+            chomp($number   =   <STDIN>);
 
             $input          =   $number?    $number eq $self->localise('input.1')?  'given':    # should mapping occur to variables set centrally?
                                             $number eq $self->localise('input.2')?  'family':   # should mapping occur to variables set centrally?
