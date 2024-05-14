@@ -123,23 +123,23 @@ sub new {
 }
 
 sub search {
-    my  $self                       =   shift;
+    my  $self                   =   shift;
     
     $self->log_debug('Entered method.')->dumper->log_verbose('Searching...');
     
     # Search:
-    my  $self->{list_of_results}    =   $self->{repository}
-                                        ->dataset($self->{dataset_to_use})
-                                        ->prepare_search($self->{search_settings})
-                                        ->perform_search;
-                                        # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
-                                        # This is an EPrints API behaviour.
-                                        # These are not direct matches, and so could be filtered out by us.
-                                        # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
-                                        # - which is beneficial if someone doesn't have the correct keyboard.
-                                        # So let's leave this in.
+    $self->{list_of_results}    =   $self->{repository}
+                                    ->dataset($self->{dataset_to_use})
+                                    ->prepare_search($self->{search_settings})
+                                    ->perform_search;
+                                    # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
+                                    # This is an EPrints API behaviour.
+                                    # These are not direct matches, and so could be filtered out by us.
+                                    # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
+                                    # - which is beneficial if someone doesn't have the correct keyboard.
+                                    # So let's leave this in.
 
-    my  $self->{records_found}      =   scalar $self->{list_of_results}->{ids}->@*;
+    $self->{records_found}      =   scalar $self->{list_of_results}->{ids}->@*;
 
     $self->log_verbose(
         $self->{records_found}? 'Found Results.':
@@ -373,7 +373,7 @@ sub _set_yaml {
     my  $self           =   shift;
     my  $filepath       =   shift // $self->default_yaml_filepath;
 
-    my  $self->{yaml}   =   # External YAML file:
+    $self->{yaml}       =   # External YAML file:
                             -e $filepath?  LoadFile($filepath):             # Will die on any load error.
                     
                             # Internal YAML __DATA__:
@@ -390,11 +390,11 @@ sub _set_yaml {
 }
 
 sub _set_repository {
-    my  $self               =   shift;
-    my  $archive_id         =   shift;
-    my  $self->{repository} =   EPrints::Repository->new(
-                                    $self->_set_archive($archive_id)
-                                );
+    my  $self           =   shift;
+    my  $archive_id     =   shift;
+    $self->{repository} =   EPrints::Repository->new(
+                                $self->_set_archive($archive_id)
+                            );
     return $self->log_debug('Set archive and repository instance attributes.');
 }
 
@@ -440,7 +440,7 @@ sub chunkify {
     # Initial Values:
     my  ($self, $list, $chunk_size) =   @ARG;
 	$chunk_size                     //= 100;
-    my  $list                       //= $self->{list_of_results}; # validate it is a list object?
+    $list                           //= $self->{list_of_results}; # validate it is a list object?
     my  @list_of_arrayrefs          =   ();
 
     # Processing:
