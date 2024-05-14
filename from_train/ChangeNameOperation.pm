@@ -936,7 +936,7 @@ sub _add_relevant_display_lines {
 
     foreach my $search_field ($self->{'search_fields'}->@*) {
 
-        $self->log_verbose('Processing search field: [_1]', $search_field);
+        $self->log_verbose('Processing search field: [_1]', $search_field->@*);
 
         for my $name ($result->get_value($search_field)->@*) {
 
@@ -1198,12 +1198,9 @@ sub _log {
                         q{};
 
     # Log:
-    #say 'dumping';
-    #say Dumper(@ARG);
-    #say $self->localise(@ARG);
     $self->{repository}->log(
         $prefix.(
-            $type eq 'dumper'?  Dumper(@ARG):
+            $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
             $self->localise(@ARG)
         ),
     );
@@ -1555,6 +1552,11 @@ my  @phrases = (
     'Generating lists, and setting values.' => 'Generating lists, and setting values.',
     'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
     'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
+    'Processing search field: [_1]'=>'Processing search field: [_1]',
+    'Leaving part_specific method.'=>'Leaving part_specific method.',
+    'Called display method.' => 'Called display method.',
+    'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
+    'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
 );
 
 our %Lexicon = (
