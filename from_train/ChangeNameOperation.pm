@@ -244,7 +244,7 @@ sub confirm {
 
         # Processing:        
         foreach my $chunk_of_results ($self->chunkify) {
-            $self->_seek_confirmation($ARG) for $chunk_of_results->@*;
+            $self->_seeking_confirmation($ARG) for $chunk_of_results->@*;
         };
 
     };
@@ -934,9 +934,9 @@ sub _add_relevant_display_lines {
     return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                         unless $result;
 
-    foreach my $search_field ($self->{'search_fields'}->@*) {
+    foreach my $search_field ($self->{'fields_to_search'}->@*) {
 
-        $self->log_verbose('Processing search field: [_1]', $search_field->@*);
+        $self->log_verbose('Processing search field: [_1]', $search_field);
 
         for my $name ($result->get_value($search_field)->@*) {
 
@@ -980,7 +980,7 @@ sub _seeking_confirmation {
                                             $self->localise('input.none'),
                                         );
 
-    foreach my $search_field ($self->{'search_fields'}->@*) {
+    foreach my $search_field ($self->{'fields_to_search'}->@*) {
 
         $self->log_verbose('Processing search field: [_1]', $search_field);
 
@@ -1092,6 +1092,9 @@ sub _match {
         $self->log_verbose('Match found for: [_1]', $self->_stringify_name($name))
         ->log_debug('Matched "[_1]" in "[_2]" part of the following unique name...', $self->{'find'}, $self->{'part'})
         ->dumper($uniqueness);
+    }
+    else {
+        $self->log_debug('No match found.');
     };
 
     return  $self;
@@ -1367,6 +1370,7 @@ my  @tokens = (
 'separator.new_line'            =>  $new_line,
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
+'display_line'                  =>  'Record [_1]: [_2].',
 
 '_stringify_name.error.no_params' =>
 'Method requires a name hash reference of name parts,
@@ -1557,6 +1561,21 @@ my  @phrases = (
     'Called display method.' => 'Called display method.',
     'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
     'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
+    'Entering method'=>'Entering method',
+    'Leaving method. Attribute display_lines is...'=>'Leaving method. Attribute display_lines is...',
+    'Match found for: [_1]'=>'Match found for: [_1]',
+    'No match found.'=>'No match found.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Matched "[_1]" in "[_2]" part of the following unique name...',
+    'Entered module.'=>'Entered module.',
+    'Found params, and about to process them...'=>'Found params, and about to process them...',
+    'Stringified names for use in a localised display line.'=>'Stringified names for use in a localised display line.',
+    'Returning localised display line as we leave the method.'=>'Returning localised display line as we leave the method.',
+    'Set display flags and added display line:'=>'Set display flags and added display line:',
+    'Leaving display method.'=>'Leaving display method.',
+    'Called confirm method.'=>'Called confirm method.',
+    'Checking if display lines have been shown.'=>'Checking if display lines have been shown.',
+    'Setting confirmation'=>'Setting confirmation',
+
 );
 
 our %Lexicon = (
