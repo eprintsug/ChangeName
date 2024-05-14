@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+
 package ChangeNameOperation v1.0.0;
 
 use     strict;
@@ -32,6 +33,7 @@ use     CPAN::Meta::YAML qw(
             Load
         ); # Standard module in Core Perl since Perl 5.14.
 use     File::Basename;
+use     Locale::Maketext;
 
 =pod Name, Version
 
@@ -1233,9 +1235,7 @@ Andrew Mehta
 
 =cut
 
-
-
-package ChangeNameOperation::Languages;
+package ChangeNameOperation::I18N;
 
 # Always:
 use     strict;
@@ -1248,18 +1248,6 @@ use     v5.16;
 # Specific:
 use     English;
 use     Locale::Maketext;
-
-sub try_or_die {
-
-    my  ($self, $language)  =   @ARG;
-    $language               //= 'en-GB';
-    my  $error={
-        language            =>  'Trouble finding a language to use.',
-    };
-
-    return  $self->get_handle($language)
-            || die  $error->{'language'};
-}
 
 1;
 
@@ -1279,9 +1267,11 @@ use     warnings (
         ); 
 
 # Specific:
-use     parent -norequire, qw(
+use     base qw(
             ChangeNameOperation::Languages
         );
+#use     base ChangeNameOperation::Languages->import;
+
 
 
 # ----------------------------------
@@ -1485,7 +1475,47 @@ our %Lexicon = (
 
 # ----------------------------------
 
+1;
+
 }
+
+
+BEGIN {
+package ChangeNameOperation::Languages;
+
+# Always:
+use     strict;
+use     warnings;
+
+# UTF-8:
+use     utf8;
+use     v5.16;
+
+# Specific:
+use     English;
+use     Locale::Maketext;
+
+sub try_or_die {
+
+    my  ($self, $language)  =   @ARG;
+    $language               //= 'en-GB';
+    my  $error={
+        language            =>  'Trouble finding a language to use.',
+    };
+
+    return  $self->get_handle($language)
+            #ChangeNameOperation::Languages::en_gb->new()
+            || die  $error->{'language'};
+}
+
+#sub get_handle {
+#    say "Test handle";
+#}
+
+1;
+
+}
+
 
 package ChangeNameOperationYAMLConfig;
 
