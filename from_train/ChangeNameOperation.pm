@@ -962,11 +962,11 @@ sub _seeking_confirmation {
 
             $self->log_debug('Checking if display lines have been shown.')->dumper($self->{display_lines_shown});
                        
-            unless $self->{display_lines_shown} {
+            unless ($self->{display_lines_shown}) {
 
                 say $self->localise(
                         'seeking_confirmation.display_lines',
-                        $self->_render_name($name),
+                        $self->_stringify_name($name),
                         join(
                             $self->localise('separator.new_line'),
                             $self->{display_lines}->{"$self->{unique_name}"}->@*,
@@ -1042,7 +1042,7 @@ sub _match {
 
     };
 
-    my  $self->{matches}        =   $uniqueness
+    $self->{matches}            =   $uniqueness
                                     && ($uniqueness =~ $self->{'matches_unique_name'})                      # This name is the current unique name,
                                     && ($name->{"$self->{'part'}"} || $name->{"$self->{'part'}"} eq '0')    # ...and we have a name part value to match against,
                                     && ($name->{"$self->{'part'}"} =~ $self->{'matches_find'});             # ...and we have found a match with that value.
@@ -1055,7 +1055,7 @@ sub _match {
                                     && $self->{auto_yes} =~ $uniqueness;
 
 
-    if ($matches) {
+    if ($self->{matches}) {
         $self->log_verbose('Match found for: [_1]', $self->_stringify_name($name))
         ->log_debug('Matched "[_1]" in "[_2]" part of the following unique name...', $self->{'find'}, $self->{'part'})
         ->dumper($uniqueness);
@@ -1101,8 +1101,6 @@ sub _validate {
     # Initial Values:
     my  $self                           =   shift;
     my  @input                          =   @ARG;
-
-    $self->log
     
     # Definitions:
     my  $number_of_input_arguments      =   scalar @input;
@@ -1254,7 +1252,7 @@ use     Locale::Maketext;
 sub try_or_die {
 
     my  ($self, $language)  =   @ARG;
-    my  $language           //= 'en-GB';
+    $language               //= 'en-GB';
     my  $error={
         language            =>  'Trouble finding a language to use.',
     };
