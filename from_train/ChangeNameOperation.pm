@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-
 package ChangeNameOperation v1.0.0;
 
 use     strict;
@@ -33,7 +32,7 @@ use     CPAN::Meta::YAML qw(
             Load
         ); # Standard module in Core Perl since Perl 5.14.
 use     File::Basename;
-use     Locale::Maketext;
+
 
 =pod Name, Version
 
@@ -105,7 +104,7 @@ Returns a string containing a greeting.
 sub start_from_commandline {
     my  $class          =   shift;
     my  @object_params  =   $class->_get_commandline_arguments(@ARG);
-     
+
     $class->_check_commandline_input(@object_params)->new(@object_params)->search->part_specific->display->confirm->change->finish;
 
 }
@@ -160,7 +159,7 @@ sub part_specific {
     
     return $self->log_debug('Premature Exit - our operation is already specific to a name part.') if $self->{part_specified};
         
-    $self->log_debug('Generating lists, and setting values.')->_tally_frequencies->_generate_name_lists->set_part->set_find->set_replace;
+    $self->log_debug('Generating lists, and setting values.')->_tally_frequencies->_generate_name_lists->_set_part->_set_find->_set_replace;
 
     # Determine what was set...
     $self->{unique_names_set}   =   $self->{'unique_names'}
@@ -310,24 +309,28 @@ sub default_yaml_filepath {
     return dirname(__FILE__).'/ChangeNameOperationConfig.yml';
 }
 
-sub set_archive {
-    return shift->_set_or_prompt_for('archive' => $ARG);
+sub get_default_language {
+    return 'en-GB'
 }
 
-sub set_part {
-    return shift->_set_or_prompt_for('part' => $ARG);
+sub _set_archive {
+    return shift->_set_or_prompt_for('archive' => shift, @ARG);
 }
 
-sub set_find {
-    return shift->_set_or_prompt_for('find' => $ARG);
+sub _set_part {
+    return shift->_set_or_prompt_for('part' => shift, @ARG);
 }
 
-sub set_search {
-    return shift->_set_or_prompt_for('find' => $ARG, 'search'); # Search prompt type.
+sub _set_find {
+    return shift->_set_or_prompt_for('find' => shift, @ARG);
 }
 
-sub set_replace {
-    return shift->_set_or_prompt_for('replace' => $ARG);
+sub _set_search {
+    return shift->_set_or_prompt_for('find' => shift, 'search', @ARG); # Search prompt type.
+}
+
+sub _set_replace {
+    return shift->_set_or_prompt_for('replace' => shift, @ARG);
 }
 
 sub set_name_parts {
@@ -376,7 +379,7 @@ sub _set_yaml {
     my  $filepath       =   shift // $self->default_yaml_filepath;
 
     $self->{yaml}       =   # External YAML file:
-                            -e $filepath?  LoadFile($filepath):             # Will die on any load error.
+                            (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
                     
                             # Internal YAML __DATA__:
                             Load(                                           # Will die on any load error.
@@ -395,9 +398,9 @@ sub _set_repository {
     my  $self           =   shift;
     my  $archive_id     =   shift;
     $self->{repository} =   EPrints::Repository->new(
-                                $self->_set_archive($archive_id)
+                                $self->_set_archive($archive_id)->{archive}
                             );
-    return $self->log_debug('Set archive and repository instance attributes.');
+    return $self;
 }
 
 # Function-esque subroutines:
@@ -572,20 +575,20 @@ sub prompt_for {
 
 sub log_verbose {
     my  $self   =   shift;
-    
+    say 'in log verbose';
     # Premature Exit:
     return $self unless ($self->{verbose} || $self->{debug});
-
+    say 'still in log verbose';
     $self->_log('verbose',@ARG);
     return $self;
 }
 
 sub log_debug {
     my  $self   =   shift;
-    
+    say 'in log debug';
     # Premature Exit:
     return $self unless $self->{debug};
-
+    say 'still in log debug';
     $self->_log('debug',@ARG);
     return $self;
 }
@@ -656,25 +659,15 @@ sub _get_commandline_arguments {
     my  $self       =   shift;
     
     # Defaults:
-    my  $lang       =   'en-GB';
-    my  $live       =   q{};
-    my  $verbose    =   q{};
-    my  $debug      =   q{};
-    my  $trace      =   q{};
-    my  $config     =   $self->default_yaml_filepath;
 
     # Params:
     my  $params     =   {
-        archive_id  =>  shift,
-        find        =>  shift,
-        replace     =>  shift,
-        part        =>  shift,
-        language    =>  \$lang,
-        live        =>  \$live,
-        verbose     =>  \$verbose,
-        debug       =>  \$debug,
-        trace       =>  \$trace,
-        config      =>  \$config,
+        language    =>  undef,
+        live        =>  0,
+        verbose     =>  0,
+        debug       =>  0,
+        trace       =>  0,
+        config      =>  undef,
     };
 
     # Command Line Options:    
@@ -708,6 +701,16 @@ sub _get_commandline_arguments {
 
     );
 
+    $params={
+        $params->%*,
+        archive_id  =>  shift,
+        find        =>  shift,
+        replace     =>  shift,
+        part        =>  shift,
+    };
+
+    #say "Dump params:".Dumper($params->%*);
+
     return              wantarray?  $params->%*:    # List context
                         $params;                    # Scalar or void contexts.
 
@@ -717,19 +720,26 @@ sub _check_commandline_input {
 
     my  $class              =   shift;
     my  $params             =   {@ARG};
-    my  @commandline_input  =   map { $ARG? $ARG:() } (
+    my  @commandline_input  =   map { defined $ARG && $ARG? $ARG:() } (
                                     $params->{archive_id},
                                     $params->{find},
                                     $params->{replace},
                                     $params->{part},
                                 );
 
-    my  $language_to_use    =   $params->{'language'}
-                            //  undef;
+    my  $language_to_use    =   'en-GB'; #$params->{'language'} //  
+                            #//  $class->get_default_language;
 
     my  $language           =   ChangeNameOperation::Languages->try_or_die($language_to_use);
 
-    my  $localise           =   sub { $language->maketext($ARG) };
+    my  $localise           =   sub { $language->maketext(@ARG) };
+
+    if ($params->{debug}) {
+        say $localise->("Commandline Params are...");
+        say Dumper($params);
+        say $localise->("Commandline Input is...");
+        say Dumper(@commandline_input);
+    };
 
     if (@commandline_input) {
 
@@ -763,38 +773,35 @@ sub _set_attributes {
 
     my  $matches_yes        =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
 
-    return
-    $self->_set_repository  ($params->{archive_id})
-    ->log_debug             ('Setting additional instance attributes from params...')
-    ->_set_search           ($params->{find})
-    ->_set_replace          ($params->{replace})
-    ->_set_part             ($params->{part})
-    ->_set_yaml             ($params->{yaml})
+    $self->%*               =   (
+        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+    );
+    $self->_set_repository      ($params->{archive_id})
+    ->log_verbose               ('Language set to [_1]', $self->{language})
+    ->log_debug                 ('Set archive attribute when setting repository. Language, archive, and repository, are required for log methods.')
+    ->log_debug                 ('Now setting additional instance attributes from params...')
+    ->_set_search               ($params->{find})
+    ->_set_replace              ($params->{replace},'no_prompt') # Optional on initialisation
+    ->_set_part                 ($params->{part},'no_prompt') # Optional on initialisation
+    ->_set_yaml                 ($params->{yaml})
     ->%*                    =   (
 
         # Existing values in $self:
         $self->%*,
 
         # From params:
-        live                =>  $params->{live},
-        debug               =>  $params->{debug},
-        verbose             =>  $params->{verbose},
+        live                =>  $params->{live} // 0,
+        debug               =>  $params->{debug} // 0,
+        verbose             =>  $params->{verbose} // 0,
         trace               =>  (
                                     $params->{verbose} > 2
                                     || ($params->{debug} && $params->{verbose})
                                     || ($params->{debug} && $params->{trace})
                                 ),
-        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}), # Should we set a default here rather than in _get_commandline_arguments ...?
 
-        # Language / Text / Content:
-        text                =>  {
-                                    data_count      =>  'Number of dataset records found: ',
-                                    search_count    =>  'Number of search results found: ',
-                                },
-        # Storage:
-        confirmations       =>  [],
-        
-    )->dumper
+    );
+
+    $self->dumper
     ->log_debug('Setting self-referential instance attributes...')
     ->%*                    =   (
 
@@ -818,7 +825,9 @@ sub _set_attributes {
                                     meta_fields     =>  $self->{fields_to_search},
                                     value           =>  $self->{find},
                                 }],
-    )->dumper
+    );
+
+    $self->dumper
     ->log_debug('Setting further self-referential attributes...')
     ->%*                    =   (
 
@@ -826,7 +835,7 @@ sub _set_attributes {
         $self->%*,
 
         # Search Settings:
-        search_settings     =>  {
+        search_settings =>  {
                                     satisfy_all         =>  1,
                                     staff               =>  1,
                                     limit               =>  30,
@@ -834,8 +843,13 @@ sub _set_attributes {
                                     allow_blank         =>  1,
                                     search_fields       =>  $self->{search_fields},
                                 },
-    )->dumper
-    ->set_name_parts->dumper;
+    );
+
+    $self->dumper
+    ->set_name_parts
+    ->dumper;
+
+    return $self;
 
 }
 
@@ -1068,10 +1082,13 @@ sub _match {
 
 sub _set_or_prompt_for {
     my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
-    $self->{"$attribute"}   =   $value?                         $self->_validate($value):
-                                defined $self->{"$attribute"}?  $self->{"$attribute"}:
-                                $prompt_type?                   $self->prompt_for($prompt_type):
+
+    $self->{"$attribute"}   =   defined $value?                                 $self->_validate($value):
+                                defined $self->{"$attribute"}?                  $self->{"$attribute"}:
+                                $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
+                                $prompt_type?                                   $self->prompt_for($prompt_type):
                                 $self->prompt_for($attribute);
+
     return $self;
 }
 
@@ -1137,12 +1154,12 @@ sub _validate {
 }
 
 sub _log {
-
+    say 'In _log';
     my  $self       =   shift;
 
     # Premature exit:
     die                 $self->localise('_log.error.no_repository')
-                        unless Scalar::Util::blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
+                        unless blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
 
     # Initial Values:
     my  $type       =   shift;
@@ -1152,7 +1169,7 @@ sub _log {
 
                                             localtime,      # Human readable system time and date - linux's ctime(3).
 
-                                            (caller 2)[3],  # Back 2, to what called dumper / log_debug / log_verbose, 
+                                            ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
                                                             # and get the 3rd array index value 
                                                             # - the perl module and subroutine name.
 
@@ -1235,7 +1252,7 @@ Andrew Mehta
 
 =cut
 
-package ChangeNameOperation::I18N;
+package ChangeNameOperation::Languages;
 
 # Always:
 use     strict;
@@ -1247,11 +1264,27 @@ use     v5.16;
 
 # Specific:
 use     English;
-use     Locale::Maketext;
+use     parent qw(Locale::Maketext);
+
+sub try_or_die {
+
+    my  ($self, $language)  =   @ARG;
+    #say 'LANG ='.(defined $language? $language:'Nothing');
+    $language               //= 'en-GB';
+    #say 'LANG ='.$language;
+    my  $error={
+        language            =>  'Trouble finding a language to use.',
+    };
+
+    return  $self->get_handle($language)
+            || die  $error->{'language'};
+}
+
 
 1;
 
-{ # Package placed within block to define scope of my and our variables 
+
+BEGIN { # Load prior to ChangeNameOperation::Languages and restrict scope of our variables to this block
 package ChangeNameOperation::Languages::en_gb;
 
 # Always:
@@ -1267,11 +1300,9 @@ use     warnings (
         ); 
 
 # Specific:
-use     base qw(
+use     parent -norequire, qw(
             ChangeNameOperation::Languages
         );
-#use     base ChangeNameOperation::Languages->import;
-
 
 
 # ----------------------------------
@@ -1464,6 +1495,9 @@ The method requires at least one thing to validate, ',
 
 my  @phrases = (
     'Constructed New Object Instance'   =>  'Constructed New Object Instance',
+    'Commandline Params are...'         =>  'Commandline Params are...',
+    'Commandline Input is...'           =>  'Commandline Input is...',
+    'Language set to [_1]'              =>  'Language set to [_1]',
 );
 
 our %Lexicon = (
@@ -1479,44 +1513,6 @@ our %Lexicon = (
 
 }
 
-
-BEGIN {
-package ChangeNameOperation::Languages;
-
-# Always:
-use     strict;
-use     warnings;
-
-# UTF-8:
-use     utf8;
-use     v5.16;
-
-# Specific:
-use     English;
-use     Locale::Maketext;
-
-sub try_or_die {
-
-    my  ($self, $language)  =   @ARG;
-    $language               //= 'en-GB';
-    my  $error={
-        language            =>  'Trouble finding a language to use.',
-    };
-
-    return  $self->get_handle($language)
-            #ChangeNameOperation::Languages::en_gb->new()
-            || die  $error->{'language'};
-}
-
-#sub get_handle {
-#    say "Test handle";
-#}
-
-1;
-
-}
-
-
 package ChangeNameOperationYAMLConfig;
 
 1;
@@ -1524,7 +1520,8 @@ package ChangeNameOperationYAMLConfig;
 __DATA__
 # This is a YAML Configuration File:
 %YAML 1.2
---- # Three dashes to start new YAML document.
+# Three dashes to start new YAML document.
+---
 
 Fields to search:
     -   creators_name
@@ -1537,5 +1534,7 @@ Force commit changes to database: yes
 # For the above, provide a yes or y (case insensitive) to force commit,
 # or anything else (such as no) to not force commit.
 
-... # Three dots to end current YAML document.
+...
+# Three dots to end current YAML document.
+
 
