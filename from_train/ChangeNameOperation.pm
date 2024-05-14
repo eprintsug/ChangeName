@@ -493,7 +493,7 @@ sub prompt_for {
                                             (
                                                 'given',
                                                 'family',
-                                            )
+                                            );
         my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
 
         say $self->localise($prompt, @prompt_arguments);
