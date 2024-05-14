@@ -74,8 +74,9 @@ $ENV{'PERL_UNICODE'}    =   'AS';   # A = Expect @ARGV values to be UTF-8 string
                                     # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
 
 # Data Dumper Settings:
-$Data::Dumper::Useperl  =   1; # Perl implementation will see Data Dumper adhere to our binmode settings.
-$Data::Dumper::Maxdepth =   4; # So when we dump a repository object we don't get too much stuff.
+$Data::Dumper::Useperl  =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+$Data::Dumper::Maxdepth =   4;  # So when we dump a repository object we don't get too much stuff.
+$Data::Dumper::Sortkeys =   1;  # Hashes in same order each time - for easier dumper comparisons.
 
 # Command Line Auto-run:
 ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
@@ -364,7 +365,13 @@ sub set_name_parts {
 
     my  $not_a_name_part    =   qr/[^($valid_name_parts)]/i;
  
-    $self->{name_parts}     =   [split $not_a_name_part, $self->localise('name_parts.display_order')]; # Array ref, so order preserved.
+    $self->{name_parts}     =   [   map
+                                    {
+                                            $ARG || $ARG eq '0'? ($ARG):    # True or zero - use.
+                                            ();                             # Else filter out.
+                                    } 
+                                    split $not_a_name_part, $self->localise('name_parts.display_order')
+                                ]; # Array ref, so order preserved.
 
     $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
 
@@ -606,8 +613,8 @@ sub dumper {
                             map {quotemeta($ARG)}
 
                             # List of attributes to exclude from dump...
-                            qw(
-                                repository
+                            (
+                            #    'repository',
                             )
                         );
 
@@ -632,7 +639,7 @@ sub dumper {
     my  %default    =   map
                         {
                             $ARG =~ m/^($class_only)$/
-                            && blessed($self->{$ARG})? ($ARG => $self->{$ARG}->isa):
+                            && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
                             ($ARG => $self->{$ARG})
                         }
                         map {$ARG =~ m/^($exclude)$/? ():($ARG)}
@@ -730,6 +737,14 @@ sub _check_commandline_input {
     my  $language           =   ChangeNameOperation::Languages->try_or_die($language_to_use);
 
     my  $localise           =   sub { $language->maketext(@ARG) };
+
+    if ($params->{live}) {
+        say $localise->('LIVE mode - changes will be made at the end after confirmation.');
+    }
+    else {
+        say $localise->('DRY RUN mode - no changes will be made.');
+        say $localise->('Run again with the --live flag when ready to implement your changes.');
+    };
 
     if ($params->{debug}) {
         say $localise->("Commandline Params are...");
@@ -875,7 +890,7 @@ sub _tally_frequencies {
                     for my $name_part ($self->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
 
                         $unique_name    .=  $name_part.
-                                            $name->{"$name_part"};
+                                            ($name->{"$name_part"} // q{});
 
                     }
 
@@ -900,7 +915,7 @@ sub _generate_name_lists {
     for my $name_of_list (keys $self->{frequencies}->%*) {
 
         $self->{"$name_of_list"}    =   [
-                                            sort {$a <=> $b} 
+                                            sort {$a cmp $b} 
                                             keys $self->{frequencies}->{"$name_of_list"}->%*    # Defined in _tally_frequencies method.
                                         ];
     };
@@ -1527,7 +1542,19 @@ my  @phrases = (
     'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
     'Set YAML configurations.' => 'Set YAML configurations.',
     'Set search-fields.' => 'Set search-fields.',
-    
+    'Setting further self-referential attributes...' => 'Setting further self-referential attributes...',
+    'Entering method.' => 'Entering method.',
+    'Name parts before we begin:' => 'Name parts before we begin:',
+    'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
+    'Leaving method.' => 'Leaving method.',
+    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
+    'Entered method.' => 'Entered method.',
+    'Searching...' => 'Searching...',
+    'Found Results.' => 'Found Results.',
+    'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
+    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
+    'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
+    'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
 );
 
 our %Lexicon = (
