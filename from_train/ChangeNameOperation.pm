@@ -426,15 +426,6 @@ sub format_single_line_for_display {
 
 }
 
-sub sorted_unique_names {
-    @unique_names = $self->{lists}->{'unique_names'}->@*;
-
-    # Premature exit
-    return  (scalar @unique_names)?     (wantarray?  @unique_names:
-                                        \@unique_names):
-            undef;
-}
-
 sub chunkify {
 
     # Initial Values:
