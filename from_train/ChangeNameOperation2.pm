@@ -19,7 +19,7 @@ use     v5.16;
 
 # Specific:
 use     English;
-use base 'Locale::Maketext';
+use     parent qw(Locale::Maketext);
 
 
 
@@ -61,7 +61,7 @@ use     warnings (
         ); 
 
 # Specific:
-use     base qw(
+use     parent -norequire, qw(
             ChangeNameOperation::Languages
         );
 #use     base ChangeNameOperation::Languages->import;
