@@ -610,8 +610,7 @@ sub dumper {
                                 repository
                             )
                         );
-                        
-    say 'exclude'.Dumper($exclude);
+
     my  $class_only =   join(
 
                             # Join by regex OR...
@@ -629,8 +628,8 @@ sub dumper {
                                 list_of_results
                             )
                         );
-   say 'class_only'.Dumper($class_only);                     
-    my  @default    =   map
+                    
+    my  %default    =   map
                         {
                             $ARG =~ m/^($class_only)$/
                             && blessed($self->{$ARG})? ($ARG => $self->{$ARG}->isa):
@@ -638,17 +637,10 @@ sub dumper {
                         }
                         map {$ARG =~ m/^($exclude)$/? ():($ARG)}
                         keys $self->%*;
-    my  $default    =   {@default};
-say 'default'.Dumper($default->%*);
+
     # Set params:
     my  @params     =   @ARG?   @ARG:
-                        ($default);
-say 'p-ram';
-Dumper(@params);
-say 'self';
-Dumper(reftype $self);
-#say join "\n", keys $self->%*;
-#say join "\n", %default;
+                        (\%default);
 
     return $self->_log('dumper',@params); 
 }
@@ -825,6 +817,10 @@ sub _set_attributes {
 
     $self->log_verbose('Set YAML configurations.')->dumper
     ->%*                    =   (
+    
+        # Existing values in $self:
+        $self->%*,
+    
         # Search:
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
@@ -833,7 +829,7 @@ sub _set_attributes {
         
     );
 
-    $self->log_debug->('Set search-fields.')->dumper
+    $self->log_debug('Set search-fields.')->dumper
     ->log_debug('Setting further self-referential attributes...')
     ->%*                    =   (
 
@@ -1529,6 +1525,9 @@ my  @phrases = (
     'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
     'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
     'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
+    'Set YAML configurations.' => 'Set YAML configurations.',
+    'Set search-fields.' => 'Set search-fields.',
+    
 );
 
 our %Lexicon = (
