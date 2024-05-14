@@ -879,7 +879,7 @@ sub _generate_name_lists {
 
     my  $self                       =   shift;
 
-    for $name_of_list (keys $self->{frequencies}->%*) {
+    for my $name_of_list (keys $self->{frequencies}->%*) {
 
         $self->{"$name_of_list"}    =   [
                                             sort {$a <=> $b} 
