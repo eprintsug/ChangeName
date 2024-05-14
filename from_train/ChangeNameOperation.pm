@@ -630,7 +630,12 @@ sub dumper {
                             )
                         );
    say 'class_only'.Dumper($class_only);                     
-    my  @default    =   
+    my  @default    =   map
+                        {
+                            $ARG =~ m/^($class_only)$/
+                            && blessed($self->{$ARG})? ($ARG => $self->{$ARG}->isa):
+                            ($ARG => $self->{$ARG})
+                        }
                         map {$ARG =~ m/^($exclude)$/? ():($ARG)}
                         keys $self->%*;
     my  $default    =   {@default};
