@@ -1136,6 +1136,8 @@ sub _generate_confirmation_feedback {
 
             if ($current_unique_name        =~  $matches_unique_name) {
 
+                $self->log_debug('Matched unique name.');
+
                 $at_least_one_confirmation  =   'Yes';
 
                 $output                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
@@ -1144,6 +1146,9 @@ sub _generate_confirmation_feedback {
                 $output                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
                 
                 $unique_name_heading_shown  =   'Yes';
+
+                $self->log_debug('Added record to confirmation feedback.');
+
             };
     
         };
@@ -1724,6 +1729,8 @@ my  @phrases = (
     'No confirmation feedback generated.'=>'No confirmation feedback generated.',
     'Displaying generated confirmation feedback.'=>'Displaying generated confirmation feedback.',
     'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
+    'Matched unique name.'=>'Matched unique name.',
+    'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
 
 );
 
