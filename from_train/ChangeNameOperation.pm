@@ -209,6 +209,7 @@ sub display {
     $self->{'matches_find'} =   qr/\Q$self->{find}\E/i;   # case insensitive. Partial matches okay. Wait. Are partial matches okay?    
 
     # Processing:
+    $self->log_verbose('Thank you for your patience. Your request is being processed...');
     for my $unique_name ($self->{'unique_names'}->@*) {
 
         $self->log_debug('Processing Unique name: [_1]', $unique_name);
@@ -1079,8 +1080,8 @@ sub _seeking_confirmation {
 
                 my  $feedback       =   [
                                             $self->{matches_unique_name},
-                                            $self->stringify_name($name),
-                                            $confirmation,
+                                            $self->_stringify_name($name),
+                                            uc($confirmation),
                                             $self->format_single_line_for_display($result, $search_field),
                                         ];
             
@@ -1096,7 +1097,7 @@ sub _seeking_confirmation {
 
                 $self->log_debug('Added details to what_to_change')->dumper($details);
                 
-                say $self->_generate_confirmation_feedback;
+                say $self->_generate_confirmation_feedback->log_debug('Displaying generated confirmation feedback.')->{confirmation_feedback};
 
             };
 
@@ -1120,10 +1121,10 @@ sub _generate_confirmation_feedback {
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
 
     my  $output                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
-    my  $unique_name_heading_shown          =   undef;
     my  $at_least_one_confirmation          =   undef;
 
     for my $current_unique_name ($self->{unique_names}->@*) {
+        my  $unique_name_heading_shown      =   undef;
         foreach my $details ($self->{what_to_change}->@*) {
 
             my  (
@@ -1131,7 +1132,7 @@ sub _generate_confirmation_feedback {
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                           =   $details->[5]->@*; 
+                )                           =   $details->[4]->@*; 
 
             if ($current_unique_name        =~  $matches_unique_name) {
 
@@ -1631,19 +1632,30 @@ The method requires at least one thing to validate, ',
 
 '_confirmation_feedback.heading.confirmed_so_far'       =>  
 
-'Records you have confirmed for changing so far...
+'
+------
+
+Records you have confirmed for changing so far...
 
 ',
 
 '_confirmation_feedback.heading.unique_name'            =>
 
-'For the unique name [_1]',
+'
+For the unique name [_1] ...
 
-'_confirmation_feedback.record.confirmed_for_changing'  =>
-'',
+Confirmation | Record To Change...
+',
+
+'_confirmation_feedback.record.confirmed_for_changing'  =>  
+
+'[_1] | [_2]
+',
 
 '_confirmation_feedback.footer'                         =>
-'',
+'
+------
+',
 
 
 'finish.change'     =>  '[quant,_1,Change] successfully completed.',
@@ -1710,6 +1722,8 @@ my  @phrases = (
     'Using search settings...'=>'Using search settings...',
     'Generated confirmation feedback.'=>'Generated confirmation feedback.',
     'No confirmation feedback generated.'=>'No confirmation feedback generated.',
+    'Displaying generated confirmation feedback.'=>'Displaying generated confirmation feedback.',
+    'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
 
 );
 
