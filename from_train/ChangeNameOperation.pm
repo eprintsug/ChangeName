@@ -206,7 +206,7 @@ sub display {
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
     # Initial values:
-    $self->{'matches_find'} =   qr/\Q$self->{find}\E/i;   # case insensitive. Partial matches okay. Wait. Are partial matches okay?    
+    $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
 
     # Processing:
     $self->log_verbose('Thank you for your patience. Your request is being processed...');
@@ -294,15 +294,19 @@ sub change {
                 $name,
             )                       =   $details->@*;
         
-        say $self->localise('change.from', $self->format_single_line_for_display($result, $search_field));
+        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->($result->id);
+ 
+        $self->log_verbose('This item is under an edit lock.') if $fresh_result->is_locked;
+        
+        say $self->localise('change.from', $self->format_single_line_for_display($fresh_result, $search_field));
 
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
-        $result->set_value($search_field, $names);
+        $fresh_result->set_value($search_field, $names);
 
-        say $self->localise('change.to', $self->format_single_line_for_display($result, $search_field));
+        say $self->localise('change.to', $self->format_single_line_for_display($fresh_result, $search_field));
     
         if ($self->{live}) {
-            $result->commit($self->{force_or_not}->@*);
+            $fresh_result->commit($self->{force_or_not}->@*);
             say $self->localise('change.done');
             $self->{changes_made}++;
         }
