@@ -75,7 +75,7 @@ $ENV{'PERL_UNICODE'}    =   'AS';   # A = Expect @ARGV values to be UTF-8 string
 
 # Data Dumper Settings:
 $Data::Dumper::Useperl  =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-$Data::Dumper::Maxdepth =   2;  # So when we dump we don't get too much stuff.
+$Data::Dumper::Maxdepth =   4;  # So when we dump we don't get too much stuff.
 $Data::Dumper::Sortkeys =   1;  # Hashes in same order each time - for easier dumper comparisons.
 
 # Command Line Auto-run:
@@ -127,7 +127,15 @@ sub new {
 sub search {
     my  $self                   =   shift;
     
-    $self->log_debug('Entered method.')->dumper->log_verbose('Searching...');
+    $self->log_debug('Entered method.')->dumper
+    ->log_debug('Using search settings...')->dumper($self->{search_settings})
+    ->log_verbose(
+        'Searching fields [_1] ...',
+        join(
+            $self->localise('separator.search_fields'),
+            $self->{fields_to_search}->@*,
+        )
+    );
     
     # Search:
     $self->{list_of_results}    =   $self->{repository}
@@ -867,7 +875,7 @@ sub _set_attributes {
         $self->%*,
 
         # Search Settings:
-        search_settings =>  {
+        search_settings     =>  {
                                     satisfy_all         =>  1,
                                     staff               =>  1,
                                     limit               =>  30,
@@ -1387,6 +1395,7 @@ my  @tokens = (
 'separator.name_parts'          =>  ' ', #space
 'separator.name_values'         =>  ',',
 'separator.new_line'            =>  $new_line,
+'separator.search_fields'       =>   ',',
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
 'display_line'                  =>  'Record [_1]: [_2].',
@@ -1575,6 +1584,7 @@ my  @phrases = (
     'Entered method.' => 'Entered method.',
     'Searching...' => 'Searching...',
     'Found Results.' => 'Found Results.',
+    'No Results Found.'=>'No Results Found.',
     'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
     'Generating lists, and setting values.' => 'Generating lists, and setting values.',
     'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
@@ -1604,6 +1614,10 @@ my  @phrases = (
     'Leaving confirm method.'=>'Leaving confirm method.',
     'Called change method.'=>'Called change method.',
     'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
+    'Premature exit - Prerequisites not met.'=>'Premature exit - Prerequisites not met.',
+    'Premature exit - Nothing to change.'=>'Premature exit - Nothing to change.',
+    'Searching fields [_1] ...'=>'Searching fields [_1] ...',
+    'Using search settings...'=>'Using search settings...',
 
 );
 
