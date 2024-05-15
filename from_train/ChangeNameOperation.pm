@@ -75,7 +75,7 @@ $ENV{'PERL_UNICODE'}    =   'AS';   # A = Expect @ARGV values to be UTF-8 string
 
 # Data Dumper Settings:
 $Data::Dumper::Useperl  =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-$Data::Dumper::Maxdepth =   4;  # So when we dump a repository object we don't get too much stuff.
+$Data::Dumper::Maxdepth =   2;  # So when we dump we don't get too much stuff.
 $Data::Dumper::Sortkeys =   1;  # Hashes in same order each time - for easier dumper comparisons.
 
 # Command Line Auto-run:
@@ -268,12 +268,12 @@ sub change {
 
         my  ($result, $search_field, $names, $name) =   $details->@*;
         
-        say $self->localise('change.from', format_single_line_for_display($result, $search_field));
+        say $self->localise('change.from', $self->format_single_line_for_display($result, $search_field));
 
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
         $result->set_value($search_field, $names);
 
-        say $self->localise('change.to', format_single_line_for_display($result, $search_field));
+        say $self->localise('change.to', $self->format_single_line_for_display($result, $search_field));
     
         if ($self->{live}) {
             $result->commit($self->{force_or_not}->@*);
@@ -601,6 +601,7 @@ sub log_debug {
 sub dumper {
     my  $self   =   shift;
     
+    return $self if $self->{no_dumper};
     return $self unless ($self->{debug} || $self->{verbose} > 1);
 
     # Default Params if no arguments passed in...
@@ -671,6 +672,8 @@ sub _get_commandline_arguments {
         verbose     =>  0,
         debug       =>  0,
         trace       =>  0,
+        no_dumper   =>  0,
+        no_trace    =>  0,
         config      =>  undef,
     };
 
@@ -680,28 +683,34 @@ sub _get_commandline_arguments {
         $params,            # Hash to store options to.
 
         # Actual options:
-        'language|lang:s',  # Optional string.
-                            # Use 'language' for the hash ref key, 
-                            # accept '--language' or '--lang' from the commandline.
-                            # Syntax can be --lang=en-GB or --lang en-GB
+        'language|lang:s',      # Optional string.
+                                # Use 'language' for the hash ref key, 
+                                # accept '--language' or '--lang' from the commandline.
+                                # Syntax can be --lang=en-GB or --lang en-GB
 
-        'config:s',         # Optional string.
-                            # Use 'config' for the hash ref key, 
-                            # accept '--config' from the commandline.
-                            # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+        'config:s',             # Optional string.
+                                # Use 'config' for the hash ref key, 
+                                # accept '--config' from the commandline.
+                                # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
  
-        'live!',            # if --live present,    set $live to 1,
-                            # if --nolive present,  set $live to 0.
+        'live!',                # if --live present,    set $live to 1,
+                                # if --nolive present,  set $live to 0.
 
-        'verbose+',         # if --verbose present,    set $verbose
-                            # to the number of times it is present.
-                            # i.e. --verbose --verbose would set $verbose to 2.
+        'verbose+',             # if --verbose present,    set $verbose
+                                # to the number of times it is present.
+                                # i.e. --verbose --verbose would set $verbose to 2.
 
-        'debug!',           # if --debug present,    set $debug to 1,
-                            # if --nodebug present,  set $debug to 0.
+        'debug!',               # if --debug present,    set $debug to 1,
+                                # if --nodebug present,  set $debug to 0.
 
-        'trace!',           # if --trace present,    set $trace to 1,
-                            # if --notrace present,  set $trace to 0.
+        'trace!',               # if --trace present,    set $trace to 1,
+                                # if --notrace present,  set $trace to 0.
+                            
+        'no_dumper|nodumper+',  # if --nodumper present set $no_dumper to 1.
+
+        'no_trace|notrace+',    # if --notrace present  set $no_trace  to 1.
+        
+                            
 
     );
 
@@ -795,10 +804,16 @@ sub _set_attributes {
         debug               =>  $params->{debug} // 0,
         verbose             =>  $params->{verbose} // 0,
         trace               =>  (
-                                    $params->{verbose} > 2
-                                    || ($params->{debug} && $params->{verbose})
-                                    || ($params->{debug} && $params->{trace})
+                                    $params->{no_trace} < 1
+                                    && 
+                                    (
+                                        $params->{verbose} > 2
+                                        || ($params->{debug} && $params->{verbose})
+                                        || ($params->{debug} && $params->{trace})
+                                    )
                                 ),
+        no_dumper           =>  $params->{no_dumper} // 0,
+        no_trace            =>  $params->{no_trace} // 0,
         # Internationalisation:
         language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
 
@@ -810,8 +825,8 @@ sub _set_attributes {
     ->log_debug                 ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
     ->log_debug                 ('Now setting additional instance attributes from params...')
     ->_set_search               ($params->{find})
-    ->_set_replace              ($params->{replace},'no_prompt') # Optional on initialisation
-    ->_set_part                 ($params->{part},'no_prompt') # Optional on initialisation
+    ->_set_replace              ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
+    ->_set_part                 ($params->{part},'no_prompt') # Also optional on initialisation.
     ->_set_yaml                 ($params->{yaml})
     ->dumper;
     
@@ -1013,33 +1028,37 @@ sub _seeking_confirmation {
             # Set or get confirmation:
             $self->log_debug('Setting confirmation');
             
-            my  $self->{confirm_prompt_arguments}   =   [
-                                                            $self->{'part'},
-                                                            $name->{"$self->{'part'}"},
-                                                            $self->{'replace'},
-                                                            ($current+1),
-                                                            $search_field,
-                                                            format_single_line_for_display($result, $search_field),
-                                                        ];
-
+            $self->{confirm_prompt_arguments}   =   [
+                                                        $self->{'part'},
+                                                        $name->{"$self->{'part'}"},
+                                                        $self->{'replace'},
+                                                        ($current+1),
+                                                        $search_field,
+                                                        $self->format_single_line_for_display($result, $search_field),
+                                                    ];
+            
+            $self->log_debug('Will check matches auto no result ([_1]) and matches auto yes result ([_2])...', $self->{matches_auto_no}, $self->{matches_auto_yes} );
+            
             my  $confirmation       =   $self->{matches_auto_no}?   $no:
                                         $self->{matches_auto_yes}?  $yes:
                                         $self->prompt_for('confirm');
 
             # Process confirmation:
-            $self->log_debug('Processing confirmation...')->dumper($confirmation);
+            $self->log_debug('Processing confirmation ([_1])', $confirmation);
 
-            if ($confirmation eq $none) {
+            if (fc $confirmation eq fc $none) {
                 $self->{auto_no}    =   $self->{unique_name};
             };
 
-            if ($confirmation eq $all) {
+            if (fc $confirmation eq fc $all) {
                 $self->{auto_yes}   =   $self->{unique_name};
             };
+            
+            #$self->_match($name); #Auto matching logic still in match routine. Need to refactor out.
 
-            next if ($confirmation eq $no || $confirmation eq $none);
+            next if (fc $confirmation eq fc $no);
 
-            if ( $confirmation eq $yes || $confirmation eq $all ) {
+            if (fc $confirmation eq fc $yes) {
             
                 my $details         =   [
                                             $result,
@@ -1455,7 +1474,7 @@ Changing...
 
 '...to...
 
-[_2]
+[_1]
 
 ',
 
@@ -1575,6 +1594,11 @@ my  @phrases = (
     'Called confirm method.'=>'Called confirm method.',
     'Checking if display lines have been shown.'=>'Checking if display lines have been shown.',
     'Setting confirmation'=>'Setting confirmation',
+    'Processing confirmation...'=>'Processing confirmation...',
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    'Added details to what_to_change'=>'Added details to what_to_change',
+    'Leaving confirm method.'=>'Leaving confirm method.',
+    'Called change method.'=>'Called change method.',
 
 );
 
