@@ -1123,9 +1123,10 @@ sub _generate_confirmation_feedback {
     my  $output                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
     my  $at_least_one_confirmation          =   undef;
 
-    for my $current_unique_name ($self->{unique_names}->@*) {
-        my  $unique_name_heading_shown      =   undef;
-        foreach my $details ($self->{what_to_change}->@*) {
+    for my $details ($self->{what_to_change}->@*) {
+        for my $current_unique_name ($self->{unique_names}->@*) {
+
+            my  $unique_name_heading_shown    =   undef;
 
             my  (
                     $matches_unique_name,
@@ -1576,7 +1577,9 @@ Changing...
 
 'seeking_confirmation.display_lines' =>
 
-'For the unique name combination...
+'------
+
+For the unique name combination...
 
 [_1]
 
