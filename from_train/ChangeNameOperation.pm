@@ -11,7 +11,16 @@ use     EPrints::Repository;
 use     EPrints::Search;
 
 use     v5.16;
-#use     feature 'signatures'; # Not activated by default until the "use v5.36" feature bundle. Only available from Perl 5.20 onwards.
+#use    feature qw(fc);         # Available in Perl 5.16 or higher.
+                                # Commented out as already activated by the "use v5.16;" feature bundle.
+                                # Guide to feature bundles here: https://perldoc.perl.org/feature#FEATURE-BUNDLES
+                                # Folds case for UTF-8 / Unicode friendly case insensitive comparisons.
+                                # https://perldoc.perl.org/perlfunc#fc
+                        
+#use    feature 'signatures';   # Not activated by default until the "use v5.36" feature bundle. 
+                                # Only available from Perl 5.20 onwards.
+                                # Commented out and not used, 
+                                # as we are targeting users with 5.16 or higher.
 use     utf8;
 use     English;
 
@@ -197,7 +206,7 @@ sub display {
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
     # Initial values:
-    $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
+    $self->{'matches_find'} =   qr/\Q$self->{find}\E/i;   # case insensitive. Partial matches okay. Wait. Are partial matches okay?    
 
     # Processing:
     for my $unique_name ($self->{'unique_names'}->@*) {
@@ -1067,23 +1076,78 @@ sub _seeking_confirmation {
             next if (fc $confirmation eq fc $no);
 
             if (fc $confirmation eq fc $yes) {
+
+                my  $feedback       =   [
+                                            $self->{matches_unique_name},
+                                            $confirmation,
+                                            $self->format_single_line_for_display($result, $search_field),
+                                        ];
             
-                my $details         =   [
+                my  $details        =   [
                                             $result,
                                             $search_field,
                                             $names,
                                             $name,
+                                            $feedback,
                                         ];
 
                 push $self->{what_to_change}->@*, $details;
 
                 $self->log_debug('Added details to what_to_change')->dumper($details);
+                
+                $self->_confirmation_feedback;
 
             };
 
         };
 
     };
+    
+    return $self->log_debug('Leaving method.')->dumper;
+
+}
+
+sub _generate_confirmation_feedback {
+
+    my  $self           =   shift;
+
+    $self->log_debug('Entered method.')->dumper;
+
+
+    return                                      $self->log_debug('Nothing to change, so no change confirmation feedback to provide.')
+                                                unless $self->{what_to_change}->@*;
+
+    my  $output                             =   undef;
+
+    $output                                 =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
+
+    my  $unique_name_heading_shown          =   undef;
+
+    for my $current_unique_name ($self->{unique_names}->@*) {
+        foreach my $details ($self->{what_to_change}->@*) {
+
+            my  (
+                    $matches_unique_name,
+                    $confirmation,
+                    $display_line
+                )                           =   $details->[5]->@*; 
+
+            if ($current_unique_name        =~  $matches_unique_name) {
+            
+                $output                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $current_unique_name)
+                                                unless $unique_name_heading_shown;
+
+                $output                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
+                
+                $unique_name_heading_shown  =   'Yes';
+            );
+    
+        };
+    };
+    
+    $output                                 .=  $self->localise('_confirmation_feedback.footer');
+    
+    $self->{confirmation_feedback}          =   $output;
     
     return $self->log_debug('Leaving method.')->dumper;
 
