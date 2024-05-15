@@ -1123,10 +1123,17 @@ sub _generate_confirmation_feedback {
     my  $output                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
     my  $at_least_one_confirmation          =   undef;
 
-    for my $details ($self->{what_to_change}->@*) {
-        for my $current_unique_name ($self->{unique_names}->@*) {
+    for my $current_unique_name ($self->{unique_names}->@*) {
 
-            my  $unique_name_heading_shown    =   undef;
+        my  $unique_name_heading_shown      =   undef;
+        my  $match                          =   $current_unique_name =~ $matches_unique_name;
+
+        $self->log_debug('Matched unique name.') if $match;
+
+            $output                         .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
+                                                if $match;
+
+        foreach my $details ($self->{what_to_change}->@*) {
 
             my  (
                     $matches_unique_name,
@@ -1137,12 +1144,11 @@ sub _generate_confirmation_feedback {
 
             if ($current_unique_name        =~  $matches_unique_name) {
 
-                $self->log_debug('Matched unique name.');
+
 
                 $at_least_one_confirmation  =   'Yes';
 
-                $output                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
-                                                unless $unique_name_heading_shown;
+
 
                 $output                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
                 
