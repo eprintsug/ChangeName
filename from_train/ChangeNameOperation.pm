@@ -1079,6 +1079,7 @@ sub _seeking_confirmation {
 
                 my  $feedback       =   [
                                             $self->{matches_unique_name},
+                                            $self->stringify_name($name),
                                             $confirmation,
                                             $self->format_single_line_for_display($result, $search_field),
                                         ];
@@ -1095,7 +1096,7 @@ sub _seeking_confirmation {
 
                 $self->log_debug('Added details to what_to_change')->dumper($details);
                 
-                $self->_confirmation_feedback;
+                say $self->_generate_confirmation_feedback;
 
             };
 
@@ -1113,41 +1114,49 @@ sub _generate_confirmation_feedback {
 
     $self->log_debug('Entered method.')->dumper;
 
+    my  $prerequisites  =   $self->{what_to_change}->@*
+                            && $self->{unique_names}->@*;
 
-    return                                      $self->log_debug('Nothing to change, so no change confirmation feedback to provide.')
-                                                unless $self->{what_to_change}->@*;
+    return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
 
-    my  $output                             =   undef;
-
-    $output                                 =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
-
+    my  $output                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
     my  $unique_name_heading_shown          =   undef;
+    my  $at_least_one_confirmation          =   undef;
 
     for my $current_unique_name ($self->{unique_names}->@*) {
         foreach my $details ($self->{what_to_change}->@*) {
 
             my  (
                     $matches_unique_name,
+                    $stringified_name,
                     $confirmation,
                     $display_line
                 )                           =   $details->[5]->@*; 
 
             if ($current_unique_name        =~  $matches_unique_name) {
-            
-                $output                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $current_unique_name)
+
+                $at_least_one_confirmation  =   'Yes';
+
+                $output                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
                                                 unless $unique_name_heading_shown;
 
                 $output                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
                 
                 $unique_name_heading_shown  =   'Yes';
-            );
+            };
     
         };
     };
     
     $output                                 .=  $self->localise('_confirmation_feedback.footer');
     
-    $self->{confirmation_feedback}          =   $output;
+    $self->{confirmation_feedback}          =   $at_least_one_confirmation? $output:
+                                                undef;
+    
+    $self->log_debug(
+        $self->{confirmation_feedback}? 'Generated confirmation feedback.':
+        'No confirmation feedback generated.',
+    );
     
     return $self->log_debug('Leaving method.')->dumper;
 
@@ -1620,6 +1629,23 @@ The method requires at least one thing to validate, ',
 
 '_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
 
+'_confirmation_feedback.heading.confirmed_so_far'       =>  
+
+'Records you have confirmed for changing so far...
+
+',
+
+'_confirmation_feedback.heading.unique_name'            =>
+
+'For the unique name [_1]',
+
+'_confirmation_feedback.record.confirmed_for_changing'  =>
+'',
+
+'_confirmation_feedback.footer'                         =>
+'',
+
+
 'finish.change'     =>  '[quant,_1,Change] successfully completed.',
 
 'finish.no_change'  => 'No changes made.', 
@@ -1682,6 +1708,8 @@ my  @phrases = (
     'Premature exit - Nothing to change.'=>'Premature exit - Nothing to change.',
     'Searching fields [_1] ...'=>'Searching fields [_1] ...',
     'Using search settings...'=>'Using search settings...',
+    'Generated confirmation feedback.'=>'Generated confirmation feedback.',
+    'No confirmation feedback generated.'=>'No confirmation feedback generated.',
 
 );
 
