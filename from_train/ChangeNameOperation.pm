@@ -276,15 +276,23 @@ sub change {
     my  $self   =   shift;
     $self->log_debug('Called change method.')->dumper;
 
-    my  $prerequisites  =   $self->{what_to_change}
-                            && reftype($self->{what_to_change}) eq 'ARRAY'
-                            && $self->{what_to_change}->@*;
+    my  $prerequisites              =   $self->{what_to_change}
+                                        && reftype($self->{what_to_change}) eq 'ARRAY'
+                                        && $self->{what_to_change}->@*;
     
-    return $self->log_debug('Premature exit - Nothing to change.') unless $prerequisites;
+    return                              $self->log_debug('Premature exit - Nothing to change.')
+                                        unless $prerequisites;
+
+    $self->{changes_made}           =   0;
 
     for my $details ($self->{what_to_change}->@*) {
 
-        my  ($result, $search_field, $names, $name) =   $details->@*;
+        my  (
+                $result,
+                $search_field,
+                $names,
+                $name,
+            )                       =   $details->@*;
         
         say $self->localise('change.from', $self->format_single_line_for_display($result, $search_field));
 
@@ -296,7 +304,7 @@ sub change {
         if ($self->{live}) {
             $result->commit($self->{force_or_not}->@*);
             say $self->localise('change.done');
-            $self->{changes_made} = 'Yes';
+            $self->{changes_made}++;
         }
         else {
             say $self->localise('change.dry_run')
@@ -309,7 +317,7 @@ sub change {
 
 sub finish {
     my  $self   =   shift;
-    say $self->localise('finish.change') if $self->{changes_made};
+    say $self->localise('finish.change',$self->{changes_made});
     say $self->localise('finish.no_change') unless $self->{changes_made};
     say $self->localise('finish.thank_you');
     return $self;
@@ -832,6 +840,7 @@ sub _set_attributes {
                                 ),
         no_dumper           =>  $params->{no_dumper} // 0,
         no_trace            =>  $params->{no_trace} // 0,
+
         # Internationalisation:
         language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
 
@@ -1576,7 +1585,7 @@ Changing...
 
 'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
 
-'change.done'       =>  'Done.',
+'change.done'       =>  'Done - the change has been made for you.',
 
 'seeking_confirmation.display_lines' =>
 
@@ -1701,6 +1710,7 @@ my  @phrases = (
     'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
     'Generating lists, and setting values.' => 'Generating lists, and setting values.',
     'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
+    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE mode - changes will be made at the end after confirmation.',
     'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
     'Processing search field: [_1]'=>'Processing search field: [_1]',
     'Leaving part_specific method.'=>'Leaving part_specific method.',
