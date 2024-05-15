@@ -1057,8 +1057,8 @@ sub _seeking_confirmation {
             
             $self->log_debug('Will check matches auto no result ([_1]) and matches auto yes result ([_2])...', $self->{matches_auto_no}, $self->{matches_auto_yes} );
             
-            my  $confirmation       =   $self->{matches_auto_no}?   $no:
-                                        $self->{matches_auto_yes}?  $yes:
+            my  $confirmation       =   $self->{matches_auto_no}?   $no:    # Match determined in _match method and could be refactored out.
+                                        $self->{matches_auto_yes}?  $yes:   # Match determined in _match method and could be refactored out.
                                         $self->prompt_for('confirm');
 
             # Process confirmation:
@@ -1066,13 +1066,13 @@ sub _seeking_confirmation {
 
             if (fc $confirmation eq fc $none) {
                 $self->{auto_no}    =   $self->{unique_name};
+                $confirmation       =   $no;
             };
 
             if (fc $confirmation eq fc $all) {
                 $self->{auto_yes}   =   $self->{unique_name};
+                $confirmation       =   $yes;
             };
-            
-            #$self->_match($name); #Auto matching logic still in match routine. Need to refactor out.
 
             next if (fc $confirmation eq fc $no);
 
@@ -1111,60 +1111,57 @@ sub _seeking_confirmation {
 
 sub _generate_confirmation_feedback {
 
-    my  $self           =   shift;
+    my  $self                                               =   shift;
 
     $self->log_debug('Entered method.')->dumper;
 
-    my  $prerequisites  =   $self->{what_to_change}->@*
-                            && $self->{unique_names}->@*;
+    my  $prerequisites                                      =   $self->{what_to_change}->@*
+                                                                && $self->{unique_names}->@*;
 
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
 
-    my  $output                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
-    my  $at_least_one_confirmation          =   undef;
+    my  $output                                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
+    my  $at_least_one_confirmation                          =   undef;
+    my  $heading_shown_for                                  =   {};
 
-    for my $current_unique_name ($self->{unique_names}->@*) {
-
-        my  $unique_name_heading_shown      =   undef;
-        my  $match                          =   $current_unique_name =~ $matches_unique_name;
-
-        $self->log_debug('Matched unique name.') if $match;
-
-            $output                         .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
-                                                if $match;
-
-        foreach my $details ($self->{what_to_change}->@*) {
+    foreach my $details ($self->{what_to_change}->@*) {
+        for my $current_unique_name ($self->{unique_names}->@*) {
 
             my  (
                     $matches_unique_name,
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                           =   $details->[4]->@*; 
+                )                                           =   $details->[4]->@*; 
 
-            if ($current_unique_name        =~  $matches_unique_name) {
+            if ($current_unique_name                        =~  $matches_unique_name) {
 
+                $self->log_debug('Matched unique name.');
 
+                $at_least_one_confirmation                  =   'Yes';
 
-                $at_least_one_confirmation  =   'Yes';
+                $output                                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
+                                                                unless $heading_shown_for->{$current_unique_name};
 
-
-
-                $output                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
-                
-                $unique_name_heading_shown  =   'Yes';
+                $output                                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
+        
+                $heading_shown_for->{"$current_unique_name"}=   'Yes';
 
                 $self->log_debug('Added record to confirmation feedback.');
+                
+                $self->log_debug('Since unique names are unique, we can leave unique name loop now we have processed a match.');
+                last;
 
             };
     
         };
+        $self->log_debug('Left unique name loop.');
     };
     
-    $output                                 .=  $self->localise('_confirmation_feedback.footer');
+    $output                                                 .=  $self->localise('_confirmation_feedback.footer');
     
-    $self->{confirmation_feedback}          =   $at_least_one_confirmation? $output:
-                                                undef;
+    $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
+                                                                undef;
     
     $self->log_debug(
         $self->{confirmation_feedback}? 'Generated confirmation feedback.':
@@ -1740,6 +1737,8 @@ my  @phrases = (
     'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
     'Matched unique name.'=>'Matched unique name.',
     'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
+    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
+    'Left unique name loop.'=>'Left unique name loop.',
 
 );
 
