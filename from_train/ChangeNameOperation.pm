@@ -951,7 +951,7 @@ sub _add_relevant_display_lines {
 
     foreach my $search_field ($self->{'fields_to_search'}->@*) {
 
-        $self->log_verbose('Processing search field: [_1]', $search_field);
+        $self->log_debug('Processing search field: [_1]', $search_field);
 
         for my $name ($result->get_value($search_field)->@*) {
 
@@ -997,7 +997,7 @@ sub _seeking_confirmation {
 
     foreach my $search_field ($self->{'fields_to_search'}->@*) {
 
-        $self->log_verbose('Processing search field: [_1]', $search_field);
+        $self->log_debug('Processing search field: [_1]', $search_field);
 
         my  $names                  =   $result->get_value($search_field);
         my  @range_of_names         =   (0..$names->$#*);             
@@ -1108,7 +1108,7 @@ sub _match {
 
 
     if ($self->{matches}) {
-        $self->log_verbose('Match found for: [_1]', $self->_stringify_name($name))
+        $self->log_debug('Match found for: [_1]', $self->_stringify_name($name))
         ->log_debug('Matched "[_1]" in "[_2]" part of the following unique name...', $self->{'find'}, $self->{'part'})
         ->dumper($uniqueness);
     }
@@ -1459,15 +1459,19 @@ Which do you wish to perform your change on first?
 
 [_6]
 
-...?',
+...?
+
+------
+',
 
 'change.from'  =>
 
 '
+----------------
+
 Changing...
 
 [_1]
-
 ',
 
 'change.to' =>
@@ -1499,8 +1503,8 @@ Changing...
 
 'Enter "Y" for Yes,
 Enter "N" for No,
-Enter "ALL" for Yes to All for this unique name combination.
-Enter "NONE" for No to All for this unique name combination.',
+Enter "ALL" for Yes to All Remaining for this unique name combination.
+Enter "NONE" for No to All Remaining for this unique name combination.',
 
 
 'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
@@ -1599,6 +1603,7 @@ my  @phrases = (
     'Added details to what_to_change'=>'Added details to what_to_change',
     'Leaving confirm method.'=>'Leaving confirm method.',
     'Called change method.'=>'Called change method.',
+    'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
 
 );
 
