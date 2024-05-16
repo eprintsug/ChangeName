@@ -1489,7 +1489,7 @@ to be passed in as an argument,
 and no such params were provided.',
 
 'commandline.end_program'       =>  'This program will now end...'.$new_line,
-'validation.errors.invalid'     =>  "Invalid [_1] field in [_2] form.\n",
+'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
 'commandline.no_arguments'      =>  'No commandline arguments given.',
 'commandline.utf8_enabled'      =>  'UTF-8 commandline arguments enabled.',
@@ -1535,6 +1535,367 @@ Family Names:
 Which do you wish to perform your change on first?
     1) Given Name
     2) Family Name
+',
+
+'prompt_for.confirm' =>
+
+'Confirm to change [_1] name from...
+
+"[_2]"
+
+...to...
+
+"[_3]"
+
+...for name [_4] in field [_5] in the following record...
+
+[_6]
+
+...?
+
+------
+',
+
+'change.from.can'  =>
+
+'Changing...
+
+[_1]
+',
+
+'change.from.cannot'  =>
+
+'Unable to change...
+
+[_1]
+',
+
+'change.to.can' =>
+
+'...to...
+
+[_1]
+',
+
+'change.to.cannot' =>
+
+'...to...
+
+[_1]
+
+...due to an edit lock on this record (record [_2]).
+',
+
+'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
+
+'change.done'       =>  'Done - the change has been made for you.',
+
+'seeking_confirmation.display_lines' =>
+
+'------
+
+For the unique name combination...
+
+[_1]
+
+...the following matching records were found:
+
+[_2]
+
+------
+',
+
+'prompt_for.confirm.acceptable_input'  =>
+
+'Enter "Y" for Yes,
+Enter "N" for No,
+Enter "ALL" for Yes to All Remaining for this unique name combination.
+Enter "NONE" for No to All Remaining for this unique name combination.',
+
+
+'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
+'prompt_for.search'                         =>  'Please specify a Search Term: ',
+'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
+
+'prompt_for.find'                           =>  
+
+'Your change will be performed using find and replace,
+(looking to find full and not partial matches, and with case insensitivity).
+What is your find value when matching within [_1]?',
+
+'prompt_for.find.error.no_part'             =>  
+
+'A part attribute must be set
+when prompting to find a value
+in a particular name part, ',
+
+'prompt_for.replace.prompt_on_blank'        =>  
+
+'Did you mean for the replace value to be a blank/null value,
+that if later confirmed would effectively be clearing the field?
+Enter Y or y for Yes, or anything else for No: ',
+
+'prompt_for.error.no_prompt_type'           =>  
+
+'No prompt type argument supplied to prompt_for method, ',
+
+
+'_validate.error.four_byte_character'       =>
+
+'This script does not support
+four byte characters in input.',
+
+'_validate.error.no_arguments'              =>
+
+'Private _validate method was called with no arguments, 
+and thus had no input to validate.
+The method requires at least one thing to validate, ',
+
+'_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
+
+'_confirmation_feedback.heading.confirmed_so_far'       =>  
+
+'
+------
+
+Records you have confirmed for changing so far...
+
+',
+
+'_confirmation_feedback.heading.unique_name'            =>
+
+'
+For the unique name [_1] ...
+
+Confirmation | Record To Change...
+',
+
+'_confirmation_feedback.record.confirmed_for_changing'  =>  
+
+'[_1] | [_2]
+',
+
+'_confirmation_feedback.footer'                         =>
+'
+------
+',
+
+
+'finish.change'     =>  '[quant,_1,change] out of [quant,_2,change] completed.',
+
+'finish.no_change'  => 'No changes made.', 
+
+'finish.thank_you'  => 'Thank you for using this script.',
+
+);
+
+my  @phrases = (
+    'Constructed New Object Instance'   =>  'Constructed New Object Instance',
+    'Commandline Params are...'         =>  'Commandline Params are...',
+    'Commandline Input is...'           =>  'Commandline Input is...',
+    'Language set to [_1].'             =>  'Language set to [_1].',
+    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
+    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
+    'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
+    'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
+    'Set YAML configurations.' => 'Set YAML configurations.',
+    'Set search-fields.' => 'Set search-fields.',
+    'Setting further self-referential attributes...' => 'Setting further self-referential attributes...',
+    'Entering method.' => 'Entering method.',
+    'Name parts before we begin:' => 'Name parts before we begin:',
+    'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
+    'Leaving method.' => 'Leaving method.',
+    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
+    'Entered method.' => 'Entered method.',
+    'Searching...' => 'Searching...',
+    'Found Results.' => 'Found Results.',
+    'No Results Found.'=>'No Results Found.',
+    'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
+    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
+    'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
+    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE mode - changes will be made at the end after confirmation.',
+    'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
+    'Processing search field: [_1]'=>'Processing search field: [_1]',
+    'Leaving part_specific method.'=>'Leaving part_specific method.',
+    'Called display method.' => 'Called display method.',
+    'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
+    'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
+    'Leaving method. Attribute display_lines is...'=>'Leaving method. Attribute display_lines is...',
+    'Match found for: [_1]'=>'Match found for: [_1]',
+    'No match found.'=>'No match found.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Matched "[_1]" in "[_2]" part of the following unique name...',
+    'Entered module.'=>'Entered module.',
+    'Found params, and about to process them...'=>'Found params, and about to process them...',
+    'Stringified names for use in a localised display line.'=>'Stringified names for use in a localised display line.',
+    'Returning localised display line as we leave the method.'=>'Returning localised display line as we leave the method.',
+    'Set display flags and added display line:'=>'Set display flags and added display line:',
+    'Leaving display method.'=>'Leaving display method.',
+    'Called confirm method.'=>'Called confirm method.',
+    'Checking if display lines have been shown.'=>'Checking if display lines have been shown.',
+    'Setting confirmation'=>'Setting confirmation',
+    'Processing confirmation...'=>'Processing confirmation...',
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    'Added details to what_to_change'=>'Added details to what_to_change',
+    'Leaving confirm method.'=>'Leaving confirm method.',
+    'Called change method.'=>'Called change method.',
+    'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
+    'Premature exit - Prerequisites not met.'=>'Premature exit - Prerequisites not met.',
+    'Premature exit - Nothing to change.'=>'Premature exit - Nothing to change.',
+    'Searching fields [_1] ...'=>'Searching fields [_1] ...',
+    'Using search settings...'=>'Using search settings...',
+    'Generated confirmation feedback.'=>'Generated confirmation feedback.',
+    'No confirmation feedback generated.'=>'No confirmation feedback generated.',
+    'Displaying generated confirmation feedback.'=>'Displaying generated confirmation feedback.',
+    'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
+    'Matched unique name.'=>'Matched unique name.',
+    'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
+    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
+    'Exited unique name loop.'=>'Exited unique name loop.',
+    'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
+    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+    'Nothing was found to match.'=>'Nothing was found to match.',
+    'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
+    'Premature Exit - our operation is already specific to a name part.'=>'Premature Exit - our operation is already specific to a name part.',
+    'Premature exit - name parts already populated.'=>'Premature exit - name parts already populated.',
+    'Premature exit - no result passed in.'=>'Premature exit - no result passed in.',
+
+);
+
+our %Lexicon = (
+    #'_AUTO' => 1, # Commented out the auto for now.
+    @configurations,
+    @tokens,
+    @phrases,
+);
+
+# ----------------------------------
+
+1;
+
+}
+
+BEGIN { # Load prior to ChangeNameOperation::Languages and restrict scope of our variables to this block
+package ChangeNameOperation::Languages::de_de;
+
+# This German translation is unfinished - and enough is done that you should get the idea....
+# Use --lang=de-DE at the commandline to use it.
+
+# Always:
+use     strict;
+use     warnings;
+
+# UTF-8:
+use     utf8;
+use     v5.16;
+use     warnings (
+            'FATAL',    #makes anything in this list fatal
+            'utf8',     #utf8 is a warnings category. There is no FATAL UTF-8
+        ); 
+
+# Specific:
+use     parent -norequire, qw(
+            ChangeNameOperation::Languages
+        );
+
+
+# ----------------------------------
+
+my  $new_line                   =   "\n";
+
+my  @configurations = (
+
+# Ignores formatting and case
+# and focuses on desired order.
+# Ignores characters or words 
+# that are not an EPrints::MetaField::Name name part.
+'name_parts.display_order'      =>  'honourific, given, family, lineage',
+
+);
+
+my  @tokens = (
+
+'input.yes_letter'              =>  'J',
+'input.no_letter'               =>  'N',
+'input.all'                     =>  'ALLE',
+'input.none'                    =>  'KEINER',
+'input.1'                       =>  '1',
+'input.2'                       =>  '2',
+'separator.name_parts'          =>  ' ', #space
+'separator.name_values'         =>  ',',
+'separator.new_line'            =>  $new_line,
+'separator.search_fields'       =>   ',',
+'name.given'                    =>  'Vorname',
+'name.family'                   =>  'Familienname',
+'name.honourific'               =>  'Ehrenname',
+'name.lineage'                  =>  'Abstammungsname', # Unsure about this one - it's literally Ancestral Name
+'display_line'                  =>  'Datensatz [_1]: [_2].',
+
+'horizontal.rule'               =>  
+'
+-------
+',
+
+'format_single_line_for_display.error.no_params' =>
+'Die Methode format_single_line_for_display erfordert,
+dass ein DataObj-Objekt (d. h. ein Suchergebnis oder ein E-Print)
+und eine Zeichenfolge eines Feldnamens (d. h. ein Suchfeld wie Erstellername)
+als Parameter übergeben werden,
+und es wurden keine Parameter übergeben.',
+
+'_stringify_name.error.no_params' =>
+'Die Methode erfordert die Übergabe
+einer Namens-Hash-Referenz von Namensteilen als Argument,
+und es wurden keine derartigen Parameter bereitgestellt.',
+
+'commandline.end_program'       =>  'Dieses Programm wird nun beendet...'.$new_line,
+'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
+
+'commandline.no_arguments'      =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
+'commandline.utf8_enabled'      =>  'UTF-8-Befehlszeilenargumente aktiviert.',
+
+'commandline.utf8_not_enabled'  =>
+
+'UTF-8-Befehlszeilenargumente scheinen nicht aktiviert zu sein.
+
+Um UTF-8-Argumente zu aktivieren,
+führen Sie das Skript bitte erneut aus,
+beispielsweise mit -CAS nach Perl als solchem ...
+
+     perl -CAS ChangeNameOperation.pm
+    
+Um mehr zu erfahren, 
+können Sie 
+https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
+anzeigen oder ausführen...
+
+     perldoc perlrun
+    
+...und scrollen Sie zum Abschnitt „Befehlsschalter“
+und lesen Sie den Abschnitt zum Schalter „-C“ darin.
+
+Wenn Sie alternativ
+UTF-8-Befehlszeilenargumente auf diese Weise nicht aktivieren können,
+erwägen Sie, das Skript ohne Argumente auszuführen.
+Stattdessen werden Sie zur Eingabe aufgefordert.',
+
+'prompt_for.1or2'               =>  'Bitte geben Sie 1 oder 2 ein.',
+'prompt_for.part'               =>
+    
+'
+Bei Ihrer Suche haben wir übereinstimmende Datensätze gefunden,
+die den folgenden Vornamen zugeordnet sind ...
+
+Vornamen:
+[_1]
+
+...und die folgenden damit verbundenen Familiennamen...
+
+Familiennamen:
+[_2]
+
+Wo möchten Sie Ihre Änderung zuerst durchführen?
+     1) Vorname
+     2) Familienname
 ',
 
 'prompt_for.confirm' =>
