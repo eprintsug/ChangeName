@@ -295,28 +295,27 @@ sub change {
                 $names,
                 $name,
             )                       =   $details->@*;
-        
-        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
-        my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
+
+        my  $can_or_cannot          =   $result->is_locked?   'cannot':
                                         'can';
 
         say $self->localise('horizontal.rule');
         
-        say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
+        say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($result, $search_field));
 
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
-        $fresh_result->set_value($search_field, $names);
+        $result->set_value($search_field, $names);
 
-        say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
+        say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($result, $search_field), $result->id);
     
         if ($self->{live}) {
-            unless ($fresh_result->is_locked) {
-                $fresh_result->commit($self->{force_or_not}->@*);
+            unless ($result->is_locked) {
+                $result->commit($self->{force_or_not}->@*);
                 say $self->localise('change.done');
                 $self->{changes_made}++;
             }
             else {
-                say $self->localise('Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.', $fresh_result->id);
+                say $self->localise('Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.', $result->id);
             };
         }
         else {
