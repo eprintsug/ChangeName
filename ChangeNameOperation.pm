@@ -910,6 +910,7 @@ sub _set_attributes {
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
                                     value           =>  $self->{search},
+                                    match           =>  'IN',
                                 }],
         
     );
@@ -923,7 +924,7 @@ sub _set_attributes {
 
         # Search Settings:
         search_settings     =>  {
-                                    satisfy_all         =>  0,
+                                    satisfy_all         =>  1,
                                     staff               =>  1,
                                     #limit               =>  30,
                                     show_zero_results   =>  1,
