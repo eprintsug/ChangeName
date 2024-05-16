@@ -806,9 +806,9 @@ sub _check_commandline_input {
     };
 
     if ($params->{debug}) {
-        say $localise->("Commandline Params are...");
+        say $localise->('Commandline Params are...');
         say Dumper($params);
-        say $localise->("Commandline Input is...");
+        say $localise->('Commandline Input is...');
         say Dumper(@commandline_input);
     };
 
@@ -1191,7 +1191,7 @@ sub _generate_confirmation_feedback {
             };
     
         };
-        $self->log_debug('Left unique name loop.');
+        $self->log_debug('Exited unique name loop.');
     };
     
     $output                                                 .=  $self->localise('_confirmation_feedback.footer');
@@ -1210,7 +1210,7 @@ sub _generate_confirmation_feedback {
 
 sub _match {
 
-    my  $self       =   shift->log_debug('Entering method');
+    my  $self       =   shift->log_debug('Entering method.');
     my  $name       =   shift;
 
     my  $uniqueness =   q{};
@@ -1467,12 +1467,21 @@ my  @tokens = (
 'separator.search_fields'       =>   ',',
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
+'name.honourific'               =>  'Honourific Name',
+'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
 
 'horizontal.rule'               =>  
 '
 -------
 ',
+
+'format_single_line_for_display.error.no_params' =>
+'Method format_single_line_for_display requires
+a DataObj object (i.e. a search result or eprint) 
+and a string of a field name (i.e. a search field like creators_name),
+to be passed to it as params,
+and no params were passed in.',
 
 '_stringify_name.error.no_params' =>
 'Method requires a name hash reference of name parts,
@@ -1711,7 +1720,6 @@ my  @phrases = (
     'Called display method.' => 'Called display method.',
     'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
     'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
-    'Entering method'=>'Entering method',
     'Leaving method. Attribute display_lines is...'=>'Leaving method. Attribute display_lines is...',
     'Match found for: [_1]'=>'Match found for: [_1]',
     'No match found.'=>'No match found.',
@@ -1742,11 +1750,14 @@ my  @phrases = (
     'Matched unique name.'=>'Matched unique name.',
     'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
-    'Left unique name loop.'=>'Left unique name loop.',
+    'Exited unique name loop.'=>'Exited unique name loop.',
     'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
     'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
     'Nothing was found to match.'=>'Nothing was found to match.',
     'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
+    'Premature Exit - our operation is already specific to a name part.'=>'Premature Exit - our operation is already specific to a name part.',
+    'Premature exit - name parts already populated.'=>'Premature exit - name parts already populated.',
+    'Premature exit - no result passed in.'=>'Premature exit - no result passed in.',
 
 );
 
