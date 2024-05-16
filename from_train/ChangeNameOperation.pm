@@ -149,7 +149,7 @@ sub search {
     # Search:
     $self->{list_of_results}    =   $self->{repository}
                                     ->dataset($self->{dataset_to_use})
-                                    ->prepare_search($self->{search_settings})
+                                    ->prepare_search($self->{search_settings}->%*)
                                     ->perform_search;
                                     # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
                                     # This is an EPrints API behaviour.
@@ -160,10 +160,8 @@ sub search {
 
     $self->{records_found}      =   scalar $self->{list_of_results}->{ids}->@*;
 
-    $self->log_verbose(
-        $self->{records_found}? 'Found Results.':
-        'No Results Found.'
-    );
+    say $self->localise('No Results Found.') unless $self->{records_found};
+    $self->log_verbose('Found Results.') if $self->{records_found};
 
     return $self->log_debug('Leaving method.')->dumper;
 
@@ -172,6 +170,8 @@ sub search {
 sub part_specific {
 
     my  $self   =   shift;
+
+    return $self->log_debug('Premature exit - No search results to narrow down.') unless $self->{records_found};
 
     $self->log_debug('Entering method.')->dumper->log_verbose('Narrowing search to a specific part...');
     
@@ -209,7 +209,7 @@ sub display {
     $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
 
     # Processing:
-    $self->log_verbose('Thank you for your patience. Your request is being processed...');
+    say $self->localise('Thank you for your patience. Your request is being processed...');
     for my $unique_name ($self->{'unique_names'}->@*) {
 
         $self->log_debug('Processing Unique name: [_1]', $unique_name);
@@ -226,6 +226,8 @@ sub display {
         };
         
     };
+
+    say $self->localise('Nothing was found to match.') unless $self->{display_set};
 
     # Output:
     return $self->log_debug('Leaving display method.')->dumper;
@@ -680,9 +682,9 @@ sub dumper {
                             # that are objects
                             # we wish to dump only
                             # the class names of:
-                            qw(
-                                repository
-                                list_of_results
+                            (
+                                'repository',
+                                'list_of_results',
                             )
                         );
                     
@@ -921,10 +923,10 @@ sub _set_attributes {
 
         # Search Settings:
         search_settings     =>  {
-                                    satisfy_all         =>  1,
+                                    satisfy_all         =>  0,
                                     staff               =>  1,
-                                    limit               =>  30,
-                                    show_zero_results   =>  0,
+                                    #limit               =>  30,
+                                    show_zero_results   =>  1,
                                     allow_blank         =>  1,
                                     search_fields       =>  $self->{search_fields},
                                 },
@@ -1794,6 +1796,8 @@ my  @phrases = (
     'Left unique name loop.'=>'Left unique name loop.',
     'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
     'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+    'Nothing was found to match.'=>'Nothing was found to match.',
+    'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
 
 );
 
