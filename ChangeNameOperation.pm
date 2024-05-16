@@ -911,6 +911,7 @@ sub _set_attributes {
                                     meta_fields     =>  $self->{fields_to_search},
                                     value           =>  $self->{search},
                                     match           =>  'IN',
+                                    merge           =>  'ANY',
                                 }],
         
     );
