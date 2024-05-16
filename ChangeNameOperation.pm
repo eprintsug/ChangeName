@@ -437,7 +437,7 @@ sub _set_yaml {
     my  $filepath       =   shift // $self->default_yaml_filepath;
 
     $self->{yaml}       =   # External YAML file:
-                            #(defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
+                            (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
                     
                             # Internal YAML __DATA__:
                             Load(                                           # Will die on any load error.
@@ -633,19 +633,19 @@ sub prompt_for {
 
 sub log_verbose {
     my  $self   =   shift;
-    #say 'in log verbose';
+
     # Premature Exit:
     return $self unless ($self->{verbose} || $self->{debug});
-    #say 'still in log verbose';
+
     return $self->_log('verbose',@ARG);
 }
 
 sub log_debug {
     my  $self   =   shift;
-    #say 'in log debug';
+
     # Premature Exit:
     return $self unless $self->{debug};
-    #say 'still in log debug';
+
     return $self->_log('debug',@ARG);
 }
 
@@ -793,8 +793,8 @@ sub _check_commandline_input {
                                     $params->{part},
                                 );
 
-    my  $language_to_use    =   'en-GB'; #$params->{'language'} //  
-                            #//  $class->get_default_language;
+    my  $language_to_use    =   $params->{'language'}
+                            //  $class->get_default_language;
 
     my  $language           =   ChangeNameOperation::Languages->try_or_die($language_to_use);
 
