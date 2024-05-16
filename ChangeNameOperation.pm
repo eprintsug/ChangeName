@@ -67,7 +67,7 @@ v1.0.0
 =head1 DESCRIPTION
 
 Calls a subroutine.
-Currently set to call L</start;>.
+Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
     perl -CAS ./ChangeNameOperation.pm
