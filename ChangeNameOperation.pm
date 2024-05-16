@@ -11,20 +11,37 @@ use     EPrints::Repository;
 use     EPrints::Search;
 
 use     v5.16;
-#use     feature 'signatures'; # Not activated by default until the "use v5.36" feature bundle. Only available from Perl 5.20 onwards.
+#use    feature qw(fc);         # Available in Perl 5.16 or higher.
+                                # Commented out as already activated by the "use v5.16;" feature bundle.
+                                # Guide to feature bundles here: https://perldoc.perl.org/feature#FEATURE-BUNDLES
+                                # Folds case for UTF-8 / Unicode friendly case insensitive comparisons.
+                                # https://perldoc.perl.org/perlfunc#fc
+                        
+#use    feature 'signatures';   # Not activated by default until the "use v5.36" feature bundle. 
+                                # Only available from Perl 5.20 onwards.
+                                # Commented out and not used, 
+                                # as we are targeting users with 5.16 or higher.
 use     utf8;
 use     English;
 
 use     Encode;
 use     Data::Dumper;
-$Data::Dumper::Useperl = 1;
 use     List::Util  qw(
-            pairmap
             mesh
         );
 use     Getopt::Long;
 
 use     open ':std',   ':encoding(UTF-8)';
+use     Scalar::Util qw(
+            blessed
+            reftype
+        );
+use     CPAN::Meta::YAML qw(
+            LoadFile
+            Load
+        ); # Standard module in Core Perl since Perl 5.14.
+use     File::Basename;
+
 
 =pod Name, Version
 
@@ -58,14 +75,20 @@ Currently set to call L</start;>.
 =cut
 
 #UTF-8 the default on standard input and output:
-my  $our_encoding                       =   ':encoding(UTF-8)';
-binmode STDIN                           ,   $our_encoding;
-binmode STDOUT                          ,   $our_encoding;
-binmode STDERR                          ,   $our_encoding;
-$ENV{'PERL_UNICODE'}                    =   'AS';   # A = Expect @ARGV values to be UTF-8 strings.
-                                                    # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
+binmode STDIN           ,   ChangeNameOperation->get_encoding;  # Using a sub/method avoids needing to wrap this package in a block
+                                                                # to prevent a my variable maintaining scope for whole file.
+binmode STDOUT          ,   ChangeNameOperation->get_encoding;
+binmode STDERR          ,   ChangeNameOperation->get_encoding;
+$ENV{'PERL_UNICODE'}    =   'AS';   # A = Expect @ARGV values to be UTF-8 strings.
+                                    # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
 
-ChangeNameOperation->start(@ARGV) unless caller;
+# Data Dumper Settings:
+$Data::Dumper::Useperl  =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+$Data::Dumper::Maxdepth =   4;  # So when we dump we don't get too much stuff.
+$Data::Dumper::Sortkeys =   1;  # Hashes in same order each time - for easier dumper comparisons.
+
+# Command Line Auto-run:
+ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
 
 =head1 METHODS
 
@@ -86,727 +109,512 @@ Returns a string containing a greeting.
 
 =cut
 
-sub utf8_input_check {
+# Start:
 
-    # Imported from encoding_change and needs to be improved...
-    my $self = shift;
-    if (@ARG) {
+sub start_from_commandline {
+    my  $class          =   shift;
+    my  @object_params  =   $class->_get_commandline_arguments(@ARG);
 
-        # Definition:
-        my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
-                                            &&
-                                            (${^UNICODE} <= '63');
-
-
-        if ($acceptable_utf8_options) {
-            say 'UTF-8 commandline arguments enabled.';
-        }
-        else {
-            say 'UTF-8 commandline arguments do not appear to be enabled.';
-            say '';
-            say 'To enable UTF-8 arguments,';
-            say 'please run the script again with, for example, -CAS after perl as such...';
-            say '';
-            say '    perl -CAS ChangeNameOperation.pm';
-            say '';
-            say 'To learn more,';
-            say 'you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D';
-            say 'or run...';
-            say '';
-            say '    perldoc perlrun';
-            say '';
-            say '...and scroll to the Command Switches section,';
-            say 'and read the -C switch section within that.';
-        };
-
-    }
-    else {
-        say 'No arguments.';
-    }
-
-};
-
-sub presentable_compound_name {
-    my  $self           =   shift;
-    my  $compound_name  =   shift;
-    my  @name_parts     =   @_;
-
-    my  $true_arguments =   $self && $compound_name && (scalar @_);
-    die                     "Insufficient or false arguments for presentable_compound_name subroutine, "
-                            unless $true_arguments;
-    my  $regex_friendly =   join(
-                                "|",                # Or
-                                map {
-                                    quotemeta($ARG) # Safe
-                                }
-                                @name_parts
-                            );
-    my  $keys           =   \@name_parts;
-    my  $values         =   [split /$regex_friendly/, $compound_name];
-    my  $hash           =   {mesh $keys, $values};
-    my  $presentable_compound_name  =   "Honorary: ".($hash->{'honourary'}? $hash->{'honourary'}: '')."\n".
-                                        "Given:    ".($hash->{'given'}? $hash->{'given'}: '')."\n".
-                                        "Family:   ".($hash->{'family'}? $hash->{'family'}: '')."\n".
-                                        "Lineage:  ".($hash->{'lineage'}? $hash->{'lineage'}: '');###
-    return $presentable_compound_name;
-}
-
-sub start {
-
-    my  $class      =   shift;
-    $class->utf8_input_check(@ARG);
-
-    # Command Line Options:
-    my  $live       =   q{};    # Default empty string.
-    Getopt::Long::Parser->new
-    ->getoptionsfromarray(
-        \@ARG,
-        'live!'     =>  \$live,
-                        # if --live present,    set $live to 1,
-                        # if --nolive present,  set $live to 0.
-    );
-
-
-    my  @params     =   (
-        archive_id  =>  shift,
-        find        =>  shift,
-        replace     =>  shift,
-        part        =>  shift,
-        live        =>  $live,
-    );
-                    
-    ChangeNameOperation->new(@params)->search->display->confirm->change->finish;
+    $class->_check_commandline_input(@object_params)->new(@object_params)->search->part_specific->display->confirm->change->finish;
 
 }
+
+# Program Flow:
 
 sub new {
     my  $class      =   shift;
     my  $params     =   {@ARG};
+
     my  $self       =   {};
-    
     bless $self, $class;
 
-    say 'Called new method.';
-    say Dumper($self);
+    $self->_set_attributes($params)->log_debug('Constructed New Object Instance.')->dumper;
 
-    $self->_set_attributes($params);
-    
     return $self;
-}
-
-sub _set_attributes {
-
-    say 'Setting attributes.';
-
-    # Set Initial Values:
-    my  $self               =   shift;
-    my  $params             =   shift;
-
-    $self->%*               =   (
-        $self->%*,
-        archive_id          =>  $self->_validate($params->{archive_id}),
-        find                =>  $self->_validate($params->{find}),
-        replace             =>  $self->_validate($params->{replace}),
-        part                =>  $self->_validate($params->{part}),
-        live                =>  $params->{live},
-        force_or_not        =>  [
-                                    [1] # Comment out line to disable force commits.
-                                ],
-        dataset_to_use      =>  'eprint',
-        fields_to_search    =>  [
-                                    'creators_name',
-                                    'contributors_name',
-                                ],
-        name_parts          =>  [
-                                    'honourific',
-                                    'given',
-                                    'family',
-                                    'lineage',
-                                ],
-                                # Remember to change presentable compound name method to accept an array ref instead of an array.
-        text                =>  {
-                                    data_count      =>  'Number of dataset records found: ',
-                                    search_count    =>  'Number of search results found: ',
-                                    part_suffix     =>  ' Name',
-                                },
-        line_delimiter      =>  "\n",
-        get_useful_frequency_counts        =>   sub { $self->get_useful_frequency_counts(@ARG) },
-        display_records                    =>   sub { $self->display_records            (@ARG) },
-        change_records                     =>   sub { $self->change_records             (@ARG) },
-    );
-    $self->{archive_id}     //= $self->prompt_for('archive');
-    $self->{find}           //= $self->prompt_for('search');
-    $self->{part_search}    =   $self->{part}?  1:
-                                0;
-                                # Whether we have yet chosen which part of a name to search.
-    #$self->{repository}     =   EPrints::Repository->new($self->{archive_id});
-    $self->{search_fields}  =   [
-                                  {
-                                        meta_fields     =>  $self->{fields_to_search},
-                                        value           =>  $self->{find},
-                                    },
-                                ];
-    my  @common_info = (
-        search_fields                       =>  $self->{fields_to_search},
-        name_parts                          =>  $self->{name_parts},
-    ); # Why do we need this? Can we not access it via $self?
-    $self->%*               =   (
-        $self->%*,
-        useful_info         =>  {
-                                    @common_info,
-                                    compound_names                      =>  {},
-                                    given_names                         =>  {},
-                                    family_names                        =>  {},
-                                },
-        part_match_info     =>  {
-                                    @common_info,
-                                    live    =>  $self->{live}, # Is this necessary?
-                                },
-        search_settings     =>  {   satisfy_all         =>  1,
-                                    staff               =>  1,
-                                    limit               =>  30,
-                                    show_zero_results   =>  0,
-                                    allow_blank         =>  1,
-                                    search_fields       =>  $self->{search_fields},
-                                },
-    );
-
-    return $self
-
-}
-
-sub start_old {
-
-    # Input:
-    my  $self                               =   shift;
-    $self->utf8_input_check(@ARG); # This will do for now.
-    my  $live                               =   q{};
-    my  @force_or_not                       =   (
-                                                    [1] # Comment out line to disable force commits.
-                                                );
-    Getopt::Long::Parser->new
-    ->getoptionsfromarray(
-        \@_,
-        'live!'                             =>  \$live
-                                                # if --live present,    set $live to 1,
-                                                # if --nolive present,  set $live to 0.
-    );
-
-    my  ($archive_id,$find,$replace,$part)  =   $self->validate(@_);
-        $archive_id                         //= $self->prompt_for('archive');
-    my  $repository                         =   EPrints::Repository->new($archive_id);
-        $find                               //= $self->prompt_for('search');
-    my  $part_search                        =   $part? 1:
-                                                0;
-    my  $dataset_to_use                     =   'eprint';
-    my  @fields_to_search                   =   (
-                                                    'creators_name',
-                                                    'contributors_name',
-                                                );
-    my  @name_parts                         =   (
-                                                    'honourific',
-                                                    'given',
-                                                    'family',
-                                                    'lineage',
-                                                ); # Is this the correct order?
-    my  $text = {
-        data_count                          =>  'Number of dataset records found: ',
-        search_count                        =>  'Number of search results found: ',
-        part_suffix                         =>  ' Name',
-    };
-    my  $line_delimiter                     =   "\n";
-    my  $search_fields                      =   [
-                                                  {
-                                                        meta_fields     =>  [
-                                                                                @fields_to_search,
-                                                                            ],
-                                                        value           =>  $find,
-                                                    },
-                                                ];
-    my  $get_useful_frequency_counts        =   \&get_useful_frequency_counts;
-    my  $display_records                    =   \&display_records;
-    my  $change_records                     =   \&change_records;
-    my  @common_info = (
-        search_fields                       =>  \@fields_to_search,
-        name_parts                          =>  \@name_parts,
-    );
-    my  $useful_info = {
-        @common_info,
-        compound_names                      =>  {},
-        given_names                         =>  {},
-        family_names                        =>  {},
-    };
-
-    my  $part_match_info = {
-        @common_info,
-        live                                =>  $live,
-    };
-
-
-    # Processing:
-    
-    # Search:
-    my  $list_of_results                    =   $repository
-                                                ->dataset($dataset_to_use)
-                                                ->prepare_search(
-                                                    satisfy_all         =>  1,
-                                                    staff               =>  1,
-                                                    limit               =>  30,
-                                                    show_zero_results   =>  0,
-                                                    allow_blank         =>  1,
-                                                    search_fields       =>  $search_fields,
-                                                )
-                                                ->perform_search;
-                                                # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
-                                                # This is an EPrints API behaviour.
-                                                # These are not direct matches, and so could be filtered out by us.
-                                                # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
-                                                # - which is beneficial if someone doesn't have the correct keyboard.
-                                                # So let's leave this in.
-                                                
-    my  @record_ids_to_search              =   $list_of_results->{ids}->@*;
-
-    say 'Find             '.Dumper ($find);
-    say 'Find             '.$find;
-    say 'Search fields:   '.Dumper ($search_fields);
-    say 'List of Results: '.Dumper (keys $list_of_results->%*);
-    say 'IDs              '.Dumper ($list_of_results->{ids});
-
-    # Process Search Results:
-    $list_of_results->map($get_useful_frequency_counts,$useful_info);
-
-
-    say 'Find             '.Dumper ($find);
-    say 'Find             '.$find;
-    say 'Search fields:   '.Dumper ($search_fields);
-    say 'List of Results: '.Dumper (keys $list_of_results->%*);
-    say 'IDs              '.Dumper ($list_of_results->{ids});
-    say 'Useful info      '.Dumper ($useful_info);
-
-    if (@record_ids_to_search) {
-        unless ($part_search) {
-
-            $part                       =   $self->prompt_for('part', $useful_info);
-            # shouldn't we validate part is one of the accepted @name_parts?
-
-            my  @presentable_part_name  =   $part?  (ucfirst($part).$text->{'part_suffix'}):
-                                            ();
-            $find                       =   $self->prompt_for('find', @presentable_part_name);
-            $replace                    //= $self->prompt_for('replace');
-            $part_search                =   $part && $find && defined($replace)? 1:
-                                            undef;
-        };
-    #    warn "Part is earlier: $part";
-        if ($part_search) {
-
-            for my $compound_name (keys $useful_info->{'compound_names'}->%*) {
-
-                # Initial Values:
-                $part_match_info->{'matches_compound_name'} =   qr/^\Q$compound_name\E$/;
-                $part_match_info->{'matches_find'}          =   qr/^\Q$find\E$/i; # case insensitive.
-                $part_match_info->{'part'}                  =   $part;
-    #            warn "Part is: $part and stored part is $part_match_info->{'part'}";
-                $part_match_info->{'display_lines'}         =   [];
-                $part_match_info->{'display'}               =   undef;
-
-                # Processing:
-                $list_of_results->map($display_records,$part_match_info);
-
-                # Output:
-                if ($part_match_info->{'display'}) {
-                    say "For the unique name combination...";
-                    say q{}; # Does it deliver a line return? Yes it does
-                    say $self->presentable_compound_name($compound_name,@name_parts);
-                    say q{}; # Does it deliver a line return? Yes it does
-                    say "...the following matching records were found:";
-                    say q{}; # Does it deliver a line return? Yes it does
-                    say join $line_delimiter, $part_match_info->{'display_lines'}->@*;
-                    say q{};
-                    say '------';
-                    say q{};
-                };
-
-                # Reset Values:
-                $part_match_info->{'display_lines'}         =   [];
-                $part_match_info->{'display'}               =   undef;
-
-                # Initial values for implementing a change:
-                $part_match_info->{'replace'}               =   $replace;
-                $part_match_info->{'force_or_not'}          =   \@force_or_not;
-                $part_match_info->{'dry_run'}               =   $live? 0:
-                                                                1;
-
-                #Processing:
-                $list_of_results->map($change_records,$part_match_info);
-
-                # Do you need output from a single loop? If so you'll need to reset and export the part match info each iteration.
-
-                # compound_names include non-part-matching names irrelevant to our search - so ... we need to filter those out / skip them.
-            }
-        };
-
-    }
-    else {
-        say "No search results.";
-    };
-
-    # Output:
-
-    return Dumper([
-        repo_is         =>  $archive_id,
-        find_is         =>  $find,
-        replace_is      =>  $replace,
-        part_is         =>  $part,
-        part_search_is  =>  $part_search,
-        dataset_is      =>  $dataset_to_use,
-        live_is         =>  $live,
-        given_list_is   =>  join(', ',keys $useful_info->{'given_names'}->%*),
-        family_list_is  =>  join(', ',keys $useful_info->{'family_names'}->%*),
-        compound_list_is=>  join(', ',keys $useful_info->{'compound_names'}->%*),
-    ]);
-    
-}
-
-sub _validate {
-    my  $self                           =   shift;
-    my  @input                          =   @_;
-
-    # No longer seems to stop out of range input? Why?
-    my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
-
-    for my $input (@input) {
-        die                                 "This script does not support ".
-                                            "four byte characters in input."
-                                            if (
-                                                $input
-                                                && ($input =~ $matches_four_byte_character)
-                                            );
-
-    };
-
-    return @input;
 }
 
 sub search {
+    my  $self                   =   shift;
+    
+    $self->log_debug('Entered method.')->dumper
+    ->log_debug('Using search settings...')->dumper($self->{search_settings})
+    ->log_verbose(
+        'Searching fields [_1] ...',
+        join(
+            $self->localise('separator.search_fields'),
+            $self->{fields_to_search}->@*,
+        )
+    );
+    
+    # Search:
+    $self->{list_of_results}    =   $self->{repository}
+                                    ->dataset($self->{dataset_to_use})
+                                    ->prepare_search($self->{search_settings}->%*)
+                                    ->perform_search;
+                                    # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
+                                    # This is an EPrints API behaviour.
+                                    # These are not direct matches, and so could be filtered out by us.
+                                    # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
+                                    # - which is beneficial if someone doesn't have the correct keyboard.
+                                    # So let's leave this in.
+
+    $self->{records_found}      =   scalar $self->{list_of_results}->{ids}->@*;
+
+    say $self->localise('No Results Found.') unless $self->{records_found};
+    $self->log_verbose('Found Results.') if $self->{records_found};
+
+    return $self->log_debug('Leaving method.')->dumper;
+
+}
+
+sub part_specific {
+
     my  $self   =   shift;
-    say "Called search method.";
-    say Dumper($self);
+
+    return $self->log_debug('Premature exit - No search results to narrow down.') unless $self->{records_found};
+
+    $self->log_debug('Entering method.')->dumper->log_verbose('Narrowing search to a specific part...');
+    
+    return $self->log_debug('Premature Exit - our operation is already specific to a name part.') if $self->{part_specified};
+        
+    $self->log_debug('Generating lists, and setting values.')->_tally_frequencies->_generate_name_lists->_set_part->_set_find->_set_replace;
+
+    # Determine what was set...
+    $self->{unique_names_set}   =   $self->{'unique_names'}
+                                    && (reftype($self->{'unique_names'}) eq 'ARRAY');
+        
+    $self->{part_specified}     =   $self->{part} && $self->{find} && defined($self->{replace})? 1: 
+                                    undef;
+                                    # Replace can be a blank string - hence defined test instead of true test.
+
+    $self->log_debug('Leaving part_specific method.')->dumper;
+
     return $self;
+
 }
 
 sub display {
-    my  $self   =   shift;
-    say "Called display method.";
-    return $self;
+
+    my  $self               =   shift;
+    
+    $self->log_debug('Called display method.')->dumper;
+
+    my  $prerequisites      =   $self->{records_found}
+                                && $self->{part_specified}
+                                && $self->{unique_names_set};
+
+    return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
+    
+    # Initial values:
+    $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
+
+    # Processing:
+    say $self->localise('Thank you for your patience. Your request is being processed...');
+    for my $unique_name ($self->{'unique_names'}->@*) {
+
+        $self->log_debug('Processing Unique name: [_1]', $unique_name);
+
+        # Initial Values:
+        $self->{'matches_unique_name'}              =   qr/^\Q$unique_name\E$/;
+        $self->{'unique_name'}                      =   $unique_name;
+        $self->{'display_lines'}->{"$unique_name"}  =   [];
+        $self->{'display'}->{"$unique_name"}        =   undef;
+
+        # Processing;
+        foreach my $chunk_of_results ($self->chunkify) {
+            $self->_add_relevant_display_lines($ARG) for $chunk_of_results->@*;
+        };
+        
+    };
+
+    say $self->localise('Nothing was found to match.') unless $self->{display_set};
+
+    # Output:
+    return $self->log_debug('Leaving display method.')->dumper;
+
 }
 
 sub confirm {
-    my  $self   =   shift;
-    say "Called confirm method.";
-    return $self;
+
+    my  $self           =   shift;
+
+    $self->log_debug('Called confirm method.')->dumper;
+
+    my  $prerequisites  =   $self->{records_found}
+                            && $self->{part_specified}
+                            && $self->{unique_names_set}
+                            && $self->{display_set};
+
+    return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
+
+    # Initial values:
+    $self->{what_to_change}             =   [];
+
+    # Processing:
+    for my $unique_name ($self->{'unique_names'}->@*) {
+    
+        $self->log_debug('Processing Unique name: [_1]', $unique_name);
+
+        # Initial Values:
+        $self->{display_lines_shown}    =   undef;
+        $self->{matches_unique_name}    =   qr/^\Q$unique_name\E$/;
+        $self->{unique_name}            =   $unique_name;
+        $self->{auto_yes}               =   undef;
+        $self->{auto_no}                =   undef;
+
+        # Processing:        
+        foreach my $chunk_of_results ($self->chunkify) {
+            $self->_seeking_confirmation($ARG) for $chunk_of_results->@*;
+        };
+
+    };
+
+    # Output:
+    return $self->log_debug('Leaving confirm method.')->dumper;
+
 }
 
 sub change {
     my  $self   =   shift;
-    say "Called change method.";
+    $self->log_debug('Called change method.')->dumper;
+
+    my  $prerequisites              =   $self->{what_to_change}
+                                        && reftype($self->{what_to_change}) eq 'ARRAY'
+                                        && $self->{what_to_change}->@*;
+    
+    return                              $self->log_debug('Premature exit - Nothing to change.')
+                                        unless $prerequisites;
+
+    $self->{changes_made}           =   0;
+
+    for my $details ($self->{what_to_change}->@*) {
+
+        my  (
+                $result,
+                $search_field,
+                $names,
+                $name,
+            )                       =   $details->@*;
+
+        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+        my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
+                                        'can';
+
+        say $self->localise('horizontal.rule');
+        
+        say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
+
+        $name->{"$self->{'part'}"}  =   $self->{'replace'};
+        $fresh_result->set_value($search_field, $names);
+
+        say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
+    
+        if ($self->{live}) {
+            unless ($fresh_result->is_locked) {
+                $fresh_result->commit($self->{force_or_not}->@*);
+                say $self->localise('change.done');
+                $self->{changes_made}++;
+            }
+            else {
+                say $self->localise('Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.', $fresh_result->id);
+            };
+        }
+        else {
+            say $self->localise('change.dry_run');
+        };
+
+    };
+    
     return $self;
 }
 
 sub finish {
     my  $self   =   shift;
-    say "At the finish. Thank you for using this test script.";
+    say $self->localise('horizontal.rule');
+    say $self->localise('finish.change',$self->{changes_made}, scalar $self->{what_to_change}->@*);
+    say $self->localise('finish.no_change') unless $self->{changes_made};
+    say $self->localise('finish.thank_you');
     return $self;
 }
 
+# Setters and Getters:
 
-
-
-sub display_records {
-
-    my  ($session, $dataset, $result, $part_match_info)  =   @_;
-
-    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
-
-        my  $names                      =   $result->get_value($search_field);
-        my  @range_of_names             =   (0..$names->$#*);
-
-        for my $current (@range_of_names) {
-
-            my  $name                   =   $names->[$current];        
-            my  $compound_name          =   q{};
-
-            my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
-
-            if ($find_matched) {
-
-                for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
-
-                    $compound_name      .=  $name_part.$name->{"$name_part"};
-
-                };
-                
-                my  $compound_matched   =  $compound_name && ($compound_name =~ $part_match_info->{'matches_compound_name'});
-                
-                if ($compound_matched) {
-                    
-                    push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
-                    $part_match_info->{'display'} = 'Yes';
-
-                }
-                
-            };
-            
-        }
-    }
-    
+sub get_encoding {
+    return ':encoding(UTF-8)';  # Encoding is also set for the open command
+                                # at the top of this package:
+                                # use     open ':std',   ':encoding(UTF-8)';
+                                # So if ever changing encoding, change that line too.
 }
 
-sub change_records {
-
-    my  ($session, $dataset, $result, $part_match_info)  =   @_;
-
-    foreach my $search_field ($part_match_info->{'search_fields'}->@*) {
-
-        my  $names                      =   $result->get_value($search_field);
-        my  @range_of_names             =   (0..$names->$#*);
-
-        for my $current (@range_of_names) {
-
-            my  $name                   =   $names->[$current];        
-            my  $compound_name          =   q{};
-
-            my  $find_matched           =   $name->{"$part_match_info->{'part'}"} && ($name->{"$part_match_info->{'part'}"}   =~  $part_match_info->{'matches_find'});
-
-            if ($find_matched) {
-
-                for my $name_part ($part_match_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
-
-                    $compound_name      .=  $name_part.$name->{"$name_part"};
-
-                };
-                
-                my  $compound_matched   =   $compound_name && ($compound_name =~ $part_match_info->{'matches_compound_name'});
-                
-                if ($compound_matched) {
-                    say                     "Confirm to change ".$part_match_info->{'part'}.
-                                            " name from...";
-                    say                     q{};
-                    say                     "'".$name->{"$part_match_info->{'part'}"}."'";
-                    say                     q{};
-                    say                     "...to...";
-                    say                     q{};
-                    say                     "'".$part_match_info->{'replace'}."'";
-                    say                     q{};
-                    say                     "...for name ".($current+1).
-                                            ' in field '.$search_field.
-                                            ' in the following record... ';
-                    say                     q{};
-                    say                     format_single_line_for_display($result, $search_field);
-                    say                     q{};
-                    say                     '...?';
-                    my  $confirmation   =   ChangeName->prompt_for('change');
-                    say                     q{};
-
-                    say                     'Changing...';
-                    say                     q{};
-                    say                     format_single_line_for_display($result, $search_field);
-                    say                     q{};
-                    say                     '...to...';
-
-                    # Change:                                  
-                    $name->{"$part_match_info->{'part'}"}      =   $part_match_info->{'replace'};
-                    $result->set_value($search_field, $names);
-
-                    say                     q{};
-                    say                     format_single_line_for_display($result, $search_field);
-                    say                     q{};
-
-                    if ($part_match_info->{'dry_run'}) {
-                        say "Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.";
-                        say q{};
-                    }
-                    else {
-                        $result->commit($part_match_info->{'force_or_not'}->@*);
-                        say "Done.";
-                        say q{};
-                    }
-
-                    
-                    #$result->commit([1]);
-                    
-                    #commit($part_match_info->{'force_or_not'}->@*)
-                    #push $part_match_info->{'display_lines'}->@*, format_single_line_for_display($result, $search_field);
-                    #$part_match_info->{'display'} = 'Yes';
-
-                }
-                
-            };
-            
-        }
-    }
-    
+sub default_yaml_filepath {
+    return dirname(__FILE__).'/ChangeNameOperationConfig.yml';
 }
 
-####
+sub get_default_language {
+    return 'en-GB'
+}
+
+sub _set_archive {
+    return shift->_set_or_prompt_for('archive' => shift, @ARG);
+}
+
+sub _set_part {
+    return shift->_set_or_prompt_for('part' => shift, @ARG);
+}
+
+sub _set_find {
+    return shift->_set_or_prompt_for('find' => shift, @ARG);
+}
+
+sub _set_search {
+    my  $self   =   shift;
+    my  $value  =   shift;
+
+    # Standard setting of search...
+    return          $self->_set_or_prompt_for('search' => $value, @ARG)
+                    unless ($value && $self->{exact});
+
+    # Special case that sets find if --exact flag given, 
+    # and then sets search the same as find:
+    $self->_set_or_prompt_for('find' => $value, @ARG)->{search} = $self->{find}; 
+    
+    return $self;
+}
+
+sub _set_replace {
+    return shift->_set_or_prompt_for('replace' => shift, @ARG);
+}
+
+sub set_name_parts {
+
+    my  $self               =   shift;
+    
+    $self->log_debug('Entering method.')->log_debug('Name parts before we begin:')->dumper($self->{name_parts});
+    
+    my  $already_set        =   $self->{name_parts}
+                                && ref($self->{name_parts}) eq 'ARRAY'
+                                && $self->{name_parts}->@*;
+
+    return                      $self->log_debug('Premature exit - name parts already populated.')
+                                if $already_set;
+
+    my  $valid_name_parts   =   join(
+
+                                    # Join by regex OR character:
+                                    '|',                    
+
+                                    # Make name parts regex safe:
+                                    map {quotemeta $ARG}    
+
+                                    # Name Parts for Each Field:
+                                    map {keys $self->{repository}->dataset($self->{dataset_to_use})->field($ARG)->property('input_name_cols')->%*}
+
+                                    # Fields:
+                                    $self->{fields_to_search}->@*
+
+                                );
+
+    my  $not_a_name_part    =   qr/[^($valid_name_parts)]/i;
+ 
+    $self->{name_parts}     =   [   map
+                                    {
+                                            $ARG || $ARG eq '0'? ($ARG):    # True or zero - use.
+                                            ();                             # Else filter out.
+                                    } 
+                                    split $not_a_name_part, $self->localise('name_parts.display_order')
+                                ]; # Array ref, so order preserved.
+
+    $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
+
+    return $self->log_debug('Leaving method.');
+
+}
+
+# Private Setters:
+
+sub _set_yaml {
+    my  $self           =   shift;
+    my  $filepath       =   shift // $self->default_yaml_filepath;
+
+    $self->{yaml}       =   # External YAML file:
+                            #(defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
+                    
+                            # Internal YAML __DATA__:
+                            Load(                                           # Will die on any load error.
+                                do                                          # 'do' returns last value of block.
+                                {
+                                    local $INPUT_RECORD_SEPARATOR = undef;  # Read until end of input.
+                                    <ChangeNameOperationYAMLConfig::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                }
+                            );
+                            
+    return $self;
+
+}
+
+sub _set_repository {
+    my  $self           =   shift;
+    my  $archive_id     =   shift;
+    $self->{repository} =   EPrints::Repository->new(
+                                $self->_set_archive($archive_id)->{archive}
+                            );
+    return $self;
+}
+
+# Function-esque subroutines:
+
 sub format_single_line_for_display {
 
     # Initial Values:
-    my  ($result, $field)       =   @_;
-    my  $seperator = {
-        fields                  =>  ', ',   # comma, space
-        name_parts              =>  ' ',    # space
-    };
-    my  $id_suffix              =   ': ';
+    my  ($self, $result, $field)    =   @ARG;
 
-    my  @order_and_omit_blanks  =   map {
-                                        join $seperator->{'name_parts'}, (
-                                            $ARG->{'honourific'}?   $ARG->{'honourific'}:
-                                            (),
-                                            $ARG->{'given'}?        $ARG->{'given'}:
-                                            (),
-                                            $ARG->{'family'}?       $ARG->{'family'}:
-                                            (),
-                                            $ARG->{'lineage'}?       $ARG->{'lineage'}:
-                                            (),
-                                        )
-                                    }
-                                    $result->get_value("$field")->@*;
+    $self->log_debug('Entered module.');
 
-    return                          $result->id.$id_suffix.
-                                    join($seperator->{'fields'}, @order_and_omit_blanks);
+    die                                 $self->localise('format_single_line_for_display.error.no_params')
+                                        unless ($result && $field);
+
+    $self->log_debug('Found params, and about to process them...');
+
+    my  $names                      =   join(
+                                            $self->localise('separator.name_values'),
+                                            map {$self->_stringify_name($ARG) // ()}
+                                            $result->get_value("$field")->@*
+                                        );
+
+    $self->log_debug('Stringified names for use in a localised display line.');
+
+
+    return                              $self->log_debug('Returning localised display line as we leave the method.')
+                                        ->localise('display_line', $result->id, $names);
+
 }
 
-sub get_useful_frequency_counts {
-    my  ($session, $dataset, $result, $useful_info)  =   @_;
+sub chunkify {
 
-    foreach my $search_field ($useful_info->{'search_fields'}->@*) {
+    # Initial Values:
+    my  ($self, $list, $chunk_size) =   @ARG;
+	$chunk_size                     //= 100;
+    $list                           //= $self->{list_of_results}; # validate it is a list object?
+    my  @list_of_arrayrefs          =   ();
 
-        my  $names          =   $result->get_value($search_field);
-        my  @range_of_names =   (0..$names->$#*);
+    # Processing:
+    for (my $offset = 0; $offset < $list->count; $offset += $chunk_size) {
+        push @list_of_arrayrefs     ,   [$list->slice($offset, $chunk_size)];
+	};
 
-        for my $current (@range_of_names) {
+    # Output:    
+    return @list_of_arrayrefs; # Could improve with a wantarray check.
 
-            my  $name           =   $names->[$current];
-            my  $compound_name  =   "";
-
-            for my $name_part ($useful_info->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
-
-                $compound_name  .=  $name_part.$name->{"$name_part"};
-
-            }
-
-            $useful_info->{'compound_names'} ->{"$compound_name"    }++;
-            $useful_info->{'given_names'}    ->{"$name->{'given'}"  }++;
-            $useful_info->{'family_names'}   ->{"$name->{'family'}" }++;
-        }
-    }
 }
 
-sub validate {
-    my  $self                           =   shift;
-    my  @input                          =   @_;
-    
-    # No longer seems to stop out of range input? Why?
-    my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
-    
-    for my $input (@input) {
-        die                                 "This script does not support ".
-                                            "four byte characters in input."
-                                            if (
-                                                $input
-                                                && ($input =~ $matches_four_byte_character)
-                                            );
-
-    };
-    
-    return @input;
+sub stringify_arrayref {
+    my $self    =   shift;
+    return join ', ', shift->@*;
 }
 
 sub prompt_for {
 
-    my  $self           =   shift;
-    my  $prompt_type    =   shift;
-    my  ($useful_info)  =   @_;
+    my  $self                   =   shift;
+    my  $prompt_type            =   shift;
+    die                             $self->localise('prompt_for.error.no_prompt_type')
+                                    unless $prompt_type;
+                            
+    my  $prompt                 =   'prompt_for.'.$prompt_type;
+    my  @prompt_arguments       =   ();
 
-    my  $input          =   undef;
+    my  $input                  =   undef;
 
     # Definitions:
-    my  $part_prompt    =   ($prompt_type eq 'part' && $useful_info);
-    my  $replace_prompt =   ($prompt_type eq 'replace');
-    my  $change_prompt  =   ($prompt_type eq 'change');
-    my $prompt = {
-        archive         =>  'Please specify an Archive ID: ',
-        search          =>  'Please specify a Search Term: ',
-        replace         =>  'Please specify a Replace Term: ',
-        find            =>  "Your change will be performed using find and replace,\n".
-                            "(looking to find full and not partial matches, and with case insensitivity).\n".
-                            'What is your find value'.
-                            ($useful_info?  " when matching within $useful_info":
-                                            '').    
-                            '? ',
-        replace_blank   =>  'Did you mean for the replace value to be a blank/null value, '.
-                            'that if later confirmed would effectively be clearing the field? '.
-                            'Enter Y for Yes, or anything else for No: ',
+    my  $part_prompt            =   ($prompt_type eq 'part');
+    my  $replace_prompt         =   ($prompt_type eq 'replace');
+    my  $confirm_prompt         =   ($prompt_type eq 'confirm');
+    my  $find_prompt            =   ($prompt_type eq 'find');
+    my  @prompt_on_blank_for    =   qw(
+                                        replace
+                                    );
+    my  $prompt_on_blank_for    =   join '|',
+                                    map {quotemeta($ARG)}
+                                    @prompt_on_blank_for;
+    my  $matches_prompt_on_blank=   qr/^($prompt_on_blank_for)$/;   # This list to join to regex is done so often, it should be a subroutine or method.
+
+    if  ($find_prompt) {
+        die                         $self->localise('prompt_for.find.error.no_part')
+                                    unless $self->{part};
+        @prompt_arguments       =   (
+                                        $self->localise('name.'.$self->{part}),
+                                    );
     };
 
     if ($part_prompt) {
     
         my  $number;
-    
-        say "\nFrom your search we found matching records with the following given names associated...\n";
-        say 'Given Names: ';
-        say join(', ',keys $useful_info->{'given_names'}->%*)."\n";
-        say "...and the following family names associated...\n";
-        say 'Family Names: ';
-        say join(', ',keys $useful_info->{'family_names'}->%*)."\n";
-        say "Which do you wish to perform your change on first?";
-        say "\t1) Given Name";
-        say "\t2) Family Name";
-    
-        until ($number && ($number eq "1" || $number eq "2")) {
+        @prompt_arguments               =   (
+                                                $self->stringify_arrayref($self->{'given_names'}),
+                                                $self->stringify_arrayref($self->{'family_names'}),
+                                            );
+        my  $acceptable_input           =   join '|',
+                                            (
+                                                'given',
+                                                'family',
+                                            );
+        my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
 
-            say "Please enter 1 or 2.";
-            chomp($number   =   <STDIN>)
+        say $self->localise($prompt, @prompt_arguments);
+
+        until ( $input && ($input =~ $matches_acceptable_input) ) {
+
+            say $self->localise('prompt_for.1or2');
+            chomp($number   =   <STDIN>);
+
+            $input          =   $number?    $number eq $self->localise('input.1')?  'given':    # should mapping occur to variables set centrally?
+                                            $number eq $self->localise('input.2')?  'family':   # should mapping occur to variables set centrally?
+                                            undef:
+                                undef;
 
         };
     
-        $input  =   $number?    ($number eq "1")?   'given':
-                                ($number eq "2")?   'family':
-                                undef:
-                    undef;
     }    
 
-    if  ($change_prompt) {
+    elsif  ($confirm_prompt) {
     
-            my  $confirmation;
-    
-            until ( $confirmation && ($confirmation =~ m/^Y|ALL|N|NONE$/i) ) {
-                say "Enter 'Y' for Yes,";
-                say "Enter 'N' for No,";
-                say "Enter 'ALL' for Yes to All for this unique name combination.";
-                say "Enter 'NONE' for No to All for this unique name combination.";
-                chomp($confirmation   =   <STDIN>)
-            };
-            
-            $input = $confirmation;
+        my  $confirmation;
+        @prompt_arguments               =   $self->{confirm_prompt_arguments}->@*; # A hack. Maybe refactor to be passed in.
+        my  $acceptable_input           =   join '|',
+                                            map {quotemeta $self->localise($ARG)}
+                                            (
+                                                'input.yes_letter',
+                                                'input.no_letter',
+                                                'input.all',
+                                                'input.none',
+                                            );
+        my  $matches_acceptable_input   =   qr/^($acceptable_input)$/i;
+
+        say $self->localise($prompt, @prompt_arguments);
+
+        until ( $confirmation && ($confirmation =~ $matches_acceptable_input) ) {
+            say $self->localise('prompt_for.confirm.acceptable_input');
+            chomp($confirmation   =   <STDIN>)
+        };
+
+        $input = $confirmation;
     }
-    
-    if ($prompt->{"$prompt_type"}) {
+
+    else {
     
         until ($input) {
     
-            say $prompt->{"$prompt_type"};
+            say $self->localise($prompt, @prompt_arguments);
             chomp(my $typed_input           =   <STDIN>);
-            ($input)                        =   $self->validate( ($typed_input) );
+            ($input)                        =   $self->_validate( ($typed_input) );
             
             last if $input;
-            if ($prompt->{"$prompt_type\_blank"}) {
+            if ($prompt_type =~ $matches_prompt_on_blank) {
     
-                say $prompt->{"$prompt_type\_blank"};
-                chomp(my $typed_input2      =  <STDIN>);
+                say $self->localise($prompt.'.prompt_on_blank');
+                chomp(my $typed_input2      =  <STDIN>); # Not validated and should be okay as we only ever use it in an equality test in the line below...
                 
                 # Definition:
-                my  $blank_input_desired    =   (fc $typed_input2 eq fc 'y'); # fc supported in Perl 5.16 onwards.
+                my  $blank_input_desired    =   ( fc $typed_input2 eq fc $self->localise('input.yes_letter') ); # fc supported in Perl 5.16 onwards.
 
                 if ($blank_input_desired) {
                     $input = q{};
@@ -822,6 +630,753 @@ sub prompt_for {
     return $input;
 
 }
+
+sub log_verbose {
+    my  $self   =   shift;
+    #say 'in log verbose';
+    # Premature Exit:
+    return $self unless ($self->{verbose} || $self->{debug});
+    #say 'still in log verbose';
+    return $self->_log('verbose',@ARG);
+}
+
+sub log_debug {
+    my  $self   =   shift;
+    #say 'in log debug';
+    # Premature Exit:
+    return $self unless $self->{debug};
+    #say 'still in log debug';
+    return $self->_log('debug',@ARG);
+}
+
+sub dumper {
+    my  $self   =   shift;
+    
+    return $self if $self->{no_dumper};
+    return $self unless ($self->{debug} || $self->{verbose} > 1);
+
+    # Default Params if no arguments passed in...
+    my  $exclude    =   join(
+
+                            # Join by regex OR...
+                            '|',
+
+                            # Regex safe:
+                            map {quotemeta($ARG)}
+
+                            # List of attributes to exclude from dump...
+                            (
+                            #    'repository',
+                            )
+                        );
+
+    my  $class_only =   join(
+
+                            # Join by regex OR...
+                            '|',
+
+                            # Regex safe:
+                            map {quotemeta($ARG)}
+
+                            # List of attributes
+                            # that are objects
+                            # we wish to dump only
+                            # the class names of:
+                            (
+                                'repository',
+                                'list_of_results',
+                            )
+                        );
+                    
+    my  %default    =   map
+                        {
+                            $ARG =~ m/^($class_only)$/
+                            && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
+                            ($ARG => $self->{$ARG})
+                        }
+                        map {$ARG =~ m/^($exclude)$/? ():($ARG)}
+                        keys $self->%*;
+
+    # Set params:
+    my  @params     =   @ARG?   @ARG:
+                        (\%default);
+
+    return $self->_log('dumper',@params); 
+}
+
+sub localise {
+        return shift->{language}->maketext(@ARG);
+}
+
+# Private subs:
+
+sub _get_commandline_arguments {
+
+    my  $self       =   shift;
+    
+    # Defaults:
+
+    # Params:
+    my  $params     =   {
+        language    =>  undef,
+        live        =>  0,
+        verbose     =>  0,
+        debug       =>  0,
+        trace       =>  0,
+        no_dumper   =>  0,
+        no_trace    =>  0,
+        config      =>  undef,
+        exact       =>  0,
+    };
+
+    # Command Line Options:    
+    Getopt::Long::Parser->new->getoptionsfromarray(
+        \@ARG,              # Array to get options from.
+        $params,            # Hash to store options to.
+
+        # Actual options:
+        'language|lang:s',      # Optional string.
+                                # Use 'language' for the hash ref key, 
+                                # accept '--language' or '--lang' from the commandline.
+                                # Syntax can be --lang=en-GB or --lang en-GB
+
+        'config:s',             # Optional string.
+                                # Use 'config' for the hash ref key, 
+                                # accept '--config' from the commandline.
+                                # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+ 
+        'live!',                # if --live present,    set $live to 1,
+                                # if --nolive present,  set $live to 0.
+
+        'verbose+',             # if --verbose present,    set $verbose
+                                # to the number of times it is present.
+                                # i.e. --verbose --verbose would set $verbose to 2.
+
+        'debug!',               # if --debug present,    set $debug to 1,
+                                # if --nodebug present,  set $debug to 0.
+
+        'trace!',               # if --trace present,    set $trace to 1,
+                                # if --notrace present,  set $trace to 0.
+                            
+        'no_dumper|nodumper+',  # if --nodumper present set $no_dumper to 1.
+
+        'no_trace|notrace+',    # if --notrace present  set $no_trace  to 1.
+        
+        'exact!',               # if --exact present,   set $exact to 1,
+                                # if --noexact present, set $exact to 0.                            
+
+    );
+
+    $params={
+        $params->%*,
+        archive_id  =>  shift,
+        search      =>  shift,
+        replace     =>  shift,
+        part        =>  shift,
+    };
+
+    #say "Dump params:".Dumper($params->%*);
+
+    return              wantarray?  $params->%*:    # List context
+                        $params;                    # Scalar or void contexts.
+
+}
+
+sub _check_commandline_input {
+
+    my  $class              =   shift;
+    my  $params             =   {@ARG};
+    my  @commandline_input  =   map { defined $ARG && $ARG? $ARG:() } (
+                                    $params->{archive_id},
+                                    $params->{search},
+                                    $params->{replace},
+                                    $params->{part},
+                                );
+
+    my  $language_to_use    =   'en-GB'; #$params->{'language'} //  
+                            #//  $class->get_default_language;
+
+    my  $language           =   ChangeNameOperation::Languages->try_or_die($language_to_use);
+
+    my  $localise           =   sub { $language->maketext(@ARG) };
+
+    if ($params->{live}) {
+        say $localise->('LIVE mode - changes will be made at the end after confirmation.');
+    }
+    else {
+        say $localise->('DRY RUN mode - no changes will be made.');
+        say $localise->('Run again with the --live flag when ready to implement your changes.');
+    };
+
+    if ($params->{debug}) {
+        say $localise->("Commandline Params are...");
+        say Dumper($params);
+        say $localise->("Commandline Input is...");
+        say Dumper(@commandline_input);
+    };
+
+    if (@commandline_input) {
+
+        # Definition:
+        my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
+                                            &&
+                                            (${^UNICODE} <= '63');
+
+
+        if ($acceptable_utf8_options) {
+            say $localise->('commandline.utf8_enabled');
+        }
+        else {
+            say $localise->('commandline.utf8_not_enabled');
+            die $localise->('commandline.end_program');
+        };
+
+    }
+    else {
+        say $localise->('commandline.no_arguments');
+    };
+    
+    return $class;
+
+};
+
+sub _set_attributes {
+
+    # Initial Values:
+    my  ($self, $params)    =   @ARG;
+
+    my  $matches_yes        =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
+
+    $self->%*               =   (
+
+        # Existing values in $self:
+        $self->%*,
+
+        # From params:
+        live                =>  $params->{live} // 0,
+        debug               =>  $params->{debug} // 0,
+        verbose             =>  $params->{verbose} // 0,
+        trace               =>  (
+                                    $params->{no_trace} < 1
+                                    && 
+                                    (
+                                        $params->{verbose} > 2
+                                        || ($params->{debug} && $params->{verbose})
+                                        || ($params->{debug} && $params->{trace})
+                                    )
+                                ),
+        no_dumper           =>  $params->{no_dumper} // 0,
+        no_trace            =>  $params->{no_trace} // 0,
+        exact               =>  $params->{exact} // 0,
+
+        # Internationalisation:
+        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+
+    );
+
+    $self->_set_repository      ($params->{archive_id})
+    ->log_verbose               ('Language set to [_1].', $self->{language}->language_tag)
+    ->log_debug                 ('Set initial instance attributes using params or defaults.')
+    ->log_debug                 ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+    ->log_debug                 ('Now setting additional instance attributes from params...')
+    ->_set_search               ($params->{search})
+    ->_set_replace              ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
+    ->_set_part                 ($params->{part},'no_prompt') # Also optional on initialisation.
+    ->_set_yaml                 ($params->{yaml})
+    ->dumper;
+    
+    $self->log_debug('Setting self-referential instance attributes...')
+    ->%*                    =   (
+
+        # Existing values in $self:
+        $self->%*,
+
+        # From YAML Configuration:
+        force_or_not        =>  [
+                                    ($self->{yaml}->{'Force commit changes to database'} =~ $matches_yes)?    [1]:
+                                    ()
+                                ],
+        dataset_to_use      =>  $self->{yaml}->{'Dataset to use'},
+        fields_to_search    =>  $self->{yaml}->{'Fields to search'},
+    );
+
+    $self->log_verbose('Set YAML configurations.')->dumper
+    ->%*                    =   (
+    
+        # Existing values in $self:
+        $self->%*,
+    
+        # Search:
+        search_fields       =>  [{
+                                    meta_fields     =>  $self->{fields_to_search},
+                                    value           =>  $self->{search},
+                                }],
+        
+    );
+
+    $self->log_debug('Set search-fields.')->dumper
+    ->log_debug('Setting further self-referential attributes...')
+    ->%*                    =   (
+
+        # Existing values in $self:
+        $self->%*,
+
+        # Search Settings:
+        search_settings     =>  {
+                                    satisfy_all         =>  0,
+                                    staff               =>  1,
+                                    #limit               =>  30,
+                                    show_zero_results   =>  1,
+                                    allow_blank         =>  1,
+                                    search_fields       =>  $self->{search_fields},
+                                },
+    );
+
+    $self->dumper
+    ->set_name_parts
+    ->dumper;
+
+    return $self;
+
+}
+
+sub _tally_frequencies {
+
+    my  ($self)  =   @ARG;
+
+    # Processing:
+    foreach my $results_chunk ($self->chunkify) {
+        foreach my $result ($results_chunk->@*) {
+            foreach my $search_field ($self->{'fields_to_search'}->@*) {
+
+                my  $names          =   $result->get_value($search_field);
+                my  @range_of_names =   (0..$names->$#*);
+
+                for my $current (@range_of_names) {
+
+                    my  $name           =   $names->[$current];
+                    my  $unique_name    =   q{};
+
+                    for my $name_part ($self->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+                        $unique_name    .=  $name_part.
+                                            ($name->{"$name_part"} // q{});
+
+                    }
+
+                    $self->{frequencies}->{'unique_names'   }->{"$unique_name"      }++;
+                    $self->{frequencies}->{'given_names'    }->{"$name->{'given'}"  }++;
+                    $self->{frequencies}->{'family_names'   }->{"$name->{'family'}" }++;
+                }
+            }
+
+		}
+		
+	};
+
+    # Output:    
+    return $self;
+}
+
+sub _generate_name_lists {
+
+    my  $self                       =   shift;
+
+    for my $name_of_list (keys $self->{frequencies}->%*) {
+
+        $self->{"$name_of_list"}    =   [
+                                            sort {$a cmp $b} 
+                                            keys $self->{frequencies}->{"$name_of_list"}->%*    # Defined in _tally_frequencies method.
+                                        ];
+    };
+    
+    return $self;
+}
+
+sub _add_relevant_display_lines {
+
+    my  $self                       =   shift;
+
+    $self->log_debug('Entered method. Attribute display_lines is...')->dumper($self->{display_lines});
+
+    my  $result                     =   shift;
+
+    return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
+                                        unless $result;
+
+    foreach my $search_field ($self->{'fields_to_search'}->@*) {
+
+        $self->log_debug('Processing search field: [_1]', $search_field);
+
+        for my $name ($result->get_value($search_field)->@*) {
+
+            if ( $self->_match($name)->{matches} ) {
+                
+                my  $line                                                   =   $self->format_single_line_for_display($result, $search_field);
+
+                push $self->{'display_lines'}->{"$self->{unique_name}"}->@* ,   $line;
+
+                $self->{'display'}->{"$self->{unique_name}"}                =   'Yes';
+
+                $self->{'display_set'}                                      =   'Yes';
+                
+                $self->log_debug('Set display flags and added display line:')->dumper($line);
+
+            }
+
+        };
+
+    };
+    
+    return $self->log_debug('Leaving method. Attribute display_lines is...')->dumper($self->{display_lines});
+
+}
+
+sub _seeking_confirmation {
+
+    my  $self                       =   shift;
+
+    $self->log_debug('Entered method.')->dumper;
+
+    my  $result                     =   shift;
+
+    return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
+                                        unless $result;
+
+    my  ($yes,$all,$no,$none)       =   (
+                                            $self->localise('input.yes_letter'),
+                                            $self->localise('input.all'),
+                                            $self->localise('input.no_letter'),
+                                            $self->localise('input.none'),
+                                        );
+
+    foreach my $search_field ($self->{'fields_to_search'}->@*) {
+
+        $self->log_debug('Processing search field: [_1]', $search_field);
+
+        my  $names                  =   $result->get_value($search_field);
+        my  @range_of_names         =   (0..$names->$#*);             
+
+        for my $current (@range_of_names) {
+
+            my  $name   =  $names->[$current];
+
+            next unless $self->_match($name)->{matches};
+
+            $self->log_debug('Checking if display lines have been shown.')->dumper($self->{display_lines_shown});
+                       
+            unless ($self->{display_lines_shown}) {
+
+                say $self->localise(
+                        'seeking_confirmation.display_lines',
+                        $self->_stringify_name($name),
+                        join(
+                            $self->localise('separator.new_line'),
+                            $self->{display_lines}->{"$self->{unique_name}"}->@*,
+                        ),
+                    );
+
+                $self->{display_lines_shown}    =   'Yes';
+
+            };
+
+            # Set or get confirmation:
+            $self->log_debug('Setting confirmation');
+            
+            $self->{confirm_prompt_arguments}   =   [
+                                                        $self->{'part'},
+                                                        $name->{"$self->{'part'}"},
+                                                        $self->{'replace'},
+                                                        ($current+1),
+                                                        $search_field,
+                                                        $self->format_single_line_for_display($result, $search_field),
+                                                    ];
+            
+            $self->log_debug('Will check matches auto no result ([_1]) and matches auto yes result ([_2])...', $self->{matches_auto_no}, $self->{matches_auto_yes} );
+            
+            my  $confirmation       =   $self->{matches_auto_no}?   $no:    # Match determined in _match method and could be refactored out.
+                                        $self->{matches_auto_yes}?  $yes:   # Match determined in _match method and could be refactored out.
+                                        $self->prompt_for('confirm');
+
+            # Process confirmation:
+            $self->log_debug('Processing confirmation ([_1])', $confirmation);
+
+            if (fc $confirmation eq fc $none) {
+                $self->{auto_no}    =   $self->{unique_name};
+                $confirmation       =   $no;
+            };
+
+            if (fc $confirmation eq fc $all) {
+                $self->{auto_yes}   =   $self->{unique_name};
+                $confirmation       =   $yes;
+            };
+
+            next if (fc $confirmation eq fc $no);
+
+            if (fc $confirmation eq fc $yes) {
+
+                my  $feedback       =   [
+                                            $self->{matches_unique_name},
+                                            $self->_stringify_name($name),
+                                            uc($confirmation),
+                                            $self->format_single_line_for_display($result, $search_field),
+                                        ];
+            
+                my  $details        =   [
+                                            $result,
+                                            $search_field,
+                                            $names,
+                                            $name,
+                                            $feedback,
+                                        ];
+
+                push $self->{what_to_change}->@*, $details;
+
+                $self->log_debug('Added details to what_to_change')->dumper($details);
+                
+                say $self->_generate_confirmation_feedback->log_debug('Displaying generated confirmation feedback.')->{confirmation_feedback};
+
+            };
+
+        };
+
+    };
+    
+    return $self->log_debug('Leaving method.')->dumper;
+
+}
+
+sub _generate_confirmation_feedback {
+
+    my  $self                                               =   shift;
+
+    $self->log_debug('Entered method.')->dumper;
+
+    my  $prerequisites                                      =   $self->{what_to_change}->@*
+                                                                && $self->{unique_names}->@*;
+
+    return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
+
+    my  $output                                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
+    my  $at_least_one_confirmation                          =   undef;
+    my  $heading_shown_for                                  =   {};
+
+    foreach my $details ($self->{what_to_change}->@*) {
+        for my $current_unique_name ($self->{unique_names}->@*) {
+
+            my  (
+                    $matches_unique_name,
+                    $stringified_name,
+                    $confirmation,
+                    $display_line
+                )                                           =   $details->[4]->@*; 
+
+            if ($current_unique_name                        =~  $matches_unique_name) {
+
+                $self->log_debug('Matched unique name.');
+
+                $at_least_one_confirmation                  =   'Yes';
+
+                $output                                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
+                                                                unless $heading_shown_for->{$current_unique_name};
+
+                $output                                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
+        
+                $heading_shown_for->{"$current_unique_name"}=   'Yes';
+
+                $self->log_debug('Added record to confirmation feedback.');
+                
+                $self->log_debug('Since unique names are unique, we can leave unique name loop now we have processed a match.');
+                last;
+
+            };
+    
+        };
+        $self->log_debug('Left unique name loop.');
+    };
+    
+    $output                                                 .=  $self->localise('_confirmation_feedback.footer');
+    
+    $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
+                                                                undef;
+    
+    $self->log_debug(
+        $self->{confirmation_feedback}? 'Generated confirmation feedback.':
+        'No confirmation feedback generated.',
+    );
+    
+    return $self->log_debug('Leaving method.')->dumper;
+
+}
+
+sub _match {
+
+    my  $self       =   shift->log_debug('Entering method');
+    my  $name       =   shift;
+
+    my  $uniqueness =   q{};
+
+    for my $name_part ($self->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+
+        $uniqueness .=  $name_part.($name->{"$name_part"}//q{});
+
+    };
+
+    $self->{matches}            =   $uniqueness
+                                    && ($uniqueness =~ $self->{'matches_unique_name'})                      # This name is the current unique name,
+                                    && ($name->{"$self->{'part'}"} || $name->{"$self->{'part'}"} eq '0')    # ...and we have a name part value to match against,
+                                    && ($name->{"$self->{'part'}"} =~ $self->{'matches_find'});             # ...and we have found a match with that value.
+                        
+
+    $self->{matches_auto_no}    =   $self->{auto_no}
+                                    && $self->{auto_no} =~ $uniqueness;
+
+    $self->{matches_auto_yes}   =   $self->{auto_yes}
+                                    && $self->{auto_yes} =~ $uniqueness;
+
+
+    if ($self->{matches}) {
+        $self->log_debug('Match found for: [_1]', $self->_stringify_name($name))
+        ->log_debug('Matched "[_1]" in "[_2]" part of the following unique name...', $self->{'find'}, $self->{'part'})
+        ->dumper($uniqueness);
+    }
+    else {
+        $self->log_debug('No match found.');
+    };
+
+    return  $self;
+}
+
+sub _set_or_prompt_for {
+    my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
+    #say 'in set and prompt_for';
+    $self->{"$attribute"}   =   defined $value?                                 $self->_validate($value):
+                                defined $self->{"$attribute"}?                  $self->{"$attribute"}:
+                                $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
+                                $prompt_type?                                   $self->prompt_for($prompt_type):
+                                $self->prompt_for($attribute);
+
+    return $self;
+}
+
+# Private Function-esque subs:
+
+sub _stringify_name {
+    my  $self           =   shift;
+    my  $name           =   shift;
+    
+    # Premature Exit:
+    die                     $self->localise('_stringify_name.error.no_params')
+                            unless $name; # hash ref check?
+    
+    my  @order_or_omit  =   ();
+
+    for my $current_part ($self->{name_parts}->@*) {
+        push @order_or_omit,
+        $name->{"$current_part"} && $name->{"$current_part"} eq '0'?    "0 but true": # 0 is potentially a valid one character name - haha.
+        $name->{"$current_part"}?                                       $name->{"$current_part"}:
+        ();
+    };
+
+    return                  @order_or_omit? join $self->localise('separator.name_parts'), @order_or_omit:
+                            undef;
+}
+
+sub _validate {
+
+    # Initial Values:
+    my  $self                           =   shift;
+    my  @input                          =   @ARG;
+    
+    # Definitions:
+    my  $number_of_input_arguments      =   scalar @input;
+    my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;    
+
+    # Premature death:
+    die                                     $self->localise('_validate.error.no_arguments')
+                                            unless $number_of_input_arguments; # Blank string or a zero are both valid values.
+
+    # Processing:
+    for my $current_index (0..$#input) {
+    
+        # Stop out of range input:
+        die                                 $self->localise('_validate.error.four_byte_character')
+                                            if (
+                                                $input[$current_index]
+                                                && ($input[$current_index] =~ $matches_four_byte_character)
+                                            );
+
+        # Consider a sole zero as a true input value:
+        $input[$current_index]          =   $input[$current_index] eq '0'? "0 but true":
+                                            $input[$current_index];
+
+    };
+
+    # Output:
+    return  # In list context:
+            wantarray?                          @input:
+            # In Scalar and void contexts..
+            $number_of_input_arguments == 1?    $input[0]:  # if only one value, return sole value...
+            \@input;                                        # ...otherwise return an array ref.
+}
+
+sub _log {
+    #say 'In _log';
+    my  $self       =   shift;
+
+    # Premature exit:
+    die                 $self->localise('_log.error.no_repository')
+                        unless blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
+
+    # Initial Values:
+    my  $type       =   shift;
+    my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
+    #Dumper(((caller 2)[3]));
+    #Dumper(scalar localtime);
+    #Dumper(uc($type));
+    my  $prefix     =   $use_prefix?    sprintf(
+                                            '[%s] [%s] [%s] - ',
+
+                                            scalar localtime,      # Human readable system time and date - linux's ctime(3).
+
+                                            ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
+                                                            # and get the 3rd array index value 
+                                                            # - the perl module and subroutine name.
+
+                                            uc($type),      # Log type - LOG / DEBUG / DUMPER
+                                        ):
+                        q{};
+
+    # Log:
+    $self->{repository}->log(
+        $prefix.(
+            $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+            $self->localise(@ARG)
+        ),
+    );
+    
+    # Stack trace:
+    if ($self->{trace}) {
+        $self->{repository}->log(
+            sprintf(
+                                                '[%s] [%s] [%s] - ',
+
+                                                scalar localtime,      # Human readable system time and date - linux's ctime(3).
+
+                                                ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
+                                                                # and get the 3rd array index value 
+                                                                # - the perl module and subroutine name.
+
+                                                'TRACE',      # Log type - LOG / DEBUG / DUMPER
+                                            )
+        );
+        EPrints->trace;
+    };
+    
+    return $self;
+}
+
+
 
 =over
 
@@ -874,11 +1429,413 @@ an anonymous sub / coderef within my_example method.
 
 1;
 
+
+
 =head1 AUTHOR
 
 Andrew Mehta
 
 =cut
 
+package ChangeNameOperation::Languages;
 
-__END__
+# Always:
+use     strict;
+use     warnings;
+
+# UTF-8:
+use     utf8;
+use     v5.16;
+
+# Specific:
+use     English;
+use     parent qw(Locale::Maketext);
+
+sub try_or_die {
+
+    my  ($self, $language)  =   @ARG;
+    #say 'LANG ='.(defined $language? $language:'Nothing');
+    $language               //= 'en-GB';
+    #say 'LANG ='.$language;
+    my  $error={
+        language            =>  'Trouble finding a language to use.',
+    };
+
+    return  $self->get_handle($language)
+            || die  $error->{'language'};
+}
+
+
+1;
+
+
+BEGIN { # Load prior to ChangeNameOperation::Languages and restrict scope of our variables to this block
+package ChangeNameOperation::Languages::en_gb;
+
+# Always:
+use     strict;
+use     warnings;
+
+# UTF-8:
+use     utf8;
+use     v5.16;
+use     warnings (
+            'FATAL',    #makes anything in this list fatal
+            'utf8',     #utf8 is a warnings category. There is no FATAL UTF-8
+        ); 
+
+# Specific:
+use     parent -norequire, qw(
+            ChangeNameOperation::Languages
+        );
+
+
+# ----------------------------------
+
+my  $new_line                   =   "\n";
+
+my  @configurations = (
+
+# Ignores formatting and case
+# and focuses on desired order.
+# Ignores characters or words 
+# that are not an EPrints::MetaField::Name name part.
+'name_parts.display_order'      =>  'honourific, given, family, lineage',
+
+);
+
+my  @tokens = (
+
+'input.yes_letter'              =>  'Y',
+'input.no_letter'               =>  'N',
+'input.all'                     =>  'ALL',
+'input.none'                    =>  'NONE',
+'input.1'                       =>  '1',
+'input.2'                       =>  '2',
+'separator.name_parts'          =>  ' ', #space
+'separator.name_values'         =>  ',',
+'separator.new_line'            =>  $new_line,
+'separator.search_fields'       =>   ',',
+'name.given'                    =>  'Given Name',
+'name.family'                   =>  'Family Name',
+'display_line'                  =>  'Record [_1]: [_2].',
+
+'horizontal.rule'               =>  
+'
+-------
+',
+
+'_stringify_name.error.no_params' =>
+'Method requires a name hash reference of name parts,
+to be passed in as an argument,
+and no such params were provided.',
+
+'commandline.end_program'       =>  'This program will now end...'.$new_line,
+'validation.errors.invalid'     =>  "Invalid [_1] field in [_2] form.\n",
+
+'commandline.no_arguments'      =>  'No commandline arguments given.',
+'commandline.utf8_enabled'      =>  'UTF-8 commandline arguments enabled.',
+
+'commandline.utf8_not_enabled'  =>
+
+'UTF-8 commandline arguments do not appear to be enabled.
+
+To enable UTF-8 arguments,
+please run the script again with, for example, -CAS after perl as such...
+
+    perl -CAS ChangeNameOperation.pm
+    
+To learn more,
+you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
+or run...
+
+    perldoc perlrun
+    
+...and scroll to the Command Switches section,
+and read the -C switch section within that.
+
+Alternatively,
+if you cannot enable UTF-8 commandline arguments in this way,
+consider running the script without arguments,
+and you will be prompted for input instead.
+',
+
+'prompt_for.1or2'               =>  'Please enter 1 or 2.',
+'prompt_for.part'               =>
+    
+'
+From your search we found matching records with the following given names associated...
+
+Given Names: 
+[_1]
+
+...and the following family names associated...
+
+Family Names: 
+[_2]
+
+Which do you wish to perform your change on first?
+    1) Given Name
+    2) Family Name
+',
+
+'prompt_for.confirm' =>
+
+'Confirm to change [_1] name from...
+
+"[_2]"
+
+...to...
+
+"[_3]"
+
+...for name [_4] in field [_5] in the following record...
+
+[_6]
+
+...?
+
+------
+',
+
+'change.from.can'  =>
+
+'Changing...
+
+[_1]
+',
+
+'change.from.cannot'  =>
+
+'Unable to change...
+
+[_1]
+',
+
+'change.to.can' =>
+
+'...to...
+
+[_1]
+',
+
+'change.to.cannot' =>
+
+'...to...
+
+[_1]
+
+...due to an edit lock on this record (record [_2]).
+',
+
+'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
+
+'change.done'       =>  'Done - the change has been made for you.',
+
+'seeking_confirmation.display_lines' =>
+
+'------
+
+For the unique name combination...
+
+[_1]
+
+...the following matching records were found:
+
+[_2]
+
+------
+',
+
+'prompt_for.confirm.acceptable_input'  =>
+
+'Enter "Y" for Yes,
+Enter "N" for No,
+Enter "ALL" for Yes to All Remaining for this unique name combination.
+Enter "NONE" for No to All Remaining for this unique name combination.',
+
+
+'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
+'prompt_for.search'                         =>  'Please specify a Search Term: ',
+'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
+
+'prompt_for.find'                           =>  
+
+'Your change will be performed using find and replace,
+(looking to find full and not partial matches, and with case insensitivity).
+What is your find value when matching within [_1]?',
+
+'prompt_for.find.error.no_part'             =>  
+
+'A part attribute must be set
+when prompting to find a value
+in a particular name part, ',
+
+'prompt_for.replace.prompt_on_blank'        =>  
+
+'Did you mean for the replace value to be a blank/null value,
+that if later confirmed would effectively be clearing the field?
+Enter Y or y for Yes, or anything else for No: ',
+
+'prompt_for.error.no_prompt_type'           =>  
+
+'No prompt type argument supplied to prompt_for method, ',
+
+
+'_validate.error.four_byte_character'       =>
+
+'This script does not support
+four byte characters in input.',
+
+'_validate.error.no_arguments'              =>
+
+'Private _validate method was called with no arguments, 
+and thus had no input to validate.
+The method requires at least one thing to validate, ',
+
+'_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
+
+'_confirmation_feedback.heading.confirmed_so_far'       =>  
+
+'
+------
+
+Records you have confirmed for changing so far...
+
+',
+
+'_confirmation_feedback.heading.unique_name'            =>
+
+'
+For the unique name [_1] ...
+
+Confirmation | Record To Change...
+',
+
+'_confirmation_feedback.record.confirmed_for_changing'  =>  
+
+'[_1] | [_2]
+',
+
+'_confirmation_feedback.footer'                         =>
+'
+------
+',
+
+
+'finish.change'     =>  '[quant,_1,change] out of [quant,_2,change] completed.',
+
+'finish.no_change'  => 'No changes made.', 
+
+'finish.thank_you'  => 'Thank you for using this script.',
+
+);
+
+my  @phrases = (
+    'Constructed New Object Instance'   =>  'Constructed New Object Instance',
+    'Commandline Params are...'         =>  'Commandline Params are...',
+    'Commandline Input is...'           =>  'Commandline Input is...',
+    'Language set to [_1].'             =>  'Language set to [_1].',
+    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
+    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
+    'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
+    'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
+    'Set YAML configurations.' => 'Set YAML configurations.',
+    'Set search-fields.' => 'Set search-fields.',
+    'Setting further self-referential attributes...' => 'Setting further self-referential attributes...',
+    'Entering method.' => 'Entering method.',
+    'Name parts before we begin:' => 'Name parts before we begin:',
+    'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
+    'Leaving method.' => 'Leaving method.',
+    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
+    'Entered method.' => 'Entered method.',
+    'Searching...' => 'Searching...',
+    'Found Results.' => 'Found Results.',
+    'No Results Found.'=>'No Results Found.',
+    'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
+    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
+    'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
+    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE mode - changes will be made at the end after confirmation.',
+    'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
+    'Processing search field: [_1]'=>'Processing search field: [_1]',
+    'Leaving part_specific method.'=>'Leaving part_specific method.',
+    'Called display method.' => 'Called display method.',
+    'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
+    'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
+    'Entering method'=>'Entering method',
+    'Leaving method. Attribute display_lines is...'=>'Leaving method. Attribute display_lines is...',
+    'Match found for: [_1]'=>'Match found for: [_1]',
+    'No match found.'=>'No match found.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Matched "[_1]" in "[_2]" part of the following unique name...',
+    'Entered module.'=>'Entered module.',
+    'Found params, and about to process them...'=>'Found params, and about to process them...',
+    'Stringified names for use in a localised display line.'=>'Stringified names for use in a localised display line.',
+    'Returning localised display line as we leave the method.'=>'Returning localised display line as we leave the method.',
+    'Set display flags and added display line:'=>'Set display flags and added display line:',
+    'Leaving display method.'=>'Leaving display method.',
+    'Called confirm method.'=>'Called confirm method.',
+    'Checking if display lines have been shown.'=>'Checking if display lines have been shown.',
+    'Setting confirmation'=>'Setting confirmation',
+    'Processing confirmation...'=>'Processing confirmation...',
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    'Added details to what_to_change'=>'Added details to what_to_change',
+    'Leaving confirm method.'=>'Leaving confirm method.',
+    'Called change method.'=>'Called change method.',
+    'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
+    'Premature exit - Prerequisites not met.'=>'Premature exit - Prerequisites not met.',
+    'Premature exit - Nothing to change.'=>'Premature exit - Nothing to change.',
+    'Searching fields [_1] ...'=>'Searching fields [_1] ...',
+    'Using search settings...'=>'Using search settings...',
+    'Generated confirmation feedback.'=>'Generated confirmation feedback.',
+    'No confirmation feedback generated.'=>'No confirmation feedback generated.',
+    'Displaying generated confirmation feedback.'=>'Displaying generated confirmation feedback.',
+    'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
+    'Matched unique name.'=>'Matched unique name.',
+    'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
+    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
+    'Left unique name loop.'=>'Left unique name loop.',
+    'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
+    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+    'Nothing was found to match.'=>'Nothing was found to match.',
+    'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
+
+);
+
+our %Lexicon = (
+    #'_AUTO' => 1, # Commented out the auto for now.
+    @configurations,
+    @tokens,
+    @phrases,
+);
+
+# ----------------------------------
+
+1;
+
+}
+
+package ChangeNameOperationYAMLConfig;
+
+1;
+
+__DATA__
+# This is a YAML Configuration File:
+%YAML 1.2
+# Three dashes to start new YAML document.
+---
+
+Fields to search:
+    -   creators_name
+    -   contributors_name
+
+Dataset to use: eprint
+
+Force commit changes to database: yes
+
+# For the above, provide a yes or y (case insensitive) to force commit,
+# or anything else (such as no) to not force commit.
+
+...
+# Three dots to end current YAML document.
+
+
