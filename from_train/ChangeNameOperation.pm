@@ -294,24 +294,31 @@ sub change {
                 $name,
             )                       =   $details->@*;
         
-        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->($result->id);
- 
-        $self->log_verbose('This item is under an edit lock.') if $fresh_result->is_locked;
+        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+        my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
+                                        'can';
+
+        say $self->localise('horizontal.rule');
         
-        say $self->localise('change.from', $self->format_single_line_for_display($fresh_result, $search_field));
+        say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
 
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
         $fresh_result->set_value($search_field, $names);
 
-        say $self->localise('change.to', $self->format_single_line_for_display($fresh_result, $search_field));
+        say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
     
         if ($self->{live}) {
-            $fresh_result->commit($self->{force_or_not}->@*);
-            say $self->localise('change.done');
-            $self->{changes_made}++;
+            unless ($fresh_result->is_locked) {
+                $fresh_result->commit($self->{force_or_not}->@*);
+                say $self->localise('change.done');
+                $self->{changes_made}++;
+            }
+            else {
+                say $self->localise('Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.', $fresh_result->id);
+            };
         }
         else {
-            say $self->localise('change.dry_run')
+            say $self->localise('change.dry_run');
         };
 
     };
@@ -321,7 +328,8 @@ sub change {
 
 sub finish {
     my  $self   =   shift;
-    say $self->localise('finish.change',$self->{changes_made});
+    say $self->localise('horizontal.rule');
+    say $self->localise('finish.change',$self->{changes_made}, scalar $self->{what_to_change}->@*);
     say $self->localise('finish.no_change') unless $self->{changes_made};
     say $self->localise('finish.thank_you');
     return $self;
@@ -747,9 +755,10 @@ sub _get_commandline_arguments {
     $params={
         $params->%*,
         archive_id  =>  shift,
-        find        =>  shift,
+        search      =>  shift,
         replace     =>  shift,
         part        =>  shift,
+        find        =>  shift,
     };
 
     #say "Dump params:".Dumper($params->%*);
@@ -1496,6 +1505,11 @@ my  @tokens = (
 'name.family'                   =>  'Family Name',
 'display_line'                  =>  'Record [_1]: [_2].',
 
+'horizontal.rule'               =>  
+'
+-------
+',
+
 '_stringify_name.error.no_params' =>
 'Method requires a name hash reference of name parts,
 to be passed in as an argument,
@@ -1569,22 +1583,34 @@ Which do you wish to perform your change on first?
 ------
 ',
 
-'change.from'  =>
+'change.from.can'  =>
 
-'
-----------------
-
-Changing...
+'Changing...
 
 [_1]
 ',
 
-'change.to' =>
+'change.from.cannot'  =>
+
+'Unable to change...
+
+[_1]
+',
+
+'change.to.can' =>
+
+'...to...
+
+[_1]
+',
+
+'change.to.cannot' =>
 
 '...to...
 
 [_1]
 
+...due to an edit lock on this record (record [_2]).
 ',
 
 'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
@@ -1682,7 +1708,7 @@ Confirmation | Record To Change...
 ',
 
 
-'finish.change'     =>  '[quant,_1,Change] successfully completed.',
+'finish.change'     =>  '[quant,_1,change] out of [quant,_2,change] completed.',
 
 'finish.no_change'  => 'No changes made.', 
 
@@ -1753,6 +1779,8 @@ my  @phrases = (
     'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
     'Left unique name loop.'=>'Left unique name loop.',
+    'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
+    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
 
 );
 
