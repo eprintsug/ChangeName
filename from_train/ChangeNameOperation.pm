@@ -365,7 +365,18 @@ sub _set_find {
 }
 
 sub _set_search {
-    return shift->_set_or_prompt_for('find' => shift, 'search', @ARG); # Search prompt type.
+    my  $self   =   shift;
+    my  $value  =   shift;
+
+    # Standard setting of search...
+    return          $self->_set_or_prompt_for('search' => $value, @ARG)
+                    unless ($value && $self->{exact});
+
+    # Special case that sets find if --exact flag given, 
+    # and then sets search the same as find:
+    $self->_set_or_prompt_for('find' => $value, @ARG)->{search} = $self->{find}; 
+    
+    return $self;
 }
 
 sub _set_replace {
@@ -713,6 +724,7 @@ sub _get_commandline_arguments {
         no_dumper   =>  0,
         no_trace    =>  0,
         config      =>  undef,
+        exact       =>  0,
     };
 
     # Command Line Options:    
@@ -748,7 +760,8 @@ sub _get_commandline_arguments {
 
         'no_trace|notrace+',    # if --notrace present  set $no_trace  to 1.
         
-                            
+        'exact!',               # if --exact present,   set $exact to 1,
+                                # if --noexact present, set $exact to 0.                            
 
     );
 
@@ -758,7 +771,6 @@ sub _get_commandline_arguments {
         search      =>  shift,
         replace     =>  shift,
         part        =>  shift,
-        find        =>  shift,
     };
 
     #say "Dump params:".Dumper($params->%*);
@@ -774,7 +786,7 @@ sub _check_commandline_input {
     my  $params             =   {@ARG};
     my  @commandline_input  =   map { defined $ARG && $ARG? $ARG:() } (
                                     $params->{archive_id},
-                                    $params->{find},
+                                    $params->{search},
                                     $params->{replace},
                                     $params->{part},
                                 );
@@ -853,6 +865,7 @@ sub _set_attributes {
                                 ),
         no_dumper           =>  $params->{no_dumper} // 0,
         no_trace            =>  $params->{no_trace} // 0,
+        exact               =>  $params->{exact} // 0,
 
         # Internationalisation:
         language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
@@ -864,7 +877,7 @@ sub _set_attributes {
     ->log_debug                 ('Set initial instance attributes using params or defaults.')
     ->log_debug                 ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
     ->log_debug                 ('Now setting additional instance attributes from params...')
-    ->_set_search               ($params->{find})
+    ->_set_search               ($params->{search})
     ->_set_replace              ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
     ->_set_part                 ($params->{part},'no_prompt') # Also optional on initialisation.
     ->_set_yaml                 ($params->{yaml})
@@ -894,7 +907,7 @@ sub _set_attributes {
         # Search:
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
-                                    value           =>  $self->{find},
+                                    value           =>  $self->{search},
                                 }],
         
     );
