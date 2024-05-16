@@ -94,16 +94,13 @@ ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
 
 =over
 
-=item hello();
+=item your_method_goes_here(params);
 
-    use ChangeName qw(hello);
-    my  $greeting = hello();
-    
-    # Alternatively:
-    use ChangeName;
-    my  $greeting = ChangeName->hello();
+    Synopsis here
 
-Returns a string containing a greeting.
+Description here.
+
+To be done.
 
 =back
 
@@ -1323,7 +1320,7 @@ sub _validate {
 }
 
 sub _log {
-    #say 'In _log';
+
     my  $self       =   shift;
 
     # Premature exit:
@@ -1333,9 +1330,7 @@ sub _log {
     # Initial Values:
     my  $type       =   shift;
     my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
-    #Dumper(((caller 2)[3]));
-    #Dumper(scalar localtime);
-    #Dumper(uc($type));
+
     my  $prefix     =   $use_prefix?    sprintf(
                                             '[%s] [%s] [%s] - ',
 
@@ -1361,16 +1356,16 @@ sub _log {
     if ($self->{trace}) {
         $self->{repository}->log(
             sprintf(
-                                                '[%s] [%s] [%s] - ',
+                '[%s] [%s] [%s] - ',
 
-                                                scalar localtime,      # Human readable system time and date - linux's ctime(3).
+                scalar localtime,   # Human readable system time and date - linux's ctime(3).
 
-                                                ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
-                                                                # and get the 3rd array index value 
-                                                                # - the perl module and subroutine name.
+                ((caller 2)[3]),    # Back 2, to what called dumper / log_debug / log_verbose, 
+                                    # and get the 3rd array index value 
+                                    # - the perl module and subroutine name.
 
-                                                'TRACE',      # Log type - LOG / DEBUG / DUMPER
-                                            )
+                'TRACE',            # Log type - LOG / DEBUG / DUMPER
+            )
         );
         EPrints->trace;
     };
@@ -1378,54 +1373,6 @@ sub _log {
     return $self;
 }
 
-
-
-=over
-
-=item my_example();
-
-    # Run from command line:
-    perl ./ChangeName.pl
-
-Input set internally.
-Searches EPrints according to internally set search criteria,
-then calls L</result_processing( $session, $dataset, $result, $output);>
-for processing of the search results for output purposes.
-Returns a multi-line string that can be used with say or print,
-to display the output returned from the result processing.
-
-=back
-
-=cut
-
-=over
-
-=item result_processing( $session, $dataset, $result, $output);
-
-Expects an L<EPrints::Repository> object ($session),
-L<EPrints::DataSet> object,
-L<EPrints::List> object (as typically returned from a search),
-and a hash reference of useful information (traditionally $info),
-which in this case will be used 
-to manipulate the value of a lines hash key,
-that stores an array reference to an array of lines,
-to be used for printing output to the terminal,
-and so is described as $output.
-
-Output is expected to be the manipulated $output hash reference,
-so there is no explicit return statement.
-
-Notes:
-Used internally by my_example, 
-so should possibly be made a private method
-(as is possible with lexical methods 
-in L<Object::Pad> or presumably Perl 5.38 too).
-Might go back to making it 
-an anonymous sub / coderef within my_example method.
-
-=back
-
-=cut
 
 
 
