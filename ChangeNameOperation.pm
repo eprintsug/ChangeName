@@ -10,7 +10,13 @@ use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
 
-use     v5.16;
+use     v5.20;
+use     feature (            
+            'postderef',        # Available from 5.20. Standard with no need for feature declaration from 5.24.
+            'postderef_qq',     # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
+        );                      # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
+                                # https://perldoc.perl.org/feature#The-'postderef'-and-'postderef_qq'-features
+        
 #use    feature qw(fc);         # Available in Perl 5.16 or higher.
                                 # Commented out as already activated by the "use v5.16;" feature bundle.
                                 # Guide to feature bundles here: https://perldoc.perl.org/feature#FEATURE-BUNDLES
@@ -20,7 +26,10 @@ use     v5.16;
 #use    feature 'signatures';   # Not activated by default until the "use v5.36" feature bundle. 
                                 # Only available from Perl 5.20 onwards.
                                 # Commented out and not used, 
-                                # as we are targeting users with 5.16 or higher.
+                                # as was originally targeting users with 5.16 or higher.
+                                # Now I realise there is no postderef and postderef_qq until 5.20,
+                                # and since this script uses them, we'll be targeting 5.20 afterall,
+                                # so could be using signatures.
 use     utf8;
 use     English;
 
@@ -272,7 +281,9 @@ sub confirm {
 }
 
 sub change {
+
     my  $self   =   shift;
+    
     $self->log_debug('Called change method.')->dumper;
 
     my  $prerequisites              =   $self->{what_to_change}
@@ -323,6 +334,7 @@ sub change {
     };
     
     return $self;
+
 }
 
 sub finish {
@@ -465,7 +477,7 @@ sub format_single_line_for_display {
     # Initial Values:
     my  ($self, $result, $field)    =   @ARG;
 
-    $self->log_debug('Entered module.');
+    $self->log_debug('Entered method.');
 
     die                                 $self->localise('format_single_line_for_display.error.no_params')
                                         unless ($result && $field);
@@ -587,6 +599,7 @@ sub prompt_for {
         my  $matches_acceptable_input   =   qr/^($acceptable_input)$/i;
 
         say $self->localise($prompt, @prompt_arguments);
+        say $self->localise('horizontal.rule');
 
         until ( $confirmation && ($confirmation =~ $matches_acceptable_input) ) {
             say $self->localise('prompt_for.confirm.acceptable_input');
@@ -843,6 +856,8 @@ sub _set_attributes {
     my  ($self, $params)    =   @ARG;
 
     my  $matches_yes        =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
+    my  $matches_match_types=   qr/^(IN|EQ|EX|SET|NO)$/;
+    my  $matches_merge_types=   qr/^(ANY|ALL)$/;
 
     $self->%*               =   (
 
@@ -879,7 +894,7 @@ sub _set_attributes {
     ->_set_search               ($params->{search})
     ->_set_replace              ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
     ->_set_part                 ($params->{part},'no_prompt') # Also optional on initialisation.
-    ->_set_yaml                 ($params->{yaml})
+    ->_set_yaml                 ($params->{config})
     ->dumper;
     
     $self->log_debug('Setting self-referential instance attributes...')
@@ -890,11 +905,20 @@ sub _set_attributes {
 
         # From YAML Configuration:
         force_or_not        =>  [
-                                    ($self->{yaml}->{'Force commit changes to database'} =~ $matches_yes)?    [1]:
+                                    ($self->{yaml}->{'Force commit changes to database'} =~ $matches_yes)?  [1]:
                                     ()
                                 ],
-        dataset_to_use      =>  $self->{yaml}->{'Dataset to use'},
-        fields_to_search    =>  $self->{yaml}->{'Fields to search'},
+        dataset_to_use      =>  $self->_validate($self->{yaml}->{'Dataset to use'}),
+        fields_to_search    =>  [$self->_validate($self->{yaml}->{'Fields to search'}->@*)],
+        search_match_type   =>  $self->{yaml}->{'Search Field Match Type'}
+                                &&
+                                (uc($self->{yaml}->{'Search Field Match Type'}) =~ $matches_match_types)?     uc $self->{yaml}->{'Search Field Match Type'}:
+                                'IN',
+        search_merge_type   =>  $self->{yaml}->{'Search Field Merge Type'}
+                                &&
+                                (uc($self->{yaml}->{'Search Field Merge Type'}) =~ $matches_merge_types)?     uc $self->{yaml}->{'Search Field Merge Type'}:
+                                'ANY',
+
     );
 
     $self->log_verbose('Set YAML configurations.')->dumper
@@ -907,8 +931,8 @@ sub _set_attributes {
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
                                     value           =>  $self->{search},
-                                    match           =>  'IN',
-                                    merge           =>  'ANY',
+                                    match           =>  $self->{search_match_type},
+                                    merge           =>  $self->{search_merge_type},
                                 }],
         
     );
@@ -1066,6 +1090,7 @@ sub _seeking_confirmation {
                        
             unless ($self->{display_lines_shown}) {
 
+                say $self->localise('horizontal.rule');
                 say $self->localise(
                         'seeking_confirmation.display_lines',
                         $self->_stringify_name($name),
@@ -1074,6 +1099,7 @@ sub _seeking_confirmation {
                             $self->{display_lines}->{"$self->{unique_name}"}->@*,
                         ),
                     );
+                say $self->localise('horizontal.rule');
 
                 $self->{display_lines_shown}    =   'Yes';
 
@@ -1156,7 +1182,8 @@ sub _generate_confirmation_feedback {
 
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
 
-    my  $output                                             =   $self->localise('_confirmation_feedback.heading.confirmed_so_far');
+    my  $output                                             =   $self->localise('horizontal.rule').
+                                                                $self->localise('_confirmation_feedback.heading.confirmed_so_far');
     my  $at_least_one_confirmation                          =   undef;
     my  $heading_shown_for                                  =   {};
 
@@ -1194,7 +1221,7 @@ sub _generate_confirmation_feedback {
         $self->log_debug('Exited unique name loop.');
     };
     
-    $output                                                 .=  $self->localise('_confirmation_feedback.footer');
+    $output                                                 .=  $self->localise('horizontal.rule');
     
     $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
                                                                 undef;
@@ -1462,9 +1489,9 @@ my  @tokens = (
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 'separator.name_parts'          =>  ' ', #space
-'separator.name_values'         =>  ',',
+'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
-'separator.search_fields'       =>   ',',
+'separator.search_fields'       =>  ', ', #comma space
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
 'name.honourific'               =>  'Honourific Name',
@@ -1551,10 +1578,7 @@ Which do you wish to perform your change on first?
 
 [_6]
 
-...?
-
-------
-',
+...?',
 
 'change.from.can'  =>
 
@@ -1574,8 +1598,7 @@ Which do you wish to perform your change on first?
 
 '...to...
 
-[_1]
-',
+[_1]',
 
 'change.to.cannot' =>
 
@@ -1583,8 +1606,7 @@ Which do you wish to perform your change on first?
 
 [_1]
 
-...due to an edit lock on this record (record [_2]).
-',
+...due to an edit lock on this record (record [_2]).',
 
 'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
 
@@ -1592,25 +1614,21 @@ Which do you wish to perform your change on first?
 
 'seeking_confirmation.display_lines' =>
 
-'------
-
-For the unique name combination...
+'For the unique name combination...
 
 [_1]
 
 ...the following matching records were found:
 
-[_2]
-
-------
-',
+[_2]',
 
 'prompt_for.confirm.acceptable_input'  =>
 
 'Enter "Y" for Yes,
 Enter "N" for No,
 Enter "ALL" for Yes to All Remaining for this unique name combination.
-Enter "NONE" for No to All Remaining for this unique name combination.',
+Enter "NONE" for No to All Remaining for this unique name combination.
+',
 
 
 'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
@@ -1621,7 +1639,9 @@ Enter "NONE" for No to All Remaining for this unique name combination.',
 
 'Your change will be performed using find and replace,
 (looking to find full and not partial matches, and with case insensitivity).
-What is your find value when matching within [_1]?',
+
+What is your find value when matching within [_1]?
+',
 
 'prompt_for.find.error.no_part'             =>  
 
@@ -1656,8 +1676,6 @@ The method requires at least one thing to validate, ',
 '_confirmation_feedback.heading.confirmed_so_far'       =>  
 
 '
-------
-
 Records you have confirmed for changing so far...
 
 ',
@@ -1675,11 +1693,6 @@ Confirmation | Record To Change...
 '[_1] | [_2]
 ',
 
-'_confirmation_feedback.footer'                         =>
-'
-------
-',
-
 
 'finish.change'     =>  '[quant,_1,change] out of [quant,_2,change] completed.',
 
@@ -1690,7 +1703,7 @@ Confirmation | Record To Change...
 );
 
 my  @phrases = (
-    'Constructed New Object Instance'   =>  'Constructed New Object Instance',
+    'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
     'Commandline Params are...'         =>  'Commandline Params are...',
     'Commandline Input is...'           =>  'Commandline Input is...',
     'Language set to [_1].'             =>  'Language set to [_1].',
@@ -1705,7 +1718,6 @@ my  @phrases = (
     'Name parts before we begin:' => 'Name parts before we begin:',
     'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
     'Leaving method.' => 'Leaving method.',
-    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
     'Entered method.' => 'Entered method.',
     'Searching...' => 'Searching...',
     'Found Results.' => 'Found Results.',
@@ -1724,7 +1736,6 @@ my  @phrases = (
     'Match found for: [_1]'=>'Match found for: [_1]',
     'No match found.'=>'No match found.',
     'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Matched "[_1]" in "[_2]" part of the following unique name...',
-    'Entered module.'=>'Entered module.',
     'Found params, and about to process them...'=>'Found params, and about to process them...',
     'Stringified names for use in a localised display line.'=>'Stringified names for use in a localised display line.',
     'Returning localised display line as we leave the method.'=>'Returning localised display line as we leave the method.',
@@ -1821,9 +1832,9 @@ my  @tokens = (
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 'separator.name_parts'          =>  ' ', #space
-'separator.name_values'         =>  ',',
+'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
-'separator.search_fields'       =>   ',',
+'separator.search_fields'       =>  ', ', #comma space
 'name.given'                    =>  'Vorname',
 'name.family'                   =>  'Familienname',
 'name.honourific'               =>  'Ehrenname',
@@ -1900,135 +1911,128 @@ Wo möchten Sie Ihre Änderung zuerst durchführen?
 
 'prompt_for.confirm' =>
 
-'Confirm to change [_1] name from...
+'Bestätigen Sie, um den Namen von [_1] zu ändern von...
 
-"[_2]"
+„[_2]“
 
-...to...
+...Zu...
 
 "[_3]"
 
-...for name [_4] in field [_5] in the following record...
+...für den Namen [_4] im Feld [_5] im folgenden Datensatz...
 
 [_6]
 
-...?
-
-------
-',
+...?',
 
 'change.from.can'  =>
 
-'Changing...
+'Ändern...
 
 [_1]
 ',
 
 'change.from.cannot'  =>
 
-'Unable to change...
+'Änderung nicht möglich... 
 
 [_1]
 ',
 
 'change.to.can' =>
 
-'...to...
+'...zu...
 
-[_1]
-',
+[_1]',
 
 'change.to.cannot' =>
 
-'...to...
+'...zu...
 
 [_1]
 
-...due to an edit lock on this record (record [_2]).
-',
+..aufgrund einer Bearbeitungssperre für diesen Datensatz (Datensatz [_2]).',
 
-'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
+'change.dry_run'    =>  'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
 
-'change.done'       =>  'Done - the change has been made for you.',
+'change.done'       =>  'Fertig – die Änderung wurde für Sie vorgenommen.',
 
 'seeking_confirmation.display_lines' =>
 
-'------
-
-For the unique name combination...
+'
+Für die eindeutige Namenskombination...
 
 [_1]
 
-...the following matching records were found:
+... wurden die folgenden übereinstimmenden Datensätze gefunden:
 
-[_2]
-
-------
-',
+[_2]',
 
 'prompt_for.confirm.acceptable_input'  =>
 
-'Enter "Y" for Yes,
-Enter "N" for No,
-Enter "ALL" for Yes to All Remaining for this unique name combination.
-Enter "NONE" for No to All Remaining for this unique name combination.',
+'Geben Sie „J“ für „Ja“ ein.
+Geben Sie „N“ für „Nein“ ein.
+Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige Namenskombination ein.
+Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
+',
 
-
-'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
-'prompt_for.search'                         =>  'Please specify a Search Term: ',
-'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
+'prompt_for.archive'                        =>  'Bitte geben Sie eine Archiv-ID an: ',
+'prompt_for.search'                         =>  'Bitte geben Sie einen Suchbegriff ein:  ',
+'prompt_for.replace'                        =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
 
 'prompt_for.find'                           =>  
 
-'Your change will be performed using find and replace,
-(looking to find full and not partial matches, and with case insensitivity).
-What is your find value when matching within [_1]?',
+'Ihre Änderung wird mithilfe von „Suchen und Ersetzen“ durchgeführt
+(wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
+und die Groß-/Kleinschreibung nicht beachtet wird).
+
+Was ist Ihr Suchwert beim Abgleich innerhalb von [_1]?
+',
 
 'prompt_for.find.error.no_part'             =>  
 
-'A part attribute must be set
-when prompting to find a value
-in a particular name part, ',
+'Bei der Aufforderung,
+einen Wert in einem bestimmten namensteil zu finden,
+muss ein teil-Attribut festgelegt werden.',
 
 'prompt_for.replace.prompt_on_blank'        =>  
 
-'Did you mean for the replace value to be a blank/null value,
-that if later confirmed would effectively be clearing the field?
-Enter Y or y for Yes, or anything else for No: ',
+'Wollten Sie absichtlich, dass der „Ersetzen“-Wert ein Leer-/Nullwert ist,
+der, wenn er später während des Bestätigungsprozesses als Änderung bestätigt wird,
+das Feld effektiv löscht?
+Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
 
 'prompt_for.error.no_prompt_type'           =>  
 
-'No prompt type argument supplied to prompt_for method, ',
+'Kein Eingabeaufforderungstypargument für die Methode prompt_for bereitgestellt.',
 
 
 '_validate.error.four_byte_character'       =>
 
-'This script does not support
-four byte characters in input.',
+'Dieses Skript unterstützt keine 
+4-Byte-Zeichen in der Eingabe.',
 
 '_validate.error.no_arguments'              =>
 
-'Private _validate method was called with no arguments, 
-and thus had no input to validate.
-The method requires at least one thing to validate, ',
+'Die private _validate-Methode wurde ohne Argumente aufgerufen.
+und hatte daher keine Eingaben zur Validierung.
+Die Methode erfordert mindestens eine Sache zur Validierung, ',
 
-'_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
+'_log.error.no_repository'                  =>  'Für die private _log-Methode ist ein gültiges EPrints::Repository-Objekt erforderlich, das als Attribut von $self festgelegt ist.',
 
 '_confirmation_feedback.heading.confirmed_so_far'       =>  
 
 '
-------
-
-Records you have confirmed for changing so far...
+Die von Ihnen bestätigten Datensätze sollen bisher geändert werden...
 
 ',
 
 '_confirmation_feedback.heading.unique_name'            =>
 
 '
-For the unique name [_1] ...
+Für den einzigartigen Namen [_1]...
 
-Confirmation | Record To Change...
+Bestätigung | Zum Ändern aufzeichnen...
 ',
 
 '_confirmation_feedback.record.confirmed_for_changing'  =>  
@@ -2036,89 +2040,82 @@ Confirmation | Record To Change...
 '[_1] | [_2]
 ',
 
-'_confirmation_feedback.footer'                         =>
-'
-------
-',
 
+'finish.change'     =>  '[quant,_1,Änderung] von [quant,_2,Änderungen] abgeschlossen.',
 
-'finish.change'     =>  '[quant,_1,change] out of [quant,_2,change] completed.',
+'finish.no_change'  => 'Keine Änderungen vorgenommen.', 
 
-'finish.no_change'  => 'No changes made.', 
-
-'finish.thank_you'  => 'Thank you for using this script.',
+'finish.thank_you'  => 'Vielen Dank, dass Sie dieses Skript verwenden.',
 
 );
 
 my  @phrases = (
-    'Constructed New Object Instance'   =>  'Constructed New Object Instance',
-    'Commandline Params are...'         =>  'Commandline Params are...',
-    'Commandline Input is...'           =>  'Commandline Input is...',
-    'Language set to [_1].'             =>  'Language set to [_1].',
-    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
-    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
-    'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
-    'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
-    'Set YAML configurations.' => 'Set YAML configurations.',
-    'Set search-fields.' => 'Set search-fields.',
-    'Setting further self-referential attributes...' => 'Setting further self-referential attributes...',
-    'Entering method.' => 'Entering method.',
-    'Name parts before we begin:' => 'Name parts before we begin:',
-    'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
-    'Leaving method.' => 'Leaving method.',
-    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
-    'Entered method.' => 'Entered method.',
-    'Searching...' => 'Searching...',
-    'Found Results.' => 'Found Results.',
-    'No Results Found.'=>'No Results Found.',
-    'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
-    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
-    'DRY RUN mode - no changes will be made.'=>'DRY RUN mode - no changes will be made.',
-    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE mode - changes will be made at the end after confirmation.',
-    'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
-    'Processing search field: [_1]'=>'Processing search field: [_1]',
-    'Leaving part_specific method.'=>'Leaving part_specific method.',
-    'Called display method.' => 'Called display method.',
-    'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
-    'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
-    'Leaving method. Attribute display_lines is...'=>'Leaving method. Attribute display_lines is...',
-    'Match found for: [_1]'=>'Match found for: [_1]',
-    'No match found.'=>'No match found.',
-    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Matched "[_1]" in "[_2]" part of the following unique name...',
-    'Entered module.'=>'Entered module.',
-    'Found params, and about to process them...'=>'Found params, and about to process them...',
-    'Stringified names for use in a localised display line.'=>'Stringified names for use in a localised display line.',
-    'Returning localised display line as we leave the method.'=>'Returning localised display line as we leave the method.',
-    'Set display flags and added display line:'=>'Set display flags and added display line:',
-    'Leaving display method.'=>'Leaving display method.',
-    'Called confirm method.'=>'Called confirm method.',
-    'Checking if display lines have been shown.'=>'Checking if display lines have been shown.',
-    'Setting confirmation'=>'Setting confirmation',
-    'Processing confirmation...'=>'Processing confirmation...',
-    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
-    'Added details to what_to_change'=>'Added details to what_to_change',
-    'Leaving confirm method.'=>'Leaving confirm method.',
-    'Called change method.'=>'Called change method.',
-    'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
-    'Premature exit - Prerequisites not met.'=>'Premature exit - Prerequisites not met.',
-    'Premature exit - Nothing to change.'=>'Premature exit - Nothing to change.',
-    'Searching fields [_1] ...'=>'Searching fields [_1] ...',
-    'Using search settings...'=>'Using search settings...',
-    'Generated confirmation feedback.'=>'Generated confirmation feedback.',
-    'No confirmation feedback generated.'=>'No confirmation feedback generated.',
-    'Displaying generated confirmation feedback.'=>'Displaying generated confirmation feedback.',
-    'Thank you for your patience. Your request is being processed...'=>'Thank you for your patience. Your request is being processed...',
-    'Matched unique name.'=>'Matched unique name.',
-    'Added record to confirmation feedback.'=>'Added record to confirmation feedback.',
-    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
-    'Exited unique name loop.'=>'Exited unique name loop.',
-    'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
-    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
-    'Nothing was found to match.'=>'Nothing was found to match.',
-    'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
-    'Premature Exit - our operation is already specific to a name part.'=>'Premature Exit - our operation is already specific to a name part.',
-    'Premature exit - name parts already populated.'=>'Premature exit - name parts already populated.',
-    'Premature exit - no result passed in.'=>'Premature exit - no result passed in.',
+    'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
+    'Commandline Params are...'         =>  'Befehlszeilenparameter sind...',
+    'Commandline Input is...'           =>  'Befehlszeileneingabe ist...',
+    'Language set to [_1].'             =>  'Sprache auf [_1] eingestellt.',
+    'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
+    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Um Protokollmethoden verwenden zu können, waren alle Sprach-, Archiv-, Repository- und Debug-/Ausführlichkeits-/Trace-Einstellungen erforderlich.',
+    'Now setting additional instance attributes from params...' => 'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt ...',
+    'Setting self-referential instance attributes...' => 'Selbstreferenzielle Instanzattribute festlegen...',
+    'Set YAML configurations.' => 'Legen Sie YAML-Konfigurationen fest.',
+    'Set search-fields.' => 'Legen Suchfelder.',
+    'Setting further self-referential attributes...' => 'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
+    'Entering method.' => 'Jetzt innerhalb der Objektmethode.',
+    'Name parts before we begin:' => 'Benennen Sie Teile, bevor wir beginnen:',
+    'Set name parts according to language localisation as follows...' => 'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest ...',
+    'Leaving method.' => 'Jetzt verlassen wir die Objektmethode.',
+    'Entered method.' => 'Innerhalb der Methode.',
+    'Searching...' => 'Jetzt auf der Suche...',
+    'Found Results.' => 'Gefundene Ergebnisse.',
+    'No Results Found.'=>'Keine Ergebnisse gefunden.',
+    'Narrowing search to a specific part...' => 'Die Suche auf ein bestimmtes Teil eingrenzen...',
+    'Generating lists, and setting values.' => 'Derzeit werden Listen erstellt und Werte festgelegt.',
+    'DRY RUN mode - no changes will be made.'=>'DRY RUN-Modus – in diesem Modus werden tatsächlich keine Änderungen vorgenommen.',
+    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
+    'Run again with the --live flag when ready to implement your changes.' => 'Führen Sie den Vorgang erneut mit dem Flag --live aus, wenn Sie bereit sind, Ihre Änderungen umzusetzen.',
+    'Processing search field: [_1]'=>'Suchfeld wird verarbeitet: [_1]',
+    'Leaving part_specific method.'=>'Verlassen der „part_specific“-Methode.',
+    'Called display method.' => 'Wird als Anzeige Objektmethode bezeichnet.',
+    'Processing Unique name: [_1]'=>'Eindeutiger Name für die Verarbeitung: [_1]',
+    'Entered method. Attribute display_lines is...'=>'Eingegebene Methode. Das Attribut display_lines ist...',
+    'Leaving method. Attribute display_lines is...'=>'Methode verlassen. Das display_lines-Attribut ist...',
+    'Match found for: [_1]'=>'Übereinstimmung gefunden für: [_1]',
+    'No match found.'=>'Keine Übereinstimmung gefunden.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Entspricht „[_1]“ im „[_2]“-Teil des folgenden eindeutigen Namens...',
+    'Found params, and about to process them...'=>'Parameter gefunden und bin bereit, sie zu verarbeiten...',
+    'Stringified names for use in a localised display line.'=>'Stringifizierte Namen zur Verwendung in einer lokalisierten „display_line“(Anzeigezeile).',
+    'Returning localised display line as we leave the method.'=>'Wir geben die lokalisierte Anzeigezeile zurück, da wir nun die Methode verlassen.',
+    'Set display flags and added display line:'=>'Setzen Sie das Anzeigeflag und die hinzugefügten Anzeigezeilen:',
+    'Leaving display method.'=>'Verlassen der „display“-Methode.',
+    'Called confirm method.'=>'Wird als „confirm“-Objektmethode bezeichnet.',
+    'Checking if display lines have been shown.'=>'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
+    'Setting confirmation'=>'Bestätigungswert festlegen.',
+    'Processing confirmation...'=>'Bestätigungswert wird jetzt verarbeitet...',
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Überprüfe nun die Ergebnisse von „matches_auto_no“ ([_1]) und „matches_auto_yes“ ([_2]) ...',
+    'Added details to what_to_change'=>'Details zu what_to_change hinzugefügt',
+    'Leaving confirm method.'=>'Verlassen der „confirm“-Methode.',
+    'Called change method.'=>'Wird als „change“-Objektmethode bezeichnet.',
+    'Processing confirmation ([_1])' => 'Bestätigungswert wird jetzt verarbeitet ([_1])',
+    'Premature exit - Prerequisites not met.'=>'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
+    'Premature exit - Nothing to change.'=>'Vorzeitiger Ausstieg – Es gibt nichts zu ändern.',
+    'Searching fields [_1] ...'=>'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
+    'Using search settings...'=>'Die folgenden Sucheinstellungen zu verwenden....', # Google translate only gives German for use rather than using!?
+    'Generated confirmation feedback.'=>'Generiertes Bestätigungs-Feedback.',
+    'No confirmation feedback generated.'=>'Es wurde kein Bestätigungsfeedback generiert.',
+    'Displaying generated confirmation feedback.'=>'Zeigt nun das generierte Bestätigungsfeedback an.',
+    'Thank you for your patience. Your request is being processed...'=>'Vielen Dank für Ihre Geduld. Ihre Anfrage wird bearbeitet...',
+    'Matched unique name.'=>'Der aktuelle Name stimmte mit dem eindeutigen Namen überein.',
+    'Added record to confirmation feedback.'=>'Der Datensatz wurde unserer Bestätigungs-Feedback hinzugefügt.',
+    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Da eindeutige Namen eindeutig sind, können wir die Schleife für eindeutige Namen verlassen, nachdem wir eine Übereinstimmung verarbeitet haben.',
+    'Exited unique name loop.'=>'Aus der Schleife für eindeutige Namen ausgebrochen.',
+    'This item (Record [_1]) is under an edit lock.'=>'Für dieses Element (Datensatz [_1]) besteht eine Bearbeitungssperre.',
+    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+    'Nothing was found to match.'=>'Es wurde keine Übereinstimmung festgestellt.',
+    'Premature exit - No search results to narrow down.'=>'Vorzeitiger Ausstieg – Keine Suchergebnisse zum Eingrenzen.',
+    'Premature Exit - our operation is already specific to a name part.'=>'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
+    'Premature exit - name parts already populated.'=>'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
+    'Premature exit - no result passed in.'=>'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
 
 );
 
