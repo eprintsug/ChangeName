@@ -301,12 +301,13 @@ sub change {
     for my $details ($self->{what_to_change}->@*) {
 
         my  (
-                $result_id,
+                $result,
                 $search_field,
-                $current,
+                $names,
+                $name,
             )                       =   $details->@*;
 
-        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result_id);
+        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
         my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
                                         'can';
 
@@ -314,9 +315,8 @@ sub change {
         
         say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
 
-        my  $names  =   $fresh_result->get_value($search_field);
-        my  $name   =   $names->[$current];
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
+        $result->set_value($search_field, $names);
         $fresh_result->set_value($search_field, $names);
 
         say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
@@ -1168,9 +1168,10 @@ sub _seeking_confirmation {
                                         ];
             
                 my  $details        =   [
-                                            $result->id,
+                                            $result,
                                             $search_field,
-                                            $current,
+                                            $names,
+                                            $name,
                                             $feedback,
                                         ];
 
@@ -1214,7 +1215,7 @@ sub _generate_confirmation_feedback {
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                                           =   $details->[3]->@*; 
+                )                                           =   $details->[4]->@*; 
 
             if ($current_unique_name                        =~  $matches_unique_name) {
 
