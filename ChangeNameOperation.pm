@@ -305,9 +305,12 @@ sub change {
                 $search_field,
                 $names,
                 $name,
+                $current,
             )                       =   $details->@*;
 
         my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+        my  $fresh_names            =   $fresh_result->get_value($search_field);
+        my  $fresh_name             =   $fresh_names->[$current];
         my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
                                         'can';
 
@@ -315,9 +318,18 @@ sub change {
         
         say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
 
-        $name->{"$self->{'part'}"}  =   $self->{'replace'};
+        $name->{"$self->{'part'}"}          =   $self->{'replace'};
         $result->set_value($search_field, $names);
-        $fresh_result->set_value($search_field, $names);
+        $self->log_debug('Changed our working result - this will not be committed.')->dumper($result->get_value($search_field));
+
+        $fresh_name->{"$self->{'part'}"}    =   $self->{'replace'};
+        $fresh_result->set_value($search_field, $fresh_names);
+        $self->log_debug('Changed our fresh result - this will be committed.')->dumper($fresh_result->get_value($search_field));
+
+        # Is it ever possible, our working result, originally confirmed, could differ from our fresh result?
+        # Should there be a comparison and warning at some point?
+        # If not, then there's really no reason to be using the original working result we confirmed on
+        # - we only need the id to get our fresh result.
 
         say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
     
@@ -1172,6 +1184,7 @@ sub _seeking_confirmation {
                                             $search_field,
                                             $names,
                                             $name,
+                                            $current,
                                             $feedback,
                                         ];
 
@@ -1215,7 +1228,7 @@ sub _generate_confirmation_feedback {
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                                           =   $details->[4]->@*; 
+                )                                           =   $details->[5]->@*; 
 
             if ($current_unique_name                        =~  $matches_unique_name) {
 
@@ -1789,6 +1802,8 @@ my  @phrases = (
     'Premature Exit - our operation is already specific to a name part.'=>'Premature Exit - our operation is already specific to a name part.',
     'Premature exit - name parts already populated.'=>'Premature exit - name parts already populated.',
     'Premature exit - no result passed in.'=>'Premature exit - no result passed in.',
+    'Changed our working result - this will not be committed.'=>'Changed our working result - this will not be committed.',
+    'Changed our fresh result - this will be committed.'=>'Changed our fresh result - this will be committed.',
 
 );
 
@@ -2136,6 +2151,8 @@ my  @phrases = (
     'Premature Exit - our operation is already specific to a name part.'=>'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
     'Premature exit - name parts already populated.'=>'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
     'Premature exit - no result passed in.'=>'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
+    'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
+    'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
 
 );
 
