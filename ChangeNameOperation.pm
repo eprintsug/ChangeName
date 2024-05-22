@@ -92,9 +92,12 @@ $ENV{'PERL_UNICODE'}    =   'AS';   # A = Expect @ARGV values to be UTF-8 string
                                     # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
 
 # Data Dumper Settings:
-$Data::Dumper::Useperl  =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-$Data::Dumper::Maxdepth =   4;  # So when we dump we don't get too much stuff.
-$Data::Dumper::Sortkeys =   1;  # Hashes in same order each time - for easier dumper comparisons.
+$Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
+$Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
+$Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+no warnings 'redefine';
+local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
+use warnings 'redefine';
 
 # Command Line Auto-run:
 ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
@@ -819,16 +822,10 @@ sub _check_commandline_input {
     };
 
     if ($params->{debug}) {
-
-        no warnings 'redefine';
-        local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
-        # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/how-to-display-readable-utf-8-strings-with-datadumper
-
         say $localise->('Commandline Params are...');
         say Dumper($params);
         say $localise->('Commandline Input is...');
         say Dumper(@commandline_input);
-
     };
 
     if (@commandline_input) {
@@ -952,11 +949,27 @@ sub _set_attributes {
 
         # Search Settings:
         search_settings     =>  {
-                                    satisfy_all         =>  1,
-                                    staff               =>  1,
-                                    #limit               =>  30,
-                                    show_zero_results   =>  1,
-                                    allow_blank         =>  1,
+
+                                    #limit               =>  30,    # Limit the number of matching records.
+
+                                    satisfy_all         =>  0,      # If this is true than all search-fields must be satisfied,
+                                                                    # if false then results matching any search-field will be returned.
+
+                                    staff               =>  1,      # If true then this is a "staff" search,
+                                                                    # which prevents searching unless the user is staff,
+                                                                    # and the results link to the staff URL of an item
+                                                                    # rather than the public URL.
+
+                                    show_zero_results   =>  1,      # Should the search go to the results page
+                                                                    # if there are no results of stay on the search form page
+                                                                    # with a warning about no results.
+
+                                    allow_blank         =>  0,      # Unless this is set, a search with no conditions
+                                                                    # will return zero records rather than all records.
+                                                                    # So presumably when a search has no conditions...
+                                                                    # - if this is set, you get all records,
+                                                                    # - if this is not set, you get zero records
+
                                     search_fields       =>  $self->{search_fields},
                                 },
     );
@@ -1377,21 +1390,13 @@ sub _log {
                                         ):
                         q{};
 
-    {   # Limit the no warnings to this lexical block...
-
-        no warnings 'redefine';
-        local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
-        # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/how-to-display-readable-utf-8-strings-with-datadumper
-        
-        # Log:
-        $self->{repository}->log(
-            $prefix.(
-                $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-                $self->localise(@ARG)
-            ),
-        );
-    
-    }
+    # Log:
+    $self->{repository}->log(
+        $prefix.(
+            $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+            $self->localise(@ARG)
+        ),
+    );
 
     # Stack trace:
     if ($self->{trace}) {
@@ -2159,6 +2164,7 @@ __DATA__
 Fields to search:
     -   creators_name
     -   contributors_name
+    -   editors_name
 
 Dataset to use: eprint
 
@@ -2166,6 +2172,42 @@ Force commit changes to database: yes
 
 # For the above, provide a yes or y (case insensitive) to force commit,
 # or anything else (such as no) to not force commit.
+
+Search Field Match Type: IN
+
+Search Field Merge Type: ANY
+
+# The "Search Field Match Type" parameter which can be one of:
+
+# IN
+# (short for index)
+# Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
+# In the case of subjects, match these subject ids or the those of any of their decendants in the subject tree.
+
+# EQ
+# (short for equal)
+# Treat the value as a single string. Match only fields which have this value.
+
+# EX
+# (short for exact)
+# If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+# In the case of subjects, match the specified subjects, but not their decendants.
+
+# SET
+# If the value is non-empty.
+
+# NO
+# This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+# The "Search Field Merge Type" parameter can be one of:
+
+# ANY
+# Match an item if any of the space-separated words in the value match.
+
+# ALL
+# Match an item only if all of the space-separated words in the value match.
+
+# "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
 
 ...
 # Three dots to end current YAML document.
