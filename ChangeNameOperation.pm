@@ -301,13 +301,12 @@ sub change {
     for my $details ($self->{what_to_change}->@*) {
 
         my  (
-                $result,
+                $result_id,
                 $search_field,
-                $names,
-                $name,
+                $current,
             )                       =   $details->@*;
 
-        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+        my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result_id);
         my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
                                         'can';
 
@@ -315,6 +314,8 @@ sub change {
         
         say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
 
+        my  $names  =   $fresh_result->get_value($search_field);
+        my  $name   =   $names->[$current];
         $name->{"$self->{'part'}"}  =   $self->{'replace'};
         $fresh_result->set_value($search_field, $names);
 
@@ -1167,10 +1168,9 @@ sub _seeking_confirmation {
                                         ];
             
                 my  $details        =   [
-                                            $result,
+                                            $result->id,
                                             $search_field,
-                                            $names,
-                                            $name,
+                                            $current,
                                             $feedback,
                                         ];
 
@@ -1214,7 +1214,7 @@ sub _generate_confirmation_feedback {
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                                           =   $details->[4]->@*; 
+                )                                           =   $details->[3]->@*; 
 
             if ($current_unique_name                        =~  $matches_unique_name) {
 
