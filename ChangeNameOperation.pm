@@ -819,10 +819,16 @@ sub _check_commandline_input {
     };
 
     if ($params->{debug}) {
+
+        no warnings 'redefine';
+        local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
+        # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/how-to-display-readable-utf-8-strings-with-datadumper
+
         say $localise->('Commandline Params are...');
         say Dumper($params);
         say $localise->('Commandline Input is...');
         say Dumper(@commandline_input);
+
     };
 
     if (@commandline_input) {
@@ -1371,14 +1377,22 @@ sub _log {
                                         ):
                         q{};
 
-    # Log:
-    $self->{repository}->log(
-        $prefix.(
-            $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-            $self->localise(@ARG)
-        ),
-    );
+    {   # Limit the no warnings to this lexical block...
+
+        no warnings 'redefine';
+        local *Data::Dumper::qquote = sub { qq["${\(shift)}"] };
+        # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/how-to-display-readable-utf-8-strings-with-datadumper
+        
+        # Log:
+        $self->{repository}->log(
+            $prefix.(
+                $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+                $self->localise(@ARG)
+            ),
+        );
     
+    }
+
     # Stack trace:
     if ($self->{trace}) {
         $self->{repository}->log(
