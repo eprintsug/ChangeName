@@ -1392,15 +1392,15 @@ sub _log {
     my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
 
     my  $prefix     =   $use_prefix?    sprintf(
-                                            '[%s] [%s] [%s] - ',
+                                            '[%s] [%s] [%s] - ',    # Three strings in square brackets, derived from the below...
 
-                                            scalar localtime,      # Human readable system time and date - linux's ctime(3).
+                                            scalar localtime,       # Human readable system time and date - linux's ctime(3).
 
-                                            ((caller 2)[3]),  # Back 2, to what called dumper / log_debug / log_verbose, 
-                                                            # and get the 3rd array index value 
-                                                            # - the perl module and subroutine name.
+                                            ((caller 2)[3]),        # Back 2, to what called dumper / log_debug / log_verbose,
+                                                                    # and get the 3rd array index value
+                                                                    # - the perl module and subroutine name.
 
-                                            uc($type),      # Log type - LOG / DEBUG / DUMPER
+                                            uc($type),              # Log type - LOG / DEBUG / DUMPER
                                         ):
                         q{};
 
@@ -1416,15 +1416,15 @@ sub _log {
     if ($self->{trace}) {
         $self->{repository}->log(
             sprintf(
-                '[%s] [%s] [%s] - ',
+                '[%s] [%s] [%s] - ',    # Three strings in square brackets, derived from the below...
 
-                scalar localtime,   # Human readable system time and date - linux's ctime(3).
+                scalar localtime,       # Human readable system time and date - linux's ctime(3).
 
-                ((caller 2)[3]),    # Back 2, to what called dumper / log_debug / log_verbose, 
-                                    # and get the 3rd array index value 
-                                    # - the perl module and subroutine name.
+                ((caller 2)[3]),        # Back 2, to what called dumper / log_debug / log_verbose,
+                                        # and get the 3rd array index value
+                                        # - the perl module and subroutine name.
 
-                'TRACE',            # Log type - LOG / DEBUG / DUMPER
+                'TRACE',                # Log type - LOG / DEBUG / DUMPER
             )
         );
         EPrints->trace;
