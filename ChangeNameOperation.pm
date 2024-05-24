@@ -557,6 +557,7 @@ sub prompt_for {
     my  $replace_prompt         =   ($prompt_type eq 'replace');
     my  $confirm_prompt         =   ($prompt_type eq 'confirm');
     my  $find_prompt            =   ($prompt_type eq 'find');
+    my  $continue_prompt        =   ($prompt_type eq 'continue');
     my  @prompt_on_blank_for    =   qw(
                                         replace
                                     );
@@ -626,6 +627,14 @@ sub prompt_for {
         };
 
         $input = $confirmation;
+    }
+
+    elsif ($continue_prompt) {
+
+        say $self->localise($prompt);
+        say $self->localise('horizontal.rule');
+        chomp($input   =   <STDIN>);
+
     }
 
     else {
@@ -1175,8 +1184,6 @@ sub _seeking_confirmation {
                 $confirmation       =   $yes;
             };
 
-            next if (fc $confirmation eq fc $no);
-
             if (fc $confirmation eq fc $yes) {
 
                 my  $feedback       =   [
@@ -1199,9 +1206,10 @@ sub _seeking_confirmation {
 
                 $self->log_debug('Added details to what_to_change')->dumper($details);
                 
-                say $self->_generate_confirmation_feedback->log_debug('Displaying generated confirmation feedback.')->{confirmation_feedback};
-
             };
+
+            say $self->_generate_confirmation_feedback->log_debug('Displaying generated confirmation feedback.')->{confirmation_feedback} // q{};
+            $self->prompt_for('continue') if $self->{confirmation_feedback};
 
         };
 
@@ -1261,7 +1269,7 @@ sub _generate_confirmation_feedback {
         $self->log_debug('Exited unique name loop.');
     };
     
-    $output                                                 .=  $self->localise('horizontal.rule');
+    #$output                                                 .=  $self->localise('horizontal.rule');    # Not needed if continue prompt will follow.
     
     $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
                                                                 undef;
@@ -1670,7 +1678,7 @@ Enter "ALL" for Yes to All Remaining for this unique name combination.
 Enter "NONE" for No to All Remaining for this unique name combination.
 ',
 
-
+'prompt_for.continue'                       =>  'Press the ENTER or RETURN key to continue...',
 'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
 'prompt_for.search'                         =>  'Please specify a Search Term: ',
 'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
@@ -2018,6 +2026,7 @@ Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige
 Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
 ',
 
+'prompt_for.continue'                       =>  'Drücken Sie die ENTER- oder RETURN-Taste, um fortzufahren...',
 'prompt_for.archive'                        =>  'Bitte geben Sie eine Archiv-ID an: ',
 'prompt_for.search'                         =>  'Bitte geben Sie einen Suchbegriff ein:  ',
 'prompt_for.replace'                        =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
