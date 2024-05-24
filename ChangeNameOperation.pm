@@ -391,16 +391,17 @@ sub _set_find {
 }
 
 sub _set_search {
-    my  $self   =   shift;
-    my  $value  =   shift;
+    my  $self       =   shift;
+    my  $value      =   shift;
 
     # Standard setting of search...
-    return          $self->_set_or_prompt_for('search' => $value, @ARG)
-                    unless ($value && $self->{exact});
+    return              $self->_set_or_prompt_for('search' => $value, @ARG)
+                        unless ($value && $self->{exact});
 
     # Special case that sets find if --exact flag given, 
     # and then sets search the same as find:
-    $self->_set_or_prompt_for('find' => $value, @ARG)->{search} = $self->{find}; 
+
+    $self->{search} =   $self->_set_or_prompt_for('find' => $value, @ARG)->{find};
     
     return $self;
 }
@@ -885,7 +886,9 @@ sub _set_attributes {
     my  $matches_match_types=   qr/^(IN|EQ|EX|SET|NO)$/;
     my  $matches_merge_types=   qr/^(ANY|ALL)$/;
 
-    %{$self}               =   (
+    %{
+        $self
+    }               =   (
 
         # Existing values in $self:
         %{$self},
@@ -923,7 +926,8 @@ sub _set_attributes {
     ->_set_yaml                 ($params->{config})
     ->dumper;
     
-    %{$self->log_debug('Setting self-referential instance attributes...')
+    %{
+        $self->log_debug('Setting self-referential instance attributes...')
     }                       =   (
 
         # Existing values in $self:
@@ -953,7 +957,8 @@ sub _set_attributes {
 
     );
 
-    %{$self->log_verbose('Set YAML configurations.')->dumper
+    %{
+        $self->log_verbose('Set YAML configurations.')->dumper
     }                       =   (
     
         # Existing values in $self:
@@ -969,8 +974,9 @@ sub _set_attributes {
         
     );
 
-    %{$self->log_debug('Set search-fields.')->dumper
-    ->log_debug('Setting further self-referential attributes...')
+    %{
+        $self->log_debug('Set search-fields.')->dumper
+        ->log_debug('Setting further self-referential attributes...')
     }                       =   (
 
         # Existing values in $self:
