@@ -11,11 +11,13 @@ use     EPrints::Repository;
 use     EPrints::Search;
 
 use     v5.16;
-no     feature (
-            'postderef',        # Available from 5.20. Standard with no need for feature declaration from 5.24.
-            'postderef_qq',     # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
-        );                      # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
+
+#use     feature (
+#            'postderef',        # Available from 5.20. Standard with no need for feature declaration from 5.24.
+#            'postderef_qq',     # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
+#        );                      # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
                                 # https://perldoc.perl.org/feature#The-'postderef'-and-'postderef_qq'-features
+                                # Commented out as I removed postfix dereferencing so it *SHOULD* work on 5.16 now, rather than require 5.20+.
         
 #use    feature qw(fc);         # Available in Perl 5.16 or higher.
                                 # Commented out as already activated by the "use v5.16;" feature bundle.
