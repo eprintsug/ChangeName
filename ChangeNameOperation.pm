@@ -10,8 +10,8 @@ use     EPrints;
 use     EPrints::Repository;
 use     EPrints::Search;
 
-use     v5.20;
-use     feature (            
+use     v5.16;
+no     feature (
             'postderef',        # Available from 5.20. Standard with no need for feature declaration from 5.24.
             'postderef_qq',     # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
         );                      # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
@@ -26,10 +26,7 @@ use     feature (
 #use    feature 'signatures';   # Not activated by default until the "use v5.36" feature bundle. 
                                 # Only available from Perl 5.20 onwards.
                                 # Commented out and not used, 
-                                # as was originally targeting users with 5.16 or higher.
-                                # Now I realise there is no postderef and postderef_qq until 5.20,
-                                # and since this script uses them, we'll be targeting 5.20 afterall,
-                                # so could be using signatures.
+                                # as was targeting users with 5.16 or higher.
 use     utf8;
 use     English;
 
@@ -151,14 +148,14 @@ sub search {
         'Searching fields [_1] ...',
         join(
             $self->localise('separator.search_fields'),
-            $self->{fields_to_search}->@*,
+            @{$self->{fields_to_search}},
         )
     );
     
     # Search:
     $self->{list_of_results}    =   $self->{repository}
                                     ->dataset($self->{dataset_to_use})
-                                    ->prepare_search($self->{search_settings}->%*)
+                                    ->prepare_search(%{$self->{search_settings}})
                                     ->perform_search;
                                     # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
                                     # This is an EPrints API behaviour.
@@ -167,7 +164,7 @@ sub search {
                                     # - which is beneficial if someone doesn't have the correct keyboard.
                                     # So let's leave this in.
 
-    $self->{records_found}      =   scalar $self->{list_of_results}->{ids}->@*;
+    $self->{records_found}      =   scalar @{$self->{list_of_results}->{ids}};
 
     say $self->localise('No Results Found.') unless $self->{records_found};
     $self->log_verbose('Found Results.') if $self->{records_found};
@@ -219,7 +216,7 @@ sub display {
 
     # Processing:
     say $self->localise('Thank you for your patience. Your request is being processed...');
-    for my $unique_name ($self->{'unique_names'}->@*) {
+    for my $unique_name (@{$self->{'unique_names'}}) {
 
         $self->log_debug('Processing Unique name: [_1]', $unique_name);
 
@@ -231,7 +228,7 @@ sub display {
 
         # Processing;
         foreach my $chunk_of_results ($self->chunkify) {
-            $self->_add_relevant_display_lines($ARG) for $chunk_of_results->@*;
+            $self->_add_relevant_display_lines($ARG) for @{$chunk_of_results};
         };
         
     };
@@ -260,7 +257,7 @@ sub confirm {
     $self->{what_to_change}             =   [];
 
     # Processing:
-    for my $unique_name ($self->{'unique_names'}->@*) {
+    for my $unique_name (@{$self->{'unique_names'}}) {
     
         $self->log_debug('Processing Unique name: [_1]', $unique_name);
 
@@ -273,7 +270,7 @@ sub confirm {
 
         # Processing:        
         foreach my $chunk_of_results ($self->chunkify) {
-            $self->_seeking_confirmation($ARG) for $chunk_of_results->@*;
+            $self->_seeking_confirmation($ARG) for @{$chunk_of_results};
         };
 
     };
@@ -291,14 +288,14 @@ sub change {
 
     my  $prerequisites              =   $self->{what_to_change}
                                         && reftype($self->{what_to_change}) eq 'ARRAY'
-                                        && $self->{what_to_change}->@*;
+                                        && @{$self->{what_to_change}};
     
     return                              $self->log_debug('Premature exit - Nothing to change.')
                                         unless $prerequisites;
 
     $self->{changes_made}           =   0;
 
-    for my $details ($self->{what_to_change}->@*) {
+    for my $details (@{$self->{what_to_change}}) {
 
         my  (
                 $result,
@@ -306,7 +303,7 @@ sub change {
                 $names,
                 $name,
                 $current,
-            )                       =   $details->@*;
+            )                       =   @{$details};
 
         my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
         my  $fresh_names            =   $fresh_result->get_value($search_field);
@@ -335,7 +332,7 @@ sub change {
     
         if ($self->{live}) {
             unless ($fresh_result->is_locked) {
-                $fresh_result->commit($self->{force_or_not}->@*);
+                $fresh_result->commit(@{$self->{force_or_not}});
                 say $self->localise('change.done');
                 $self->{changes_made}++;
             }
@@ -356,7 +353,7 @@ sub change {
 sub finish {
     my  $self   =   shift;
     say $self->localise('horizontal.rule');
-    say $self->localise('finish.change',$self->{changes_made}, scalar $self->{what_to_change}->@*);
+    say $self->localise('finish.change',$self->{changes_made}, scalar @{$self->{what_to_change}});
     say $self->localise('finish.no_change') unless $self->{changes_made};
     say $self->localise('finish.thank_you');
     return $self;
@@ -418,7 +415,7 @@ sub set_name_parts {
     
     my  $already_set        =   $self->{name_parts}
                                 && ref($self->{name_parts}) eq 'ARRAY'
-                                && $self->{name_parts}->@*;
+                                && @{$self->{name_parts}};
 
     return                      $self->log_debug('Premature exit - name parts already populated.')
                                 if $already_set;
@@ -432,10 +429,14 @@ sub set_name_parts {
                                     map {quotemeta $ARG}    
 
                                     # Name Parts for Each Field:
-                                    map {keys $self->{repository}->dataset($self->{dataset_to_use})->field($ARG)->property('input_name_cols')->%*}
+                                    map {
+                                        keys %{
+                                            $self->{repository}->dataset($self->{dataset_to_use})->field($ARG)->property('input_name_cols')
+                                        }
+                                    }
 
                                     # Fields:
-                                    $self->{fields_to_search}->@*
+                                    @{$self->{fields_to_search}}
 
                                 );
 
@@ -503,7 +504,7 @@ sub format_single_line_for_display {
     my  $names                      =   join(
                                             $self->localise('separator.name_values'),
                                             map {$self->_stringify_name($ARG) // ()}
-                                            $result->get_value("$field")->@*
+                                            @{$result->get_value("$field")}
                                         );
 
     $self->log_debug('Stringified names for use in a localised display line.');
@@ -534,7 +535,7 @@ sub chunkify {
 
 sub stringify_arrayref {
     my $self    =   shift;
-    return join ', ', shift->@*;
+    return join ', ', @{ (shift) };
 }
 
 sub prompt_for {
@@ -603,7 +604,7 @@ sub prompt_for {
     elsif  ($confirm_prompt) {
     
         my  $confirmation;
-        @prompt_arguments               =   $self->{confirm_prompt_arguments}->@*; # A hack. Maybe refactor to be passed in.
+        @prompt_arguments               =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
         my  $acceptable_input           =   join '|',
                                             map {quotemeta $self->localise($ARG)}
                                             (
@@ -721,7 +722,7 @@ sub dumper {
                             ($ARG => $self->{$ARG})
                         }
                         map {$ARG =~ m/^($exclude)$/? ():($ARG)}
-                        keys $self->%*;
+                        keys %{$self};
 
     # Set params:
     my  @params     =   @ARG?   @ARG:
@@ -794,16 +795,14 @@ sub _get_commandline_arguments {
     );
 
     $params={
-        $params->%*,
+        %{$params},
         archive_id  =>  shift,
         search      =>  shift,
         replace     =>  shift,
         part        =>  shift,
     };
 
-    #say "Dump params:".Dumper($params->%*);
-
-    return              wantarray?  $params->%*:    # List context
+    return              wantarray?  %{$params}:    # List context
                         $params;                    # Scalar or void contexts.
 
 }
@@ -875,10 +874,10 @@ sub _set_attributes {
     my  $matches_match_types=   qr/^(IN|EQ|EX|SET|NO)$/;
     my  $matches_merge_types=   qr/^(ANY|ALL)$/;
 
-    $self->%*               =   (
+    %{$self}               =   (
 
         # Existing values in $self:
-        $self->%*,
+        %{$self},
 
         # From params:
         live                =>  $params->{live} // 0,
@@ -913,11 +912,11 @@ sub _set_attributes {
     ->_set_yaml                 ($params->{config})
     ->dumper;
     
-    $self->log_debug('Setting self-referential instance attributes...')
-    ->%*                    =   (
+    %{$self->log_debug('Setting self-referential instance attributes...')
+    }                       =   (
 
         # Existing values in $self:
-        $self->%*,
+        %{$self},
 
         # From YAML Configuration:
         force_or_not        =>  [
@@ -925,7 +924,13 @@ sub _set_attributes {
                                     ()
                                 ],
         dataset_to_use      =>  $self->_validate($self->{yaml}->{'Dataset to use'}),
-        fields_to_search    =>  [$self->_validate($self->{yaml}->{'Fields to search'}->@*)],
+        fields_to_search    =>  [
+                                    $self->_validate(
+                                        @{
+                                            $self->{yaml}->{'Fields to search'}
+                                        }
+                                    )
+                                ],
         search_match_type   =>  $self->{yaml}->{'Search Field Match Type'}
                                 &&
                                 (uc($self->{yaml}->{'Search Field Match Type'}) =~ $matches_match_types)?     uc $self->{yaml}->{'Search Field Match Type'}:
@@ -937,11 +942,11 @@ sub _set_attributes {
 
     );
 
-    $self->log_verbose('Set YAML configurations.')->dumper
-    ->%*                    =   (
+    %{$self->log_verbose('Set YAML configurations.')->dumper
+    }                       =   (
     
         # Existing values in $self:
-        $self->%*,
+        %{$self},
     
         # Search:
         search_fields       =>  [{
@@ -953,12 +958,12 @@ sub _set_attributes {
         
     );
 
-    $self->log_debug('Set search-fields.')->dumper
+    %{$self->log_debug('Set search-fields.')->dumper
     ->log_debug('Setting further self-referential attributes...')
-    ->%*                    =   (
+    }                       =   (
 
         # Existing values in $self:
-        $self->%*,
+        %{$self},
 
         # Search Settings:
         search_settings     =>  {
@@ -1001,18 +1006,18 @@ sub _tally_frequencies {
 
     # Processing:
     foreach my $results_chunk ($self->chunkify) {
-        foreach my $result ($results_chunk->@*) {
-            foreach my $search_field ($self->{'fields_to_search'}->@*) {
+        foreach my $result (@{$results_chunk}) {
+            foreach my $search_field (@{$self->{'fields_to_search'}}) {
 
                 my  $names          =   $result->get_value($search_field);
-                my  @range_of_names =   (0..$names->$#*);
+                my  @range_of_names =   (0..$#{$names});
 
                 for my $current (@range_of_names) {
 
                     my  $name           =   $names->[$current];
                     my  $unique_name    =   q{};
 
-                    for my $name_part ($self->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+                    for my $name_part (@{$self->{'name_parts'}}) { # Array, so in specific order that's the same each time.
 
                         $unique_name    .=  $name_part.
                                             ($name->{"$name_part"} // q{});
@@ -1037,11 +1042,11 @@ sub _generate_name_lists {
 
     my  $self                       =   shift;
 
-    for my $name_of_list (keys $self->{frequencies}->%*) {
+    for my $name_of_list (keys %{$self->{frequencies}}) {
 
         $self->{"$name_of_list"}    =   [
                                             sort {$a cmp $b} 
-                                            keys $self->{frequencies}->{"$name_of_list"}->%*    # Defined in _tally_frequencies method.
+                                            keys %{$self->{frequencies}->{"$name_of_list"}}    # Defined in _tally_frequencies method.
                                         ];
     };
     
@@ -1059,17 +1064,17 @@ sub _add_relevant_display_lines {
     return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                         unless $result;
 
-    foreach my $search_field ($self->{'fields_to_search'}->@*) {
+    foreach my $search_field (@{$self->{'fields_to_search'}}) {
 
         $self->log_debug('Processing search field: [_1]', $search_field);
 
-        for my $name ($result->get_value($search_field)->@*) {
+        for my $name (@{$result->get_value($search_field)}) {
 
             if ( $self->_match($name)->{matches} ) {
                 
                 my  $line                                                   =   $self->format_single_line_for_display($result, $search_field);
 
-                push $self->{'display_lines'}->{"$self->{unique_name}"}->@* ,   $line;
+                push @{$self->{'display_lines'}->{"$self->{unique_name}"}}  ,   $line;
 
                 $self->{'display'}->{"$self->{unique_name}"}                =   'Yes';
 
@@ -1105,12 +1110,12 @@ sub _seeking_confirmation {
                                             $self->localise('input.none'),
                                         );
 
-    foreach my $search_field ($self->{'fields_to_search'}->@*) {
+    foreach my $search_field (@{$self->{'fields_to_search'}}) {
 
         $self->log_debug('Processing search field: [_1]', $search_field);
 
         my  $names                  =   $result->get_value($search_field);
-        my  @range_of_names         =   (0..$names->$#*);             
+        my  @range_of_names         =   (0..$#{$names});
 
         for my $current (@range_of_names) {
 
@@ -1128,7 +1133,7 @@ sub _seeking_confirmation {
                         $self->_stringify_name($name),
                         join(
                             $self->localise('separator.new_line'),
-                            $self->{display_lines}->{"$self->{unique_name}"}->@*,
+                            @{$self->{display_lines}->{"$self->{unique_name}"}},
                         ),
                     );
                 say $self->localise('horizontal.rule');
@@ -1188,7 +1193,7 @@ sub _seeking_confirmation {
                                             $feedback,
                                         ];
 
-                push $self->{what_to_change}->@*, $details;
+                push @{$self->{what_to_change}}, $details;
 
                 $self->log_debug('Added details to what_to_change')->dumper($details);
                 
@@ -1210,8 +1215,8 @@ sub _generate_confirmation_feedback {
 
     $self->log_debug('Entered method.')->dumper;
 
-    my  $prerequisites                                      =   $self->{what_to_change}->@*
-                                                                && $self->{unique_names}->@*;
+    my  $prerequisites                                      =   @{$self->{what_to_change}}
+                                                                && @{$self->{unique_names}};
 
     return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
 
@@ -1220,15 +1225,15 @@ sub _generate_confirmation_feedback {
     my  $at_least_one_confirmation                          =   undef;
     my  $heading_shown_for                                  =   {};
 
-    foreach my $details ($self->{what_to_change}->@*) {
-        for my $current_unique_name ($self->{unique_names}->@*) {
+    foreach my $details (@{$self->{what_to_change}}) {
+        for my $current_unique_name (@{$self->{unique_names}}) {
 
             my  (
                     $matches_unique_name,
                     $stringified_name,
                     $confirmation,
                     $display_line
-                )                                           =   $details->[5]->@*; 
+                )                                           =   @{ $details->[5] };
 
             if ($current_unique_name                        =~  $matches_unique_name) {
 
@@ -1275,7 +1280,7 @@ sub _match {
 
     my  $uniqueness =   q{};
 
-    for my $name_part ($self->{'name_parts'}->@*) { # Array, so in specific order that's the same each time.
+    for my $name_part (@{$self->{'name_parts'}}) { # Array, so in specific order that's the same each time.
 
         $uniqueness .=  $name_part.($name->{"$name_part"}//q{});
 
@@ -1330,7 +1335,7 @@ sub _stringify_name {
     
     my  @order_or_omit  =   ();
 
-    for my $current_part ($self->{name_parts}->@*) {
+    for my $current_part (@{$self->{name_parts}}) {
         push @order_or_omit,
         $name->{"$current_part"} && $name->{"$current_part"} eq '0'?    "0 but true": # 0 is potentially a valid one character name - haha.
         $name->{"$current_part"}?                                       $name->{"$current_part"}:
