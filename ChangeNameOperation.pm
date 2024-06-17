@@ -674,79 +674,6 @@ sub prompt_for {
 
 }
 
-sub log_verbose {
-    my  $self   =   shift;
-
-    # Premature Exit:
-    return $self unless ($self->{verbose} || $self->{debug});
-
-    return $self->_log('verbose',@ARG);
-}
-
-sub log_debug {
-    my  $self   =   shift;
-
-    # Premature Exit:
-    return $self unless $self->{debug};
-
-    return $self->_log('debug',@ARG);
-}
-
-sub dumper {
-    my  $self   =   shift;
-    
-    return $self if $self->{no_dumper};
-    return $self unless ($self->{debug} || $self->{verbose} > 1);
-
-    # Default Params if no arguments passed in...
-    my  $exclude    =   join(
-
-                            # Join by regex OR...
-                            '|',
-
-                            # Regex safe:
-                            map {quotemeta($ARG)}
-
-                            # List of attributes to exclude from dump...
-                            (
-                            #    'repository',
-                            )
-                        );
-
-    my  $class_only =   join(
-
-                            # Join by regex OR...
-                            '|',
-
-                            # Regex safe:
-                            map {quotemeta($ARG)}
-
-                            # List of attributes
-                            # that are objects
-                            # we wish to dump only
-                            # the class names of:
-                            (
-                                'repository',
-                                'list_of_results',
-                            )
-                        );
-                    
-    my  %default    =   map
-                        {
-                            $ARG =~ m/^($class_only)$/
-                            && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
-                            ($ARG => $self->{$ARG})
-                        }
-                        map {$ARG =~ m/^($exclude)$/? ():($ARG)}
-                        keys %{$self};
-
-    # Set params:
-    my  @params     =   @ARG?   @ARG:
-                        (\%default);
-
-    return $self->_log('dumper',@params); 
-}
-
 sub localise {
         return shift->{language}->maketext(@ARG);
 }
@@ -774,8 +701,8 @@ sub _get_commandline_arguments {
 
     # Command Line Options:    
     Getopt::Long::Parser->new->getoptionsfromarray(
-        \@ARG,              # Array to get options from.
-        $params,            # Hash to store options to.
+        \@ARG,                  # Array to get options from.
+        $params,                # Hash to store options to.
 
         # Actual options:
         'language|lang:s',      # Optional string.
@@ -806,7 +733,7 @@ sub _get_commandline_arguments {
         'no_trace|notrace+',    # if --notrace present  set $no_trace  to 1.
         
         'exact!',               # if --exact present,   set $exact to 1,
-                                # if --noexact present, set $exact to 0.                            
+                                # if --noexact present, set $exact to 0.
 
     );
 
@@ -818,8 +745,8 @@ sub _get_commandline_arguments {
         part        =>  shift,
     };
 
-    return              wantarray?  %{$params}:    # List context
-                        $params;                    # Scalar or void contexts.
+    return              wantarray?  %{$params}: # List context
+                        $params;                # Scalar or void contexts.
 
 }
 
@@ -879,7 +806,7 @@ sub _check_commandline_input {
     
     return $class;
 
-};
+}
 
 sub _set_attributes {
 
@@ -1385,17 +1312,17 @@ sub _validate {
 
     # Processing:
     for my $current_index (0..$#input) {
-    
+
+        # Consider a sole zero as a true input value:
+        $input[$current_index]          =   $input[$current_index] eq '0'? "0 but true":
+                                            $input[$current_index];
+
         # Stop out of range input:
         die                                 $self->localise('_validate.error.four_byte_character')
                                             if (
                                                 $input[$current_index]
                                                 && ($input[$current_index] =~ $matches_four_byte_character)
                                             );
-
-        # Consider a sole zero as a true input value:
-        $input[$current_index]          =   $input[$current_index] eq '0'? "0 but true":
-                                            $input[$current_index];
 
     };
 
@@ -1405,6 +1332,81 @@ sub _validate {
             # In Scalar and void contexts..
             $number_of_input_arguments == 1?    $input[0]:  # if only one value, return sole value...
             \@input;                                        # ...otherwise return an array ref.
+}
+
+# Log Stuff:
+
+sub log_verbose {
+    my  $self   =   shift;
+
+    # Premature Exit:
+    return $self unless ($self->{verbose} || $self->{debug});
+
+    return $self->_log('verbose',@ARG);
+}
+
+sub log_debug {
+    my  $self   =   shift;
+
+    # Premature Exit:
+    return $self unless $self->{debug};
+
+    return $self->_log('debug',@ARG);
+}
+
+sub dumper {
+    my  $self   =   shift;
+
+    return $self if $self->{no_dumper};
+    return $self unless ($self->{debug} || $self->{verbose} > 1);
+
+    # Default Params if no arguments passed in...
+    my  $exclude    =   join(
+
+                            # Join by regex OR...
+                            '|',
+
+                            # Regex safe:
+                            map {quotemeta($ARG)}
+
+                            # List of attributes to exclude from dump...
+                            (
+                            #    'repository',
+                            )
+                        );
+
+    my  $class_only =   join(
+
+                            # Join by regex OR...
+                            '|',
+
+                            # Regex safe:
+                            map {quotemeta($ARG)}
+
+                            # List of attributes
+                            # that are objects
+                            # we wish to dump only
+                            # the class names of:
+                            (
+                                'repository',
+                                'list_of_results',
+                            )
+                        );
+
+    my  %default    =   map
+                        {
+                            $ARG =~ m/^($class_only)$/
+                            && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
+                            ($ARG => $self->{$ARG})
+                        }
+                        map {$ARG =~ m/^($exclude)$/? ():($ARG)}
+                        keys %{$self};
+
+    # Set params:
+    my  @params     =   @ARG?   @ARG:
+                        (\%default);
+
+    return $self->_log('dumper',@params);
 }
 
 sub _log {
@@ -1456,9 +1458,6 @@ sub _get_log_prefix {
          uc($type),              # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
      );
 }
-
-
-
 
 1;
 
