@@ -1835,6 +1835,7 @@ my  @phrases = (
     'Set search normally, as no --exact flag provided.'=>'Set search normally, as no --exact flag provided.',
     'Interpreting search term "[_1]" as exact string to find.'=>'Interpreting search term "[_1]" as exact string to find.',
     'Find attribute set to ([_1]).'=>'Find attribute set to ([_1]).',
+    'Search attribute set to ([_1]).'=>'Search attribute set to ([_1]).',
 
 );
 
