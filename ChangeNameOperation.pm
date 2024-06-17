@@ -32,11 +32,7 @@ use     v5.16;
 use     utf8;
 use     English;
 
-use     Encode;
 use     Data::Dumper;
-use     List::Util  qw(
-            mesh
-        );
 use     Getopt::Long;
 
 use     open ':std',   ':encoding(UTF-8)';
@@ -370,8 +366,8 @@ sub get_encoding {
                                 # So if ever changing encoding, change that line too.
 }
 
-sub default_yaml_filepath {
-    return dirname(__FILE__).'/ChangeNameOperationConfig.yml';
+sub get_default_yaml_filepath {
+    return shift->{default_yaml_filepath};
 }
 
 sub get_default_language {
@@ -400,7 +396,6 @@ sub _set_search {
 
     # Special case that sets find if --exact flag given, 
     # and then sets search the same as find:
-
     $self->{search} =   $self->_set_or_prompt_for('find' => $value, @ARG)->{find};
     
     return $self;
@@ -463,7 +458,7 @@ sub set_name_parts {
 
 sub _set_yaml {
     my  $self           =   shift;
-    my  $filepath       =   shift // $self->default_yaml_filepath;
+    my  $filepath       =   shift // $self->get_default_yaml_filepath;
 
     $self->{yaml}       =   # External YAML file:
                             (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
@@ -880,52 +875,55 @@ sub _check_commandline_input {
 sub _set_attributes {
 
     # Initial Values:
-    my  ($self, $params)    =   @ARG;
+    my  ($self, $params)        =   @ARG;
 
-    my  $matches_yes        =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
-    my  $matches_match_types=   qr/^(IN|EQ|EX|SET|NO)$/;
-    my  $matches_merge_types=   qr/^(ANY|ALL)$/;
+    my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
+    my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
+    my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
 
     %{
         $self
-    }               =   (
+    }                           =   (
 
         # Existing values in $self:
         %{$self},
 
         # From params:
-        live                =>  $params->{live} // 0,
-        debug               =>  $params->{debug} // 0,
-        verbose             =>  $params->{verbose} // 0,
-        trace               =>  (
-                                    $params->{no_trace} < 1
-                                    && 
-                                    (
-                                        $params->{verbose} > 2
-                                        || ($params->{debug} && $params->{verbose})
-                                        || ($params->{debug} && $params->{trace})
-                                    )
-                                ),
-        no_dumper           =>  $params->{no_dumper} // 0,
-        no_trace            =>  $params->{no_trace} // 0,
-        exact               =>  $params->{exact} // 0,
+        live                    =>  $params->{live} // 0,
+        debug                   =>  $params->{debug} // 0,
+        verbose                 =>  $params->{verbose} // 0,
+        trace                   =>  (
+                                        $params->{no_trace} < 1
+                                        &&
+                                        (
+                                            $params->{verbose} > 2
+                                            || ($params->{debug} && $params->{verbose})
+                                            || ($params->{debug} && $params->{trace})
+                                        )
+                                    ),
+        no_dumper               =>  $params->{no_dumper} // 0,
+        no_trace                =>  $params->{no_trace} // 0,
+        exact                   =>  $params->{exact} // 0,
 
         # Internationalisation:
-        language            =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+        language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+
+        # Defaults:
+        default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
 
     );
 
-    $self->_set_repository      ($params->{archive_id})
-    ->log_verbose               ('Language set to [_1].', $self->{language}->language_tag)
-    ->log_debug                 ('Set initial instance attributes using params or defaults.')
-    ->log_debug                 ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
-    ->log_debug                 ('Now setting additional instance attributes from params...')
-    ->_set_search               ($params->{search})
-    ->_set_replace              ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
-    ->_set_part                 ($params->{part},'no_prompt') # Also optional on initialisation.
-    ->_set_yaml                 ($params->{config})
+    $self->_set_repository          ($params->{archive_id})
+    ->log_verbose                   ('Language set to [_1].', $self->{language}->language_tag)
+    ->log_debug                     ('Set initial instance attributes using params or defaults.')
+    ->log_debug                     ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+    ->log_debug                     ('Now setting additional instance attributes from params...')
+    ->_set_search                   ($params->{search})
+    ->_set_replace                  ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
+    ->_set_part                     ($params->{part},'no_prompt') # Also optional on initialisation.
+    ->_set_yaml                     ($params->{config})
     ->dumper;
-    
+
     %{
         $self->log_debug('Setting self-referential instance attributes...')
     }                       =   (
