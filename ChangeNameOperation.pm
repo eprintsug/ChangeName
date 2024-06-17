@@ -387,7 +387,7 @@ sub _set_find {
 }
 
 sub _set_search_normal {
-    return shift->_set_or_prompt_for('search' => shift, @ARG)->log_debug('Set search normally, as no --exact flag provided.');
+    return shift->_set_or_prompt_for('search' => shift, @ARG);
 
 }
 
@@ -395,7 +395,6 @@ sub _set_search_exact {
     my  $self   =   shift;
     my  $value  =   shift;
     return          $self
-                    ->log_verbose           ('Interpreting search term "[_1]" as exact string to find.', $value)
                     ->_set_find             ($value, @ARG)
                     ->_set_search_normal    ($value, @ARG)
                     ->log_debug             ('Find attribute set to ([_1]).', $self->{find})
@@ -406,8 +405,8 @@ sub _set_search_exact {
 sub _set_search {
     my  $self   =   shift;
     my  $value  =   shift;
-    return          $value && $self->{exact}?   $self->_set_search_exact($value, @ARG):
-                    $self->_set_search_normal($value, @ARG);
+    return          $value && $self->{exact}?   $self->log_verbose('Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.', $value)->_set_search_exact($value, @ARG):
+                    $self->log_debug('Set search normally, as no --exact flag provided.')->_set_search_normal($value, @ARG);
 }
 
 sub _set_replace {
@@ -1421,7 +1420,7 @@ sub _log {
     my  $type       =   shift;
     my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
 
-    my  $prefix     =   $use_prefix?    $self->_get_log_prefix('TRACE'):
+    my  $prefix     =   $use_prefix?    $self->_get_log_prefix(uc($type)):
                         q{};
 
     # Log:
@@ -1828,7 +1827,7 @@ my  @phrases = (
     'Changed our working result - this will not be committed.'=>'Changed our working result - this will not be committed.',
     'Changed our fresh result - this will be committed.'=>'Changed our fresh result - this will be committed.',
     'Set search normally, as no --exact flag provided.'=>'Set search normally, as no --exact flag provided.',
-    'Interpreting search term "[_1]" as exact string to find.'=>'Interpreting search term "[_1]" as exact string to find.',
+    'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'=>'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.',
     'Find attribute set to ([_1]).'=>'Find attribute set to ([_1]).',
     'Search attribute set to ([_1]).'=>'Search attribute set to ([_1]).',
 
