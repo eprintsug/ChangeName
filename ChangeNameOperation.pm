@@ -386,19 +386,28 @@ sub _set_find {
     return shift->_set_or_prompt_for('find' => shift, @ARG);
 }
 
+sub _set_search_normal {
+    return shift->_set_or_prompt_for('search' => shift, @ARG)->log_debug('Set search normally, as no --exact flag provided.');
+
+}
+
+sub _set_search_exact {
+    my  $self   =   shift;
+    my  $value  =   shift;
+    return          $self
+                    ->log_verbose           ('Interpreting search term "[_1]" as exact string to find.', $value)
+                    ->_set_find             ($value, @ARG)
+                    ->_set_search_normal    ($value, @ARG)
+                    ->log_debug             ('Find attribute set to ([_1]).', $self->{find})
+                    ->log_debug             ('Search attribute set to ([_1]).', $self->{search})
+                    ;
+}
+
 sub _set_search {
-    my  $self       =   shift;
-    my  $value      =   shift;
-
-    # Standard setting of search...
-    return              $self->_set_or_prompt_for('search' => $value, @ARG)
-                        unless ($value && $self->{exact});
-
-    # Special case that sets find if --exact flag given, 
-    # and then sets search the same as find:
-    $self->{search} =   $self->_set_or_prompt_for('find' => $value, @ARG)->{find};
-    
-    return $self;
+    my  $self   =   shift;
+    my  $value  =   shift;
+    return          $value && $self->{exact}?   $self->_set_search_exact($value, @ARG):
+                    $self->_set_search_normal($value, @ARG);
 }
 
 sub _set_replace {
@@ -961,7 +970,7 @@ sub _set_attributes {
     
         # Existing values in $self:
         %{$self},
-    
+
         # Search:
         search_fields       =>  [{
                                     meta_fields     =>  $self->{fields_to_search},
@@ -1823,6 +1832,9 @@ my  @phrases = (
     'Premature exit - no result passed in.'=>'Premature exit - no result passed in.',
     'Changed our working result - this will not be committed.'=>'Changed our working result - this will not be committed.',
     'Changed our fresh result - this will be committed.'=>'Changed our fresh result - this will be committed.',
+    'Set search normally, as no --exact flag provided.'=>'Set search normally, as no --exact flag provided.',
+    'Interpreting search term "[_1]" as exact string to find.'=>'Interpreting search term "[_1]" as exact string to find.',
+    'Find attribute set to ([_1]).'=>'Find attribute set to ([_1]).',
 
 );
 
