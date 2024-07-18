@@ -13,9 +13,9 @@ use     EPrints::Search;
 use     v5.16;
 
 #use     feature (
-#            'postderef',        # Available from 5.20. Standard with no need for feature declaration from 5.24.
-#            'postderef_qq',     # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
-#        );                      # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
+#            'postderef',       # Available from 5.20. Standard with no need for feature declaration from 5.24.
+#            'postderef_qq',    # Available from 5.20. Still needs feature declarations. Included in "use v5.26;" feature bundle.
+#        );                     # The first activates postfix dereferencing, the second in interpolation - and also highest array index dereferencing.
                                 # https://perldoc.perl.org/feature#The-'postderef'-and-'postderef_qq'-features
                                 # Commented out as I removed postfix dereferencing so it *SHOULD* work on 5.16 now, rather than require 5.20+.
         
@@ -29,8 +29,9 @@ use     v5.16;
                                 # Only available from Perl 5.20 onwards.
                                 # Commented out and not used, 
                                 # as was targeting users with 5.16 or higher.
-use     utf8;
-use     English;
+
+use     utf8;                   # This file in utf8.
+use     English;                # Use full english names for special perl variables.
 
 use     Data::Dumper;
 use     Getopt::Long;
@@ -44,7 +45,7 @@ use     CPAN::Meta::YAML qw(
             LoadFile
             Load
         ); # Standard module in Core Perl since Perl 5.14.
-use     File::Basename;
+use     File::Basename; # Will use this to get the directory name that this file is in.
 
 
 =pod Name, Version
