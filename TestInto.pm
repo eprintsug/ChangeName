@@ -1,8 +1,12 @@
 #!/usr/bin/env perl
 
-use v5.16; # 
-
-# Embedded dependency:
+use     v5.16; # 
+use     English qw(
+            -no_match_vars
+        );                              # Use full english names for special perl variables,
+                                        # except the regex match variables
+                                        # due to a performance if they are invoked,
+                                        # on Perl v5.18 or lower.
 package Import::Into {
 
 =head1 NAME
@@ -300,21 +304,12 @@ package BoilerPlate v1.0.0 {
     use     strict;
     use     warnings;
     use     utf8;                           # This file in utf8.
-    use     Data::Dumper;
     use     English qw(
-                -no_match_vars
-            );                              # Use full english names for special perl variables,
-                                            # except the regex match variables
-                                            # due to a performance if they are invoked,
-                                            # on Perl v5.18 or lower.
-
-    # Use dependency embedded in this file:
-    use     parent -norequire, qw(
-                Import::Into
-            );
-
-
-
+            -no_match_vars
+        );                              # Use full english names for special perl variables,
+                                        # except the regex match variables
+                                        # due to a performance if they are invoked,
+                                        # on Perl v5.18 or lower.
     my      $encoding_layer;
     
     BEGIN {
@@ -329,6 +324,12 @@ package BoilerPlate v1.0.0 {
                                                             # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                             # ENV settings are global for current thread and any forked processes.
 
+    # Use dependency embedded in this file:
+    use     parent -norequire, qw(
+                Import::Into
+            );
+    Import::Into->import;
+
 
     sub import {
     
@@ -336,13 +337,13 @@ package BoilerPlate v1.0.0 {
         my $target = caller;
     
         # Processing / Declaring what Pragmas to import:
-        $ARG->import::into($target) for qw(
+        $_->import::into($target) for qw(
             strict
             warnings
             utf8
-            English
             Data::Dumper
         );
+        English->export_to_level($target, qw(-no_match_vars));
     
         #Set default on standard input, output, and error:
         binmode STDIN,  $encoding_layer;
@@ -360,15 +361,15 @@ package BoilerPlate v1.0.0 {
 
 package ChangeNameOperation v1.0.0 {
 
-use     parent -norequire, qw(
-            BoilerPlate
-        );
-BoilerPlate->import;
-
-print Dumper('what');
-say "Hello!".$PERL_VERSION;
-
-1;
+    use     parent -norequire, qw(
+                BoilerPlate
+            );
+    BoilerPlate->import;
+    
+    print Dumper('what');
+    say "Hello!".$PERL_VERSION;
+    
+    1;
 
 }; # ChangeNameOperation Package.
 
