@@ -1,9 +1,7 @@
 #!/usr/bin/env perl
 
-use     feature ':5.16';
-use     Data::Dumper;
+use v5.16; # 
 
-BEGIN {
 # Embedded dependency:
 package Import::Into {
 
@@ -298,60 +296,58 @@ sub unimport::out_of {
 
 }
 
-};
-
-BEGIN {
 package BoilerPlate v1.0.0 {
     use     strict;
     use     warnings;
-    use     utf8; # This file in utf8.
-
-    my      $feature_bundle;
-    my      $encoding;
-    
-    BEGIN {
-            my  $version_number_to_use  =   '5.16';
-            my  $encoding_to_use        =   'UTF-8';
-            
-            $feature_bundle             =   ':'.$version_number_to_use;
-            $encoding                   =   ":encoding($encoding_to_use)";
-    };
-
-    use     feature "$feature_bundle";
-    use     English qw( -no_match_vars );   # Use full english names for special perl variables,
+    use     utf8;                           # This file in utf8.
+    use     Data::Dumper;
+    use     English qw(
+                -no_match_vars
+            );                              # Use full english names for special perl variables,
                                             # except the regex match variables
                                             # due to a performance if they are invoked,
                                             # on Perl v5.18 or lower.
-    
-    # Global (so not in the import subroutine):
-    use     open ':std'                 ,   "$encoding";    # :std affect is global.
-    $ENV{'PERL_UNICODE'}                =   'AS';           # A = Expect @ARGV values to be UTF-8 strings.
-                                                            # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
-                                                            # ENV settings are global for current thread and any forked processes.
+
     # Use dependency embedded in this file:
     use     parent -norequire, qw(
                 Import::Into
             );
-    Import::Into->import;
 
-    use Data::Dumper;
+
+
+    my      $encoding_layer;
+    
+    BEGIN {
+            my  $encoding_to_use        =   'UTF-8';
+            
+            $encoding_layer             =   ":encoding($encoding_to_use)";
+    };
+
+    # Global (so not in the import subroutine):
+    use     open ':std'                 ,   "$encoding_layer";    # :std affect is global.
+    $ENV{'PERL_UNICODE'}                =   'AS';           # A = Expect @ARGV values to be UTF-8 strings.
+                                                            # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
+                                                            # ENV settings are global for current thread and any forked processes.
+
 
     sub import {
     
         # Initial Variables:
         my $target = caller;
-        say "Trying say.";
-        #die "Target was: $target";
     
         # Processing / Declaring what Pragmas to import:
-        $ARG        ->import::into  ($target)   for qw(strict warnings utf8 English);
-        #feature     ->import::into  (1, "$feature_bundle");
-        #Data::Dumper->import::into ($target);
+        $ARG->import::into($target) for qw(
+            strict
+            warnings
+            utf8
+            English
+            Data::Dumper
+        );
     
         #Set default on standard input, output, and error:
-        binmode     STDIN,          $encoding;
-        binmode     STDOUT,         $encoding;
-        binmode     STDERR,         $encoding;
+        binmode STDIN,  $encoding_layer;
+        binmode STDOUT, $encoding_layer;
+        binmode STDERR, $encoding_layer;
     
     }
     
@@ -361,7 +357,6 @@ package BoilerPlate v1.0.0 {
     1;
 
 } # ChangeNameOperation::BoilerPlate::PragmaAndEncoding Package.
-};
 
 package ChangeNameOperation v1.0.0 {
 
@@ -370,10 +365,8 @@ use     parent -norequire, qw(
         );
 BoilerPlate->import;
 
-
-#print Dumper('what');
-say "Hello";
-#say "Hello!";
+print Dumper('what');
+say "Hello!".$PERL_VERSION;
 
 1;
 
