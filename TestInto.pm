@@ -354,7 +354,7 @@ package ChangeNameOperation::BoilerPlate v1.0.0 {
 
 package ChangeNameOperation v1.0.0 {
 
-use ChangeNameOperation::BoilerPlate;
+ChangeNameOperation::BoilerPlate->import;
 
 say "Hello!";
 
