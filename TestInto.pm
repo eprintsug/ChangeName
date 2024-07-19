@@ -294,7 +294,7 @@ sub unimport::out_of {
 
 }
 
-package ChangeNameOperation::BoilerPlate v1.0.0 {
+package BoilerPlate v1.0.0 {
     use     strict;
     use     warnings;
     use     utf8; # This file in utf8.
@@ -330,12 +330,13 @@ package ChangeNameOperation::BoilerPlate v1.0.0 {
     sub import {
     
         # Initial Variables:
-        my  $calling_module_level_depth =   1;
+        my $target = caller;
+        say "Trying say.";
+        die "Target was: $target";
     
         # Processing / Declaring what Pragmas to import:
-        $ARG        ->import        for qw(strict warnings utf8);
-        feature     ->import        ($feature_bundle);
-        English     ->import::into  ($calling_module_level_depth); # Not using due to no import::into
+        $ARG        ->import::into  ($target)   for qw(strict warnings utf8 English);
+        feature     ->import::into  ($target, $feature_bundle);
     
         #Set default on standard input, output, and error:
         binmode     STDIN,          $encoding;
@@ -354,7 +355,7 @@ package ChangeNameOperation::BoilerPlate v1.0.0 {
 
 package ChangeNameOperation v1.0.0 {
 
-ChangeNameOperation::BoilerPlate->import;
+BoilerPlate->import;
 
 say "Hello!";
 
