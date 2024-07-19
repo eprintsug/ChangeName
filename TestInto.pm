@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+BEGIN {
 # Embedded dependency:
 package Import::Into {
 
@@ -294,6 +295,9 @@ sub unimport::out_of {
 
 }
 
+};
+
+BEGIN {
 package BoilerPlate v1.0.0 {
     use     strict;
     use     warnings;
@@ -327,16 +331,19 @@ package BoilerPlate v1.0.0 {
             );
     Import::Into->import;
 
+    use Data::Dumper;
+
     sub import {
     
         # Initial Variables:
         my $target = caller;
         say "Trying say.";
-        die "Target was: $target";
+        #die "Target was: $target";
     
         # Processing / Declaring what Pragmas to import:
         $ARG        ->import::into  ($target)   for qw(strict warnings utf8 English);
-        feature     ->import::into  ($target, $feature_bundle);
+        feature     ->import::into  (1, "$feature_bundle");
+        Data::Dumper->import::into ($target);
     
         #Set default on standard input, output, and error:
         binmode     STDIN,          $encoding;
@@ -351,13 +358,19 @@ package BoilerPlate v1.0.0 {
     1;
 
 } # ChangeNameOperation::BoilerPlate::PragmaAndEncoding Package.
-
+};
 
 package ChangeNameOperation v1.0.0 {
 
+use     parent -norequire, qw(
+            BoilerPlate
+        );
 BoilerPlate->import;
 
-say "Hello!";
+
+print Dumper('what');
+ChangeNameOperation::say "Hello";
+#say "Hello!";
 
 1;
 
