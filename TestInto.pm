@@ -42,6 +42,18 @@ package ChangeNameOperation v1.0.0 {
     say "Hello!".$PERL_VERSION; # English works
     my $é = 'test'; # utf8 works.
     1;
+    my  @input_layers =   PerlIO::get_layers(STDIN, details => 1);
+    say 'Input: ';
+    say join "\n", @input_layers;
+
+    my  @output_layers =   PerlIO::get_layers(STDOUT, details => 1);
+    say 'Output: ';
+    say join "\n", @output_layers;
+
+    my  @error_layers =   PerlIO::get_layers(STDERR, details => 1);
+    say 'Error Layers: ';
+    say join "\n", @error_layers;
+
 
 }; # ChangeNameOperation Package.
 
