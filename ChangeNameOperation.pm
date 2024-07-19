@@ -48,11 +48,8 @@ package ChangeNameOperation::BoilerPlate::PragmaAndEncoding v1.0.0 {
 } # ChangeNameOperation::BoilerPlate::PragmaAndEncoding Package.
 
 package ChangeNameOperation::BoilerPlate::Modules v1.0.0 {
-    use     ChangeNameOperation::BoilerPlate::PragmaAndEncoding;
-    use     English qw( -no_match_vars );   # Use full english names for special perl variables,
-                                            # except the regex match variables
-                                            # due to a performance if they are invoked,
-                                            # on Perl v5.18 or lower.
+    ChangeNameOperation::BoilerPlate::PragmaAndEncoding->import;
+
     use     Data::Dumper;   # Remove once log stuff working.    
     
     # Data Dumper Settings:
@@ -71,8 +68,13 @@ package ChangeNameOperation v1.0.0 {
     use     parent -norequire, qw(
                 ChangeNameOperation::BoilerPlate::Modules
             );
+    use     English qw( -no_match_vars );   # Use full english names for special perl variables,
+                                            # except the regex match variables
+                                            # due to a performance if they are invoked,
+                                            # on Perl v5.18 or lower.
 
     # Specific:
+    use     Data::Dumper;
     use     lib '/opt/eprints3/perl_lib';
     use     EPrints;
     use     EPrints::Repository;
@@ -1496,6 +1498,11 @@ package ChangeNameOperation::Log v1.0.0 {
     use     parent -norequire, qw(
                 ChangeNameOperation::BoilerPlate::Modules
             );
+    use     English qw( -no_match_vars );   # Use full english names for special perl variables,
+                                            # except the regex match variables
+                                            # due to a performance if they are invoked,
+                                            # on Perl v5.18 or lower.
+
 
 }; # ChangeNameOperation::Log Package.
 
@@ -1505,6 +1512,10 @@ package ChangeNameOperation::Languages v1.0.0 {
     use     parent -norequire, qw(
                 ChangeNameOperation::BoilerPlate::Modules
             );
+    use     English qw( -no_match_vars );   # Use full english names for special perl variables,
+                                            # except the regex match variables
+                                            # due to a performance if they are invoked,
+                                            # on Perl v5.18 or lower.
     
     # Specific:
     use     parent qw(Locale::Maketext);
@@ -1525,13 +1536,13 @@ package ChangeNameOperation::Languages v1.0.0 {
     
     
     1;
-}; # ChangeNameOperation::Log Package.
+}; # ChangeNameOperation::Languages Package.
 
-# Load Languages Before All Else:
+# Load Languages before all else:
 BEGIN {
 
-package ChangeNameOperation::Languages::en_gb 
-{
+package ChangeNameOperation::Languages::en_gb { 
+
 
 # Use --lang=en-GB at the commandline to use it.
 
@@ -1863,10 +1874,9 @@ our %Lexicon = (
 
 1;
 
-};
+}
 
-package ChangeNameOperation::Languages::de_de
-{
+package ChangeNameOperation::Languages::de_de {
 
 # Use --lang=de-DE at the commandline to use it.
 
@@ -2200,9 +2210,9 @@ our %Lexicon = (
 
 1;
 
-};
-
 }
+
+};
 
 # Load Configuration - positioned last and without a package block, so __DATA__ can be used:
 package ChangeNameOperation::YAMLConfig v1.0.0;
