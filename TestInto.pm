@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+use     feature ':5.16';
+use     Data::Dumper;
+
 BEGIN {
 # Embedded dependency:
 package Import::Into {
@@ -342,8 +345,8 @@ package BoilerPlate v1.0.0 {
     
         # Processing / Declaring what Pragmas to import:
         $ARG        ->import::into  ($target)   for qw(strict warnings utf8 English);
-        feature     ->import::into  (1, "$feature_bundle");
-        Data::Dumper->import::into ($target);
+        #feature     ->import::into  (1, "$feature_bundle");
+        #Data::Dumper->import::into ($target);
     
         #Set default on standard input, output, and error:
         binmode     STDIN,          $encoding;
@@ -368,8 +371,8 @@ use     parent -norequire, qw(
 BoilerPlate->import;
 
 
-print Dumper('what');
-ChangeNameOperation::say "Hello";
+#print Dumper('what');
+say "Hello";
 #say "Hello!";
 
 1;
