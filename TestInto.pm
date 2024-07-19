@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use     warnings;
 use     v5.16; # 
 
 package BoilerPlate::PragmasAndEncoding v1.0.0 {
@@ -57,6 +58,8 @@ package ChangeNameOperation v1.0.0 {
     
     print Dumper('what');
     #local $baz = 9;	# Strict works!
+#    use warnings;
+    my $x = "2:" + 3;
     say "Hello!".$PERL_VERSION;
     
     1;
