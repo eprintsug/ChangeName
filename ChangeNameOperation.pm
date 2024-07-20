@@ -809,30 +809,22 @@ To be done.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
     
-        %{
-            $self
-        }                           =   (
+        %{ $self }                  =   (
     
             # Existing values in $self:
             %{$self},
     
             # From params:
             live                    =>  $params->{live} // 0,
-            debug                   =>  $params->{debug} // 0,
-            verbose                 =>  $params->{verbose} // 0,
-            trace                   =>  (
-                                            $params->{no_trace} < 1
-                                            &&
-                                            (
-                                                $params->{verbose} > 2
-                                                || ($params->{debug} && $params->{verbose})
-                                                || ($params->{debug} && $params->{trace})
-                                            )
-                                        ),
-            no_dumper               =>  $params->{no_dumper} // 0,
-            no_trace                =>  $params->{no_trace} // 0,
             exact                   =>  $params->{exact} // 0,
-    
+            logger                  =>  ChangeNameOperation::Log->new(
+                                            debug       =>  $params->{debug},
+                                            verbose     =>  $params->{verbose},
+                                            trace       =>  $params->{trace},
+                                            no_dumper   =>  $params->{no_dumper},
+                                            no_trace    =>  $params->{no_trace},
+                                        ),
+   
             # Internationalisation:
             language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
     
@@ -842,19 +834,21 @@ To be done.
         );
     
         $self->_set_repository          ($params->{archive_id})
-        ->log_verbose                   ('Language set to [_1].', $self->{language}->language_tag)
-        ->log_debug                     ('Set initial instance attributes using params or defaults.')
-        ->log_debug                     ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
-        ->log_debug                     ('Now setting additional instance attributes from params...')
-        ->_set_search                   ($params->{search})
+        ->logger
+        ->verbose                       ('Language set to [_1].', $self->{language}->language_tag)
+        ->debug                         ('Set initial instance attributes using params or defaults.')
+        ->debug                         ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+        ->debug                         ('Now setting additional instance attributes from params...');
+        
+        
+        $self->_set_search              ($params->{search})
         ->_set_replace                  ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
         ->_set_part                     ($params->{part},'no_prompt') # Also optional on initialisation.
         ->_set_yaml                     ($params->{config})
-        ->dumper;
+
+        ->logger->dumper->log_debug('Setting self-referential instance attributes...');
     
-        %{
-            $self->log_debug('Setting self-referential instance attributes...')
-        }                       =   (
+        %{ $self }               =   (
     
             # Existing values in $self:
             %{$self},
@@ -881,10 +875,11 @@ To be done.
                                     (uc($self->{yaml}->{'Search Field Merge Type'}) =~ $matches_merge_types)?     uc $self->{yaml}->{'Search Field Merge Type'}:
                                     'ANY',
     
-        );
+        )
+        ->log_verbose('Set YAML configurations.')->dumper;
     
         %{
-            $self->log_verbose('Set YAML configurations.')->dumper
+            $self;
         }                       =   (
         
             # Existing values in $self:
@@ -1327,6 +1322,10 @@ To be done.
     }
     
     # Log Stuff:
+
+    sub logger {
+        return shift->{logger};
+    }
     
     sub log_verbose {
         my  $self   =   shift;
