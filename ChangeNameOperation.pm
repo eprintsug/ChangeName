@@ -809,7 +809,9 @@ To be done.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
     
-        %{ $self }                  =   (
+        %{
+            $self
+        }                           =   (
     
             # Existing values in $self:
             %{$self},
@@ -818,13 +820,20 @@ To be done.
             live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
             logger                  =>  ChangeNameOperation::Log->new(
-                                            debug       =>  $params->{debug},
-                                            verbose     =>  $params->{verbose},
-                                            trace       =>  $params->{trace},
-                                            no_dumper   =>  $params->{no_dumper},
-                                            no_trace    =>  $params->{no_trace},
+                                            debug                   =>  $params->{debug},
+                                            verbose                 =>  $params->{verbose},
+                                            trace                   =>  $params->{trace},
+                                            no_dumper               =>  $params->{no_dumper},
+                                            no_trace                =>  $params->{no_trace},
+                                            dumper_class_name_only  =>  [
+                                                                            'repository',
+                                                                            'list_of_results',
+                                                                        ],
+                                            dumper_exclude          =>  [
+                                                                            #'repository',
+                                                                        ],
                                         ),
-   
+    
             # Internationalisation:
             language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
     
@@ -834,21 +843,19 @@ To be done.
         );
     
         $self->_set_repository          ($params->{archive_id})
-        ->logger
-        ->verbose                       ('Language set to [_1].', $self->{language}->language_tag)
-        ->debug                         ('Set initial instance attributes using params or defaults.')
-        ->debug                         ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
-        ->debug                         ('Now setting additional instance attributes from params...');
-        
-        
-        $self->_set_search              ($params->{search})
+        ->log_verbose                   ('Language set to [_1].', $self->{language}->language_tag)
+        ->log_debug                     ('Set initial instance attributes using params or defaults.')
+        ->log_debug                     ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+        ->log_debug                     ('Now setting additional instance attributes from params...')
+        ->_set_search                   ($params->{search})
         ->_set_replace                  ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
         ->_set_part                     ($params->{part},'no_prompt') # Also optional on initialisation.
         ->_set_yaml                     ($params->{config})
-
-        ->logger->dumper->log_debug('Setting self-referential instance attributes...');
+        ->dumper;
     
-        %{ $self }               =   (
+        %{
+            $self->log_debug('Setting self-referential instance attributes...')
+        }                       =   (
     
             # Existing values in $self:
             %{$self},
@@ -875,11 +882,10 @@ To be done.
                                     (uc($self->{yaml}->{'Search Field Merge Type'}) =~ $matches_merge_types)?     uc $self->{yaml}->{'Search Field Merge Type'}:
                                     'ANY',
     
-        )
-        ->log_verbose('Set YAML configurations.')->dumper;
+        );
     
         %{
-            $self;
+            $self->log_verbose('Set YAML configurations.')->dumper
         }                       =   (
         
             # Existing values in $self:
@@ -1322,132 +1328,29 @@ To be done.
     }
     
     # Log Stuff:
-
-    sub logger {
-        return shift->{logger};
-    }
     
     sub log_verbose {
         my  $self   =   shift;
     
-        # Premature Exit:
-        return $self unless ($self->{verbose} || $self->{debug});
+        $self->{logger}->verbose(@ARG);
     
-        return $self->_log('verbose',@ARG);
+        return $self;
     }
     
     sub log_debug {
         my  $self   =   shift;
     
-        # Premature Exit:
-        return $self unless $self->{debug};
+        $self->{logger}->debug(@ARG);
     
-        return $self->_log('debug',@ARG);
+        return $self;
     }
     
     sub dumper {
         my  $self   =   shift;
     
-        return $self if $self->{no_dumper};
-        return $self unless ($self->{debug} || $self->{verbose} > 1);
-    
-        # Default Params if no arguments passed in...
-        my  $exclude    =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
-                                # List of attributes to exclude from dump...
-                                (
-                                #    'repository',
-                                )
-                            );
-    
-        my  $class_only =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
-                                # List of attributes
-                                # that are objects
-                                # we wish to dump only
-                                # the class names of:
-                                (
-                                    'repository',
-                                    'list_of_results',
-                                )
-                            );
-    
-        my  %default    =   map
-                            {
-                                $ARG =~ m/^($class_only)$/
-                                && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
-                                ($ARG => $self->{$ARG})
-                            }
-                            map {$ARG =~ m/^($exclude)$/? ():($ARG)}
-                            keys %{$self};
-    
-        # Set params:
-        my  @params     =   @ARG?   @ARG:
-                            (\%default);
-    
-        return $self->_log('dumper',@params);
-    }
-    
-    sub _log {
-    
-        my  $self       =   shift;
-    
-        # Premature exit:
-        die                 $self->localise('_log.error.no_repository')
-                            unless blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
-    
-        # Initial Values:
-        my  $type       =   shift;
-        my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
-    
-        my  $prefix     =   $use_prefix?    $self->_get_log_prefix(uc($type)):
-                            q{};
-    
-        # Log:
-        $self->{repository}->log(
-            $prefix.(
-                $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-                $self->localise(@ARG)
-            ),
-        );
-    
-        # Stack trace:
-        if ($self->{trace}) {
-            $self->{repository}->log(
-                $self->_get_log_prefix('TRACE')
-            );
-            EPrints->trace;
-        };
-        
+        $self->{logger}->set_dumper_default($self)->dumper(@ARG);
+
         return $self;
-    }
-    
-    sub _get_log_prefix {
-        my  $self   =   shift;
-        my  $type   =   shift;
-        return sprintf(
-             '[%s] [%s] [%s] - ',    # Three strings in square brackets, derived from the below...
-    
-             scalar localtime,       # Human readable system time and date - linux's ctime(3).
-    
-             ((caller 3)[3]),        # Back 3, to what called dumper / log_debug / log_verbose,
-                                     # and get the 3rd array index value
-                                     # - the perl module and subroutine name.
-    
-             uc($type),              # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
-         );
     }
     
     1;
@@ -1527,6 +1430,7 @@ package ChangeNameOperation::Log v1.0.0 {
             dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
 
             dumper_exclude          =>  $params->{dumper_exclude} // [],
+            dumper_default          =>  {},
     
             # Internationalisation:
             language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
@@ -1542,6 +1446,14 @@ package ChangeNameOperation::Log v1.0.0 {
     
     sub localise {
             return shift->{language}->maketext(@ARG);
+    }
+    
+    sub set_dumper_default {
+        my  $self   =   shift;
+
+        $self->{dumper_default} = shift // {};
+
+        return $self;
     }
 
     sub verbose {
@@ -1608,7 +1520,7 @@ package ChangeNameOperation::Log v1.0.0 {
                                 ($ARG => $self->{$ARG})
                             }
                             map {$ARG =~ m/^($exclude)$/? ():($ARG)}
-                            keys %{$self};
+                            keys %{$self->{dumper_default}};
     
         # Set params:
         my  @params     =   @ARG?   @ARG:
