@@ -1474,6 +1474,8 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
+    use     EPrints;
+    use     EPrints::Repository;
     use     Data::Dumper;   # Remove once log stuff working.    
 
     # Data Dumper Settings:
@@ -1483,6 +1485,188 @@ package ChangeNameOperation::Log v1.0.0 {
     no warnings 'redefine';
     local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
     use warnings 'redefine';
+    
+    sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
+    
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper;
+    
+        return $self;
+    }
+
+    sub _set_attributes {
+        my  ($self, $params)        =   @ARG;
+
+        %{
+            $self
+        }                           =   (
+    
+            # Existing values in $self:
+            %{$self},
+    
+            # From params:
+            debug                   =>  $params->{debug} // 0,
+            verbose                 =>  $params->{verbose} // 0,
+            trace                   =>  (
+                                            $params->{no_trace} < 1
+                                            &&
+                                            (
+                                                $params->{verbose} > 2
+                                                || ($params->{debug} && $params->{verbose})
+                                                || ($params->{debug} && $params->{trace})
+                                            )
+                                        ),
+            no_dumper               =>  $params->{no_dumper} // 0,
+            no_trace                =>  $params->{no_trace} // 0,
+
+            repository              =>  $params->{repository} // undef,
+            
+            dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
+
+            dumper_exclude          =>  $params->{dumper_exclude} // [],
+    
+            # Internationalisation:
+            language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+    
+        );
+        
+        return  $self;
+    }
+
+    sub get_default_language {
+        return 'en-GB'
+    }
+    
+    sub localise {
+            return shift->{language}->maketext(@ARG);
+    }
+
+    sub verbose {
+        my  $self   =   shift;
+    
+        # Premature Exit:
+        return $self unless ($self->{verbose} || $self->{debug});
+    
+        return $self->_log('verbose',@ARG);
+    }
+    
+    sub debug {
+        my  $self   =   shift;
+    
+        # Premature Exit:
+        return $self unless $self->{debug};
+    
+        return $self->_log('debug',@ARG);
+    }
+    
+    sub dumper {
+        my  $self   =   shift;
+    
+        return $self if $self->{no_dumper};
+        return $self unless ($self->{debug} || $self->{verbose} > 1);
+    
+        # Default Params if no arguments passed in...
+        my  $exclude    =   join(
+    
+                                # Join by regex OR...
+                                '|',
+    
+                                # Regex safe:
+                                map {quotemeta($ARG)}
+    
+                                # List of attributes to exclude from dump...
+                                (
+                                #    'repository',
+                                    @{ $self->{dumper_exclude} },
+                                )
+                            );
+    
+        my  $class_only =   join(
+    
+                                # Join by regex OR...
+                                '|',
+    
+                                # Regex safe:
+                                map {quotemeta($ARG)}
+    
+                                # List of attributes
+                                # that are objects
+                                # we wish to dump only
+                                # the class names of:
+                                (
+                                    @{ $self->{dumper_class_name_only} },
+                                )
+                            );
+    
+        my  %default    =   map
+                            {
+                                $ARG =~ m/^($class_only)$/
+                                && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
+                                ($ARG => $self->{$ARG})
+                            }
+                            map {$ARG =~ m/^($exclude)$/? ():($ARG)}
+                            keys %{$self};
+    
+        # Set params:
+        my  @params     =   @ARG?   @ARG:
+                            (\%default);
+    
+        return $self->_log('dumper',@params);
+    }
+    
+    sub _log {
+    
+        my  $self       =   shift;
+    
+        # Premature exit:
+        die                 $self->localise('_log.error.no_repository')
+                            unless blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
+    
+        # Initial Values:
+        my  $type       =   shift;
+        my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
+    
+        my  $prefix     =   $use_prefix?    $self->_get_log_prefix(uc($type)):
+                            q{};
+    
+        # Log:
+        $self->{repository}->log(
+            $prefix.(
+                $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+                $self->localise(@ARG)
+            ),
+        );
+    
+        # Stack trace:
+        if ($self->{trace}) {
+            $self->{repository}->log(
+                $self->_get_log_prefix('TRACE')
+            );
+            EPrints->trace;
+        };
+        
+        return $self;
+    }
+    
+    sub _get_log_prefix {
+        my  $self   =   shift;
+        my  $type   =   shift;
+        return sprintf(
+             '[%s] [%s] [%s] - ',    # Three strings in square brackets, derived from the below...
+    
+             scalar localtime,       # Human readable system time and date - linux's ctime(3).
+    
+             ((caller 3)[3]),        # Back 3, to what called dumper / log_debug / log_verbose,
+                                     # and get the 3rd array index value
+                                     # - the perl module and subroutine name.
+    
+             uc($type),              # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
+         );
+    }
 
 }; # ChangeNameOperation::Log Package.
 
