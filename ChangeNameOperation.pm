@@ -808,6 +808,8 @@ To be done.
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
+
+        $self->_set_repository          ($params->{archive_id});
     
         %{
             $self
@@ -825,9 +827,12 @@ To be done.
                                             trace                   =>  $params->{trace},
                                             no_dumper               =>  $params->{no_dumper},
                                             no_trace                =>  $params->{no_trace},
+                                            language                =>  $params->{language},
+                                            repository              =>  $self->{repository},
                                             dumper_class_name_only  =>  [
                                                                             'repository',
                                                                             'list_of_results',
+                                                                            'dumper_default',
                                                                         ],
                                             dumper_exclude          =>  [
                                                                             #'repository',
@@ -841,11 +846,11 @@ To be done.
             default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
     
         );
-    
-        $self->_set_repository          ($params->{archive_id})
+
+        $self
         ->log_verbose                   ('Language set to [_1].', $self->{language}->language_tag)
         ->log_debug                     ('Set initial instance attributes using params or defaults.')
-        ->log_debug                     ('Language, archive, repository, and debug/verbose/trace settings were all required for log methods.')
+        ->log_debug                     ('Archive, repository, and log related params were all required for log methods.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
         ->_set_replace                  ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
@@ -1332,7 +1337,7 @@ To be done.
     sub log_verbose {
         my  $self   =   shift;
     
-        $self->{logger}->verbose(@ARG);
+        $self->{logger}->set_caller_depth(4)->verbose(@ARG);
     
         return $self;
     }
@@ -1340,7 +1345,7 @@ To be done.
     sub log_debug {
         my  $self   =   shift;
     
-        $self->{logger}->debug(@ARG);
+        $self->{logger}->set_caller_depth(4)->debug(@ARG);
     
         return $self;
     }
@@ -1348,7 +1353,7 @@ To be done.
     sub dumper {
         my  $self   =   shift;
     
-        $self->{logger}->set_dumper_default($self)->dumper(@ARG);
+        $self->{logger}->set_caller_depth(4)->set_dumper_default($self)->dumper(@ARG);
 
         return $self;
     }
@@ -1376,9 +1381,14 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
+    use     lib '/opt/eprints3/perl_lib';
     use     EPrints;
     use     EPrints::Repository;
-    use     Data::Dumper;   # Remove once log stuff working.    
+    use     Scalar::Util qw(
+            blessed
+            reftype
+        );
+    use     Data::Dumper;
 
     # Data Dumper Settings:
     $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
@@ -1426,16 +1436,18 @@ package ChangeNameOperation::Log v1.0.0 {
             no_trace                =>  $params->{no_trace} // 0,
 
             repository              =>  $params->{repository} // undef,
+            caller_depth            =>  3,
             
             dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
 
             dumper_exclude          =>  $params->{dumper_exclude} // [],
-            dumper_default          =>  {},
     
             # Internationalisation:
             language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
     
         );
+
+        $self->{dumper_default}     =  $self;
         
         return  $self;
     }
@@ -1451,7 +1463,15 @@ package ChangeNameOperation::Log v1.0.0 {
     sub set_dumper_default {
         my  $self   =   shift;
 
-        $self->{dumper_default} = shift // {};
+        $self->{dumper_default} = shift // $self->{dumper_default};
+
+        return $self;
+    }
+
+    sub set_caller_depth {
+        my  $self   =   shift;
+
+        $self->{caller_depth} = shift // $self->{caller_depth};
 
         return $self;
     }
@@ -1567,15 +1587,15 @@ package ChangeNameOperation::Log v1.0.0 {
         my  $self   =   shift;
         my  $type   =   shift;
         return sprintf(
-             '[%s] [%s] [%s] - ',    # Three strings in square brackets, derived from the below...
+             '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
     
-             scalar localtime,       # Human readable system time and date - linux's ctime(3).
+             scalar localtime,                      # Human readable system time and date - linux's ctime(3).
     
-             ((caller 3)[3]),        # Back 3, to what called dumper / log_debug / log_verbose,
-                                     # and get the 3rd array index value
-                                     # - the perl module and subroutine name.
+             ((caller $self->{caller_depth})[3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
+                                                    # and get the 3rd array index value
+                                                    # - the perl module and subroutine name.
     
-             uc($type),              # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
+             uc($type),                             # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
          );
     }
 
@@ -1867,7 +1887,7 @@ my  @phrases = (
     'Commandline Input is...'           =>  'Commandline Input is...',
     'Language set to [_1].'             =>  'Language set to [_1].',
     'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
-    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.',
+    'Archive, repository, and log related params were all required for log methods.' =>  'Archive, repository, and log related params were all required for log methods.',
     'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
     'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
     'Set YAML configurations.' => 'Set YAML configurations.',
@@ -1934,7 +1954,7 @@ my  @phrases = (
     'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'=>'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.',
     'Find attribute set to ([_1]).'=>'Find attribute set to ([_1]).',
     'Search attribute set to ([_1]).'=>'Search attribute set to ([_1]).',
-
+    'Constructed New Logger Object Instance.'=>'Constructed New Logger Object Instance.',
 );
 
 our %Lexicon = (
@@ -2207,7 +2227,7 @@ my  @phrases = (
     'Commandline Input is...'           =>  'Befehlszeileneingabe ist...',
     'Language set to [_1].'             =>  'Sprache auf [_1] eingestellt.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
-    'Language, archive, repository, and debug/verbose/trace settings were all required for log methods.' =>  'Um Protokollmethoden verwenden zu können, waren alle Sprach-, Archiv-, Repository- und Debug-/Ausführlichkeits-/Trace-Einstellungen erforderlich.',
+    'Archive, repository, and log related params were all required for log methods.' =>  'Für die Protokollierung Methoden waren Archiv- und Repository-Attribute sowie mit der Protokollierung verbundene Parameter erforderlich.',
     'Now setting additional instance attributes from params...' => 'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt ...',
     'Setting self-referential instance attributes...' => 'Selbstreferenzielle Instanzattribute festlegen...',
     'Set YAML configurations.' => 'Legen Sie YAML-Konfigurationen fest.',
@@ -2270,7 +2290,7 @@ my  @phrases = (
     'Premature exit - no result passed in.'=>'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
     'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
     'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
-
+    'Constructed New Logger Object Instance.'=>'Neue Logger-Objektinstanz erstellt.',
 );
 
 our %Lexicon = (
