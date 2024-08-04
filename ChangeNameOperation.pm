@@ -80,7 +80,7 @@ package ChangeNameOperation v1.0.0 {
                 -no_match_vars
             );                      # Use full english names for special perl variables,
                                     # except the regex match variables
-                                    # due to a performance if they are invoked,
+                                    # due to a performance issue if they are invoked,
                                     # on Perl v5.18 or lower.
 
     # Specific:
@@ -181,23 +181,108 @@ Allows setting of language, by way of a language tag.
 i.e. en-GB, or de-DE.
 See L</LANGUAGES> for list of current language packages.
 
+--config
+
+Allows setting the location of a YAML configuration file to use.
+i.e. ... 
+
+    --config path/to/yaml_config.yml
+
+--live
+
+Ensures changes take effect.
+
+--nolive
+
+Ensures dry run mode - changes do not take effect.
+The script already runs in dry run mode by default.
+
+--verbose
+
+Provides additional insightful output during the operation.
+If repeated, shows dumper and trace output,
+unless these are surpressed by --no_dumper or --no_trace flags.
+
+--debug
+
+Shows debugging information during execution.
+This includes Data::Dumper and EPrints->trace output.
+Use --no_dumper and --no_trace flags to surpress this.
+
+--trace
+
+Should two verbose flags, or at least one debug flag be set,
+this trace flag will ensure an EPrints->trace stack trace
+is displayed alongside every log message.
+
+--notrace, --no_trace
+
+Prevents the display of EPrints->trace stack traces
+when the debug flag or two verbose flags are in effect.
+
+--no_dumper, --no_dump, --nodumper, --nodump
+
+Prevents the display of Data::Dumper output
+when the debug flag or two verbose flags are in effect.
+
+--exact
+
+Indicates the search term, if provided on the command line,
+should be interpreted as a case insensitive find value too.
+This means you will not be prompted for a find value,
+and makes your search an exact search.
+
+
+
+            'config:s',             # Optional string.
+                                    # Use 'config' for the hash ref key, 
+                                    # accept '--config' from the commandline.
+                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+     
+            'live!',                # if --live present,    set $live to 1,
+                                    # if --nolive present,  set $live to 0.
+    
+            'verbose+',             # if --verbose present,    set $verbose
+                                    # to the number of times it is present.
+                                    # i.e. --verbose --verbose would set $verbose to 2.
+    
+            'debug!',               # if --debug present,    set $debug to 1,
+                                    # if --nodebug present,  set $debug to 0.
+    
+            'trace!',               # if --trace present,    set $trace to 1,
+                                    # if --notrace present,  set $trace to 0.
+                                
+            'no_dumper'.
+            '|no_dump'.
+            '|nodumper'.
+            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
+    
+            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
+            
+            'exact!',               # if --exact present,   set $exact to 1,
+                                    # if --noexact present, set $exact to 0.
+
 --verbose
 
 Indicates
+
+
 
 Considers arguments passed in to have come from the commandline,
 processes them to obtain object construction parameters,
 checks those parameters,
 then uses them to construct a new ChangeNameOperation object,
-upon which the program flow is called.
+upon which the program flow is called...
 
-Beginning with a search,
-then refining down to a specific part of a name,
-then displaying the findings to the user,
-confirming any changes,
-making changes,
-and proceding to finish.
+    # Construct new object, and begin program flow...
+    $self->new(@object_params)->search->part_specific->display->confirm->change->finish
 
+Beginning with a search (L</search>),
+then refining down to a specific part (L</part_specific>) of a name,
+then displaying the findings to the user (L</display>),
+confirming any changes (L</confirm>),
+making changes (L</change>),
+and proceding to finish (L</finish>).
 
 
 =cut
@@ -828,9 +913,12 @@ and proceding to finish.
             'trace!',               # if --trace present,    set $trace to 1,
                                     # if --notrace present,  set $trace to 0.
                                 
-            'no_dumper|nodumper+',  # if --nodumper present set $no_dumper to 1.
+            'no_dumper'.
+            '|no_dump'.
+            '|nodumper'.
+            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
     
-            'no_trace|notrace+',    # if --notrace present  set $no_trace  to 1.
+            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
             
             'exact!',               # if --exact present,   set $exact to 1,
                                     # if --noexact present, set $exact to 0.
