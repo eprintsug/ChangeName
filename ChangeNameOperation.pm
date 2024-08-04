@@ -1,5 +1,42 @@
 #!/usr/bin/env perl
 
+=pod FILENAME
+
+=encoding utf8
+
+=head1 FILENAME
+
+ChangeNameOperation.pm
+
+=cut
+
+=pod Synopsis, Description
+
+=head1 SYNOPSIS
+
+    # Run file at the command line:
+    perl -CAS ./ChangeNameOperation.pm
+
+=head1 FILE DESCRIPTION
+
+A file containing multiple Perl packages,
+that each help in an operation,
+for changing the names associated with
+an EPrint, within an EPrints repository.
+
+The main body of the file itself,
+sets global Perl settings,
+such as the Perl feature bundle to use,
+and UTF-8 encoding globals,
+before any embedded packages begin.
+
+A C<BEGIN> block intervenes in load order,
+to ensure language classes are loaded
+before any packages that use
+them.
+
+=cut
+
 # Used throughout:
 use     strict;
 use     warnings;
@@ -23,6 +60,18 @@ binmode STDERR              ,   $encoding_layer;
 $ENV{'PERL_UNICODE'}        =   'AS';               # A = Expect @ARGV values to be UTF-8 strings.
                                                     # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                     # ENV settings are global for current thread and any forked processes.
+
+=head1 PERL PACKAGES
+
+=over
+
+=cut
+
+=item ChangeNameOperation
+
+Performs the change name operation.
+
+=cut
 
 package ChangeNameOperation v1.0.0 {
 
@@ -66,7 +115,7 @@ package ChangeNameOperation v1.0.0 {
 
 =encoding utf8
 
-=head1 NAME
+=head1 MODULE NAME
 
 ChangeNameOperation
 
@@ -85,15 +134,23 @@ v1.0.0
 
 =head1 DESCRIPTION
 
-Calls a subroutine.
+Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
     perl -CAS ./ChangeNameOperation.pm
+    
+Loads the class when used in another script.
+
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+    
+See L</new> method for info on acceptable object parameters.
 
 =cut
 
-    
     # Command Line Auto-run:
     ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
     
@@ -101,17 +158,50 @@ Currently set to call L</start_from_commandline>.
 
 =over
 
-=item your_method_goes_here(params);
+=cut
 
-    Synopsis here
+=item start_from_commandline(@ARGV);
 
-Description here.
+    # Run at the command line:
+    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bob given --verbose --live
 
-To be done.
+Auto-ran when ChangeNameOperation.pm is ran from the commandline.
 
-=back
+Considers the first four arguments provided to be 
+an EPrints archive ID,
+then a case insensitive search term,
+then a case sensitive replacement,
+and finally a name part - either given or family.
+
+Can accept a number of flags.
+
+--language, --lang
+
+Allows setting of language, by way of a language tag.
+i.e. en-GB, or de-DE.
+See L</LANGUAGES> for list of current language packages.
+
+--verbose
+
+Indicates
+
+Considers arguments passed in to have come from the commandline,
+processes them to obtain object construction parameters,
+checks those parameters,
+then uses them to construct a new ChangeNameOperation object,
+upon which the program flow is called.
+
+Beginning with a search,
+then refining down to a specific part of a name,
+then displaying the findings to the user,
+confirming any changes,
+making changes,
+and proceding to finish.
+
+
 
 =cut
+
     
     # Start:
     
@@ -124,7 +214,25 @@ To be done.
     }
     
     # Program Flow:
-    
+=item new(@ARGV);
+
+Auto-ran when ChangeNameOperation.pm is ran from the commandline.
+
+Considers arguments passed in to have come from the commandline,
+processes them to obtain object construction parameters,
+checks those parameters,
+then uses them to construct a new ChangeNameOperation object,
+upon which the program flow is called.
+
+Beginning with a search,
+then refining down to a specific part of a name,
+then displaying the findings to the user,
+confirming any changes,
+making changes,
+and proceding to finish.
+
+=cut
+
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
@@ -1335,19 +1443,11 @@ To be done.
     # Log Stuff:
     
     sub log_verbose {
-        my  $self   =   shift;
-    
-        $self->{logger}->set_caller_depth(4)->verbose(@ARG);
-    
-        return $self;
+        return shift->{logger}->set_caller_depth(4)->verbose(@ARG);
     }
     
     sub log_debug {
-        my  $self   =   shift;
-    
-        $self->{logger}->set_caller_depth(4)->debug(@ARG);
-    
-        return $self;
+        return shift->{logger}->set_caller_depth(4)->debug(@ARG);
     }
     
     sub dumper {
@@ -1360,7 +1460,12 @@ To be done.
     
     1;
     
- 
+=pod End of methods.
+
+=back
+
+=cut
+
 
 =head1 AUTHOR
 
@@ -1369,6 +1474,15 @@ Andrew Mehta
 =cut
 
 }; # ChangeNameOperation Package.
+
+=item ChangeNameOperation::Log
+
+Allows for creating a logger object
+that has methods related to logging
+verbose, debug, trace, and data dumper output
+to the EPrints log.
+
+=cut
 
 package ChangeNameOperation::Log v1.0.0 {
 
@@ -1453,7 +1567,7 @@ package ChangeNameOperation::Log v1.0.0 {
     }
 
     sub get_default_language {
-        return 'en-GB'
+        return 'en-GB';
     }
     
     sub localise {
@@ -1601,6 +1715,12 @@ package ChangeNameOperation::Log v1.0.0 {
 
 }; # ChangeNameOperation::Log Package.
 
+=item ChangeNameOperation::Languages
+
+MakeText project class for loading language classes.
+
+=cut
+
 package ChangeNameOperation::Languages v1.0.0 {
 
     # Standard:
@@ -1632,18 +1752,25 @@ package ChangeNameOperation::Languages v1.0.0 {
     1;
 }; # ChangeNameOperation::Languages Package.
 
-# Load Languages before all else:
+=head1 Languages:
+
+=cut
+
+# Load Language Classes before all else:
 BEGIN {
+
+=item ChangeNameOperation::Languages::en_gb
+
+British English language class.
+Lexicon contains configurations, tokens, and phrases.
+
+=cut
 
 package ChangeNameOperation::Languages::en_gb { 
 
-
 # Use --lang=en-GB at the commandline to use it.
 
-use     parent -norequire, qw(
-            ChangeNameOperation::Languages
-        );
-
+ChangeNameOperation::Languages->import;
 
 # ----------------------------------
 
@@ -1970,15 +2097,19 @@ our %Lexicon = (
 
 }
 
+=item ChangeNameOperation::Languages::de_de
+
+German language class.
+Lexicon contains configurations, tokens, and phrases.
+
+=cut
+
 package ChangeNameOperation::Languages::de_de {
 
 # Use --lang=de-DE at the commandline to use it.
 
 # Specific:
-use     parent -norequire, qw(
-            ChangeNameOperation::Languages
-        );
-
+ChangeNameOperation::Languages->import;
 
 # ----------------------------------
 
@@ -2308,10 +2439,29 @@ our %Lexicon = (
 
 };
 
+=item ChangeNameOperation::YAMLConfig
+
+Package storing YAML formatted default configuration settings.
+Used if no external .yml file is provided.
+
+=cut
+
 # Load Configuration - positioned last and without a package block, so __DATA__ can be used:
 package ChangeNameOperation::YAMLConfig v1.0.0;
 
 1;
+
+=pod End of Packages.
+
+=back
+
+=cut
+
+=head1 AUTHOR
+
+Andrew Mehta
+
+=cut
 
 __DATA__
 # This is a YAML Configuration File:
