@@ -63,15 +63,11 @@ $ENV{'PERL_UNICODE'}        =   'AS';               # A = Expect @ARGV values to
 
 =head1 PERL PACKAGES
 
-=over
-
 =cut
 
-=item ChangeNameOperation
+=head2 ChangeNameOperation
 
 Performs the change name operation.
-
-=back
 
 =cut
 
@@ -117,11 +113,15 @@ package ChangeNameOperation v1.0.0 {
 
 =encoding utf8
 
-=head1 MODULE NAME
+=over
+
+=over
+
+=item MODULE NAME
 
 ChangeNameOperation
 
-=head1 VERSION
+=item VERSION
 
 v1.0.0
 
@@ -129,7 +129,7 @@ v1.0.0
 
 =pod Synopsis, Description
 
-=head1 SYNOPSIS
+=item SYNOPSIS
 
     # Run at the command line:
     perl -CAS ./ChangeNameOperation.pm
@@ -140,7 +140,7 @@ v1.0.0
     my $object = ChangeNameOperation->new(@object_params);
 
 
-=head1 DESCRIPTION
+=item DESCRIPTION
 
 Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
@@ -148,8 +148,6 @@ Currently set to call L</start_from_commandline>.
     # Run from the command line:
     perl -CAS ./ChangeNameOperation.pm
 
-Z<>
-Z<>
 Loads the class when used in another script.
 
     # Use in a unit test or other Perl Script:
@@ -157,7 +155,6 @@ Loads the class when used in another script.
     
     my $object = ChangeNameOperation->new(@object_params);
 
-Z<>
 See L</new> method for info on acceptable object parameters.
 
 =cut
@@ -165,7 +162,7 @@ See L</new> method for info on acceptable object parameters.
     # Command Line Auto-run:
     ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
     
-=head1 METHODS
+=item METHODS
 
 =over
 
@@ -1573,17 +1570,19 @@ it will prompt the user for them too.
 =cut
 
 
-=head1 AUTHOR
+=item AUTHOR
 
 Andrew Mehta
+
+=back
+
+=back
 
 =cut
 
 }; # ChangeNameOperation Package.
 
-=over
-
-=item ChangeNameOperation::Log
+=head2 ChangeNameOperation::Log
 
 Allows for creating a logger object
 that has methods related to logging
@@ -1619,6 +1618,61 @@ package ChangeNameOperation::Log v1.0.0 {
     no warnings 'redefine';
     local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
     use warnings 'redefine';
+ 
+=pod Name, Version
+
+=encoding utf8
+
+=over
+
+=over
+
+=item MODULE NAME
+
+ChangeNameOperation
+
+=item VERSION
+
+v1.0.0
+
+=cut
+
+=pod Synopsis, Description
+
+=item SYNOPSIS
+
+    # Run at the command line:
+    perl -CAS ./ChangeNameOperation.pm
+    
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+
+
+=item DESCRIPTION
+
+Calls a subroutine when ran from the commandline.
+Currently set to call L</start_from_commandline>.
+
+    # Run from the command line:
+    perl -CAS ./ChangeNameOperation.pm
+
+Loads the class when used in another script.
+
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+
+See L</new> method for info on acceptable object parameters.
+
+=back
+
+=back
+
+=cut
+ 
     
     sub new {
         my  $class      =   shift;
@@ -1823,11 +1877,9 @@ package ChangeNameOperation::Log v1.0.0 {
 
 }; # ChangeNameOperation::Log Package.
 
-=item ChangeNameOperation::Languages
+=head2 ChangeNameOperation::Languages
 
 MakeText project class for loading language classes.
-
-=back
 
 =cut
 
@@ -1862,19 +1914,20 @@ package ChangeNameOperation::Languages v1.0.0 {
     1;
 }; # ChangeNameOperation::Languages Package.
 
-=head1 Languages:
+=head2 Language Packages:
+
+These lexicons contain language specific configurations, tokens, and phrases.
+
+=over
 
 =cut
 
 # Load Language Classes before all else:
 BEGIN {
 
-=over
-
 =item ChangeNameOperation::Languages::en_gb
 
-British English language class.
-Lexicon contains configurations, tokens, and phrases.
+British English.
 
 =cut
 
@@ -2211,8 +2264,7 @@ our %Lexicon = (
 
 =item ChangeNameOperation::Languages::de_de
 
-German language class.
-Lexicon contains configurations, tokens, and phrases.
+German.
 
 =cut
 
@@ -2551,7 +2603,13 @@ our %Lexicon = (
 
 };
 
-=item ChangeNameOperation::YAMLConfig
+=pod End Language Packages
+
+=back
+
+=cut
+
+=head2 ChangeNameOperation::YAMLConfig
 
 Package storing YAML formatted default configuration settings.
 Used if no external .yml file is provided.
@@ -2564,8 +2622,6 @@ package ChangeNameOperation::YAMLConfig v1.0.0;
 1;
 
 =pod End of Packages.
-
-=back
 
 =cut
 
