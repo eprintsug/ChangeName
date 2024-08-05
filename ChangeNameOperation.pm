@@ -71,6 +71,8 @@ $ENV{'PERL_UNICODE'}        =   'AS';               # A = Expect @ARGV values to
 
 Performs the change name operation.
 
+=back
+
 =cut
 
 package ChangeNameOperation v1.0.0 {
@@ -131,6 +133,12 @@ v1.0.0
 
     # Run at the command line:
     perl -CAS ./ChangeNameOperation.pm
+    
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+
 
 =head1 DESCRIPTION
 
@@ -139,14 +147,17 @@ Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
     perl -CAS ./ChangeNameOperation.pm
-    
+
+Z<>
+Z<>
 Loads the class when used in another script.
 
     # Use in a unit test or other Perl Script:
     use ChangeNameOperation;
     
     my $object = ChangeNameOperation->new(@object_params);
-    
+
+Z<>
 See L</new> method for info on acceptable object parameters.
 
 =cut
@@ -163,110 +174,86 @@ See L</new> method for info on acceptable object parameters.
 =item start_from_commandline(@ARGV);
 
     # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bob given --verbose --live
+    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
+    
 
 Auto-ran when ChangeNameOperation.pm is ran from the commandline.
 
 Considers the first four arguments provided to be 
-an EPrints archive ID,
-then a case insensitive search term,
-then a case sensitive replacement,
-and finally a name part - either given or family.
+an EPrints archive ID (My Archive in the example above),
+then a case insensitive search term (bob in the example above),
+then a case sensitive replacement (Bobbi in the example above),
+and finally a name part - either given or family (given in the example above).
 
-Can accept a number of flags.
+Can accept a number of flags (preceded by two dashes 
+- such as the --exact --verbose and --live examples shown above).
+The flags and their usage are as follows:
 
---language, --lang
+=over
+
+=item --language, --lang
 
 Allows setting of language, by way of a language tag.
 i.e. en-GB, or de-DE.
+
+    --lang en-GB
+
 See L</LANGUAGES> for list of current language packages.
 
---config
+=item --config
 
 Allows setting the location of a YAML configuration file to use.
 i.e. ... 
 
-    --config path/to/yaml_config.yml
+    --config /path/to/yaml_config.yml
 
---live
+=item --live
 
 Ensures changes take effect.
 
---nolive
+=item --nolive
 
 Ensures dry run mode - changes do not take effect.
 The script already runs in dry run mode by default.
 
---verbose
+=item --exact
+
+Indicates the search term, if provided on the command line,
+should be interpreted as a case insensitive find value too.
+This means you will not be prompted for a find value,
+for the find and replace operation on the search results.
+Your search term is considered to be your find value too,
+making this an exact search (albeit case insensitive).
+
+=item --verbose
 
 Provides additional insightful output during the operation.
 If repeated, shows dumper and trace output,
 unless these are surpressed by --no_dumper or --no_trace flags.
 
---debug
+=item --debug
 
 Shows debugging information during execution.
 This includes Data::Dumper and EPrints->trace output.
 Use --no_dumper and --no_trace flags to surpress this.
 
---trace
+=item --trace
 
 Should two verbose flags, or at least one debug flag be set,
 this trace flag will ensure an EPrints->trace stack trace
 is displayed alongside every log message.
 
---notrace, --no_trace
+=item --notrace, --no_trace
 
 Prevents the display of EPrints->trace stack traces
 when the debug flag or two verbose flags are in effect.
 
---no_dumper, --no_dump, --nodumper, --nodump
+=item --no_dumper, --no_dump, --nodumper, --nodump
 
 Prevents the display of Data::Dumper output
 when the debug flag or two verbose flags are in effect.
 
---exact
-
-Indicates the search term, if provided on the command line,
-should be interpreted as a case insensitive find value too.
-This means you will not be prompted for a find value,
-and makes your search an exact search.
-
-
-
-            'config:s',             # Optional string.
-                                    # Use 'config' for the hash ref key, 
-                                    # accept '--config' from the commandline.
-                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
-     
-            'live!',                # if --live present,    set $live to 1,
-                                    # if --nolive present,  set $live to 0.
-    
-            'verbose+',             # if --verbose present,    set $verbose
-                                    # to the number of times it is present.
-                                    # i.e. --verbose --verbose would set $verbose to 2.
-    
-            'debug!',               # if --debug present,    set $debug to 1,
-                                    # if --nodebug present,  set $debug to 0.
-    
-            'trace!',               # if --trace present,    set $trace to 1,
-                                    # if --notrace present,  set $trace to 0.
-                                
-            'no_dumper'.
-            '|no_dump'.
-            '|nodumper'.
-            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
-    
-            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
-            
-            'exact!',               # if --exact present,   set $exact to 1,
-                                    # if --noexact present, set $exact to 0.
-
---verbose
-
-Indicates
-
-
+=back
 
 Considers arguments passed in to have come from the commandline,
 processes them to obtain object construction parameters,
@@ -275,7 +262,7 @@ then uses them to construct a new ChangeNameOperation object,
 upon which the program flow is called...
 
     # Construct new object, and begin program flow...
-    $self->new(@object_params)->search->part_specific->display->confirm->change->finish
+    $self->new(@object_params)->search->part_specific->display->confirm->change->finish;
 
 Beginning with a search (L</search>),
 then refining down to a specific part (L</part_specific>) of a name,
@@ -287,8 +274,7 @@ and proceding to finish (L</finish>).
 
 =cut
 
-    
-    # Start:
+    # Start Method:
     
     sub start_from_commandline {
         my  $class          =   shift;
@@ -298,23 +284,15 @@ and proceding to finish (L</finish>).
     
     }
     
-    # Program Flow:
-=item new(@ARGV);
+    # Program Flow Methods:
 
-Auto-ran when ChangeNameOperation.pm is ran from the commandline.
+=item ChangeNameOperation->new(@object_params);
 
-Considers arguments passed in to have come from the commandline,
-processes them to obtain object construction parameters,
-checks those parameters,
-then uses them to construct a new ChangeNameOperation object,
-upon which the program flow is called.
-
-Beginning with a search,
-then refining down to a specific part of a name,
-then displaying the findings to the user,
-confirming any changes,
-making changes,
-and proceding to finish.
+Accepts parameters required for a new ChangeNameOperation,
+and returns a new ChangeNameOperation object,
+upon which program flow methods
+or setters and getters,
+can be called.
 
 =cut
 
@@ -329,6 +307,18 @@ and proceding to finish.
     
         return $self;
     }
+
+=item $self->search;
+
+    # Construct an object, and populate its 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search;
+
+Performs an EPrints search,
+according to values set during ChangeNameOperation object construction.
+
+Returns the initial ChangeNameOperation object, now with list_of_results and records_found object attributes set.
+
+=cut
     
     sub search {
         my  $self                   =   shift;
@@ -363,6 +353,20 @@ and proceding to finish.
         return $self->log_debug('Leaving method.')->dumper;
     
     }
+
+=item $self->part_specific;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
+
+Should search results have been retrieved (will return prematurely if not),
+it will process the search results in order to generate useful lists,
+and then attempt to refine the search down by setting or prompting for a specific name part.
+
+If find and replace values have not already been set,
+it will prompt the user for them too.
+
+=cut
     
     sub part_specific {
     
@@ -389,6 +393,20 @@ and proceding to finish.
         return $self;
     
     }
+
+=item $self->part_specific;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
+
+Should search results have been retrieved (will return prematurely if not),
+it will process the search results in order to generate useful lists,
+and then attempt to refine the search down by setting or prompting for a specific name part.
+
+If find and replace values have not already been set,
+it will prompt the user for them too.
+
+=cut
     
     sub display {
     
@@ -1563,6 +1581,8 @@ Andrew Mehta
 
 }; # ChangeNameOperation Package.
 
+=over
+
 =item ChangeNameOperation::Log
 
 Allows for creating a logger object
@@ -1807,6 +1827,8 @@ package ChangeNameOperation::Log v1.0.0 {
 
 MakeText project class for loading language classes.
 
+=back
+
 =cut
 
 package ChangeNameOperation::Languages v1.0.0 {
@@ -1846,6 +1868,8 @@ package ChangeNameOperation::Languages v1.0.0 {
 
 # Load Language Classes before all else:
 BEGIN {
+
+=over
 
 =item ChangeNameOperation::Languages::en_gb
 
