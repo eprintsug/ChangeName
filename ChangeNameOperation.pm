@@ -113,15 +113,12 @@ package ChangeNameOperation v1.0.0 {
 
 =encoding utf8
 
-=over
 
-=over
-
-=item MODULE NAME
+=head3 MODULE NAME
 
 ChangeNameOperation
 
-=item VERSION
+=head3 VERSION
 
 v1.0.0
 
@@ -129,7 +126,7 @@ v1.0.0
 
 =pod Synopsis, Description
 
-=item SYNOPSIS
+=head3 SYNOPSIS
 
     # Run at the command line:
     perl -CAS ./ChangeNameOperation.pm
@@ -140,7 +137,7 @@ v1.0.0
     my $object = ChangeNameOperation->new(@object_params);
 
 
-=item DESCRIPTION
+=head3 DESCRIPTION
 
 Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
@@ -162,7 +159,7 @@ See L</new> method for info on acceptable object parameters.
     # Command Line Auto-run:
     ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
     
-=item METHODS
+=head3 METHODS
 
 =over
 
