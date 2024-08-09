@@ -10,12 +10,15 @@ ChangeNameOperation.pm
 
 =cut
 
-=pod Synopsis, Description
+=pod Synopsis, Description, Options
 
 =head1 SYNOPSIS
 
     # Run file at the command line:
     perl -CAS ./ChangeNameOperation.pm
+
+    # Run at the command line with arguments and flags:
+    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
 
 =head1 FILE DESCRIPTION
 
@@ -26,7 +29,7 @@ an EPrint, within an EPrints repository.
 
 The main body of the file itself,
 sets global Perl settings,
-such as the Perl feature bundle to use,
+such as the Perl version feature bundle to use,
 and UTF-8 encoding globals,
 before any embedded packages begin.
 
@@ -34,6 +37,109 @@ A C<BEGIN> block intervenes in load order,
 to ensure language classes are loaded
 before any packages that use
 them.
+
+After such language class loading,
+the next package executed is then the first in the file
+- the L</ChangeNameOperation> package.
+
+=head1 ARGUMENTS
+
+Considers the first four arguments provided at the commandline to be...
+
+=over
+
+=item 1
+
+...an EPrints archive ID (C<MyArchive> in the L<SYNOPSIS> example above),
+
+=item 2
+
+...then a case insensitive search term (C<bob> in the L<SYNOPSIS> example above),
+
+=item 3
+
+...then a case sensitive replacement (C<Bobbi> in the L<SYNOPSIS> example above),
+
+=item 4
+
+...and finally a name part
+- either "C<given>" name
+or "C<family>" name
+(C<given> in the L<SYNOPSIS> example above).
+
+=back 
+
+Can also accept a number of flags (preceded by two dashes 
+- such as the C<--exact> C<--verbose> and C<--live> examples shown above).
+The flags and their usage are described under L</OPTIONS>.
+
+=head1 OPTIONS
+
+=over
+
+=item B<--lang>, I<language tag> B<--language>=I<language tag>
+
+Allows setting of language, by way of a language tag.
+i.e. en-GB, or de-DE.
+
+    --lang en-GB
+
+See L</LANGUAGES> for list of current language packages.
+
+=item B<--config> I</path/to/yaml_config.yml>
+
+Allows setting the location of a YAML configuration file to use.
+i.e. ... 
+
+    --config /path/to/yaml_config.yml
+
+=item B<--live>
+
+Ensures changes take effect.
+
+=item B<--nolive>
+
+Ensures dry run mode - changes do not take effect.
+The script already runs in dry run mode by default.
+
+=item B<--exact>
+
+Indicates the search term, if provided on the command line,
+should be interpreted as a case insensitive find value too.
+This means you will not be prompted for a find value,
+for the find and replace operation on the search results.
+Your search term is considered to be your find value too,
+making this an exact search (albeit case insensitive).
+
+=item B<--verbose>
+
+Provides additional insightful output during the operation.
+If repeated, shows dumper and trace output,
+unless these are surpressed by --no_dumper or --no_trace flags.
+
+=item B<--debug>
+
+Shows debugging information during execution.
+This includes Data::Dumper and EPrints->trace output.
+Use --no_dumper and --no_trace flags to surpress this.
+
+=item B<--trace>
+
+Should two verbose flags, or at least one debug flag be set,
+this trace flag will ensure an EPrints->trace stack trace
+is displayed alongside every log message.
+
+=item B<--notrace>, B<--no_trace>
+
+Prevents the display of EPrints->trace stack traces
+when the debug flag or two verbose flags are in effect.
+
+=item B<--nodump>, B<--no_dump>, B<--nodumper>, B<--no_dumper>
+
+Prevents the display of Data::Dumper output
+when the debug flag or two verbose flags are in effect.
+
+=back
 
 =cut
 
@@ -143,7 +249,17 @@ Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
+
+Considers the first four arguments provided at the commandline to be 
+an EPrints archive ID (C<MyArchive> in the example above),
+then a case insensitive search term (C<bob> in the example above),
+then a case sensitive replacement (C<Bobbi> in the example above),
+and finally a name part - either C<given> or C<family> (C<given> in the example above).
+
+Can accept a number of flags (preceded by two dashes 
+- such as the C<--exact> C<--verbose> and C<--live> examples shown above).
+The flags and their usage are described under L</OPTIONS>.
 
 Loads the class when used in another script.
 
@@ -159,95 +275,15 @@ See L</new> method for info on acceptable object parameters.
     # Command Line Auto-run:
     ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
     
-=head3 METHODS
+=head3 CLASS METHODS
 
-=over
-
-=cut
-
-=item start_from_commandline(@ARGV);
+=head4 $class->start_from_commandline(@ARGV);
 
     # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
-    
+    perl -CAS ./ChangeNameOperation.pm
 
-Auto-ran when ChangeNameOperation.pm is ran from the commandline.
-
-Considers the first four arguments provided to be 
-an EPrints archive ID (My Archive in the example above),
-then a case insensitive search term (bob in the example above),
-then a case sensitive replacement (Bobbi in the example above),
-and finally a name part - either given or family (given in the example above).
-
-Can accept a number of flags (preceded by two dashes 
-- such as the --exact --verbose and --live examples shown above).
-The flags and their usage are as follows:
-
-=over
-
-=item --language, --lang
-
-Allows setting of language, by way of a language tag.
-i.e. en-GB, or de-DE.
-
-    --lang en-GB
-
-See L</LANGUAGES> for list of current language packages.
-
-=item --config
-
-Allows setting the location of a YAML configuration file to use.
-i.e. ... 
-
-    --config /path/to/yaml_config.yml
-
-=item --live
-
-Ensures changes take effect.
-
-=item --nolive
-
-Ensures dry run mode - changes do not take effect.
-The script already runs in dry run mode by default.
-
-=item --exact
-
-Indicates the search term, if provided on the command line,
-should be interpreted as a case insensitive find value too.
-This means you will not be prompted for a find value,
-for the find and replace operation on the search results.
-Your search term is considered to be your find value too,
-making this an exact search (albeit case insensitive).
-
-=item --verbose
-
-Provides additional insightful output during the operation.
-If repeated, shows dumper and trace output,
-unless these are surpressed by --no_dumper or --no_trace flags.
-
-=item --debug
-
-Shows debugging information during execution.
-This includes Data::Dumper and EPrints->trace output.
-Use --no_dumper and --no_trace flags to surpress this.
-
-=item --trace
-
-Should two verbose flags, or at least one debug flag be set,
-this trace flag will ensure an EPrints->trace stack trace
-is displayed alongside every log message.
-
-=item --notrace, --no_trace
-
-Prevents the display of EPrints->trace stack traces
-when the debug flag or two verbose flags are in effect.
-
-=item --no_dumper, --no_dump, --nodumper, --nodump
-
-Prevents the display of Data::Dumper output
-when the debug flag or two verbose flags are in effect.
-
-=back
+Class method auto-ran when
+L<ChangeNameOperation.pm> is ran from the commandline.
 
 Considers arguments passed in to have come from the commandline,
 processes them to obtain object construction parameters,
@@ -256,15 +292,35 @@ then uses them to construct a new ChangeNameOperation object,
 upon which the program flow is called...
 
     # Construct new object, and begin program flow...
-    $self->new(@object_params)->search->part_specific->display->confirm->change->finish;
+    ChangeNameOperation->new(@object_params)->search->part_specific->display->confirm->change->finish;
+
+=over
+
+=item *
 
 Beginning with a search (L</search>),
-then refining down to a specific part (L</part_specific>) of a name,
+
+=item *
+
+then refining down to a specific part of a name (L</part_specific>),
+
+=item *
+
 then displaying the findings to the user (L</display>),
+
+=item *
+
 confirming any changes (L</confirm>),
+
+=item *
+
 making changes (L</change>),
+
+=item *
+
 and proceding to finish (L</finish>).
 
+=back
 
 =cut
 
@@ -280,7 +336,15 @@ and proceding to finish (L</finish>).
     
     # Program Flow Methods:
 
-=item ChangeNameOperation->new(@object_params);
+
+=head3 CONSTRUCTORS
+
+=cut
+
+=head4 ChangeNameOperation->new(@object_params);
+
+    # Construct new object, and begin program flow...
+    my  $object =   ChangeNameOperation->new(@object_params);
 
 Accepts parameters required for a new ChangeNameOperation,
 and returns a new ChangeNameOperation object,
@@ -302,7 +366,9 @@ can be called.
         return $self;
     }
 
-=item $self->search;
+=head3 INSTANCE METHODS
+
+=head4 $self->search;
 
     # Construct an object, and populate its 
     my  $object  =   ChangeNameOperation->new(@object_params)->search;
@@ -348,7 +414,7 @@ Returns the initial ChangeNameOperation object, now with list_of_results and rec
     
     }
 
-=item $self->part_specific;
+=head4 $self->part_specific;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
@@ -388,7 +454,7 @@ it will prompt the user for them too.
     
     }
 
-=item $self->part_specific;
+=head4 $self->part_specific;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
@@ -442,7 +508,16 @@ it will prompt the user for them too.
         return $self->log_debug('Leaving display method.')->dumper;
     
     }
-    
+
+=head4 $self->confirm;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm;
+
+To do.
+
+=cut
+  
     sub confirm {
     
         my  $self           =   shift;
@@ -482,7 +557,16 @@ it will prompt the user for them too.
         return $self->log_debug('Leaving confirm method.')->dumper;
     
     }
-    
+
+=head4 $self->change;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm->change;
+
+To do.
+
+=cut
+
     sub change {
     
         my  $self   =   shift;
@@ -552,7 +636,16 @@ it will prompt the user for them too.
         return $self;
     
     }
-    
+
+=head4 $self->finish;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm->change->finish;
+
+To do.
+
+=cut
+
     sub finish {
         my  $self   =   shift;
         say $self->localise('horizontal.rule');
@@ -563,7 +656,7 @@ it will prompt the user for them too.
     }
     
     # Setters and Getters:
-    
+
     sub get_default_yaml_filepath {
         return shift->{default_yaml_filepath};
     }
@@ -674,7 +767,7 @@ it will prompt the user for them too.
                                     do                                          # 'do' returns last value of block.
                                     {
                                         local $INPUT_RECORD_SEPARATOR = undef;  # Read until end of input.
-                                        <ChangeNameOperation::YAMLConfig::DATA> # Input is __DATA__ at the bottom of this very file.
+                                        <ChangeNameOperation::Config::YAML::DATA> # Input is __DATA__ at the bottom of this very file.
                                     }
                                 );
                                 
@@ -2606,7 +2699,20 @@ our %Lexicon = (
 
 =cut
 
-=head2 ChangeNameOperation::YAMLConfig
+
+=head2 ChangeNameOperation::Config::Load
+
+Package that loads configuration.
+
+=cut
+
+package ChangeNameOperation::Config::Load v1.0.0 {
+
+
+
+};
+
+=head2 ChangeNameOperation::Config::YAML
 
 Package storing YAML formatted default configuration settings.
 Used if no external .yml file is provided.
@@ -2614,7 +2720,7 @@ Used if no external .yml file is provided.
 =cut
 
 # Load Configuration - positioned last and without a package block, so __DATA__ can be used:
-package ChangeNameOperation::YAMLConfig v1.0.0;
+package ChangeNameOperation::Config::YAML v1.0.0;
 
 1;
 
@@ -2633,6 +2739,8 @@ __DATA__
 %YAML 1.2
 # Three dashes to start new YAML document.
 ---
+
+EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
 Fields to search:
     -   creators_name
