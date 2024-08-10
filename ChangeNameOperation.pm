@@ -149,23 +149,25 @@ use     warnings;
 use     v5.16;
 use     utf8;
 
+my      @config_filepath_or_empty_list  =   ();
+
 # Global Encoding Settings:
 my      $encoding_layer;
 
 BEGIN {
-    my  $encoding_to_use    =   'UTF-8';
+    my  $encoding_to_use                =   'UTF-8';
         
-    $encoding_layer         =   ":encoding($encoding_to_use)";
+    $encoding_layer                     =   ":encoding($encoding_to_use)";
 };
 
-use     open ':std'         ,   "$encoding_layer";  # :std affect is global.
-binmode STDIN               ,   $encoding_layer;
-binmode STDOUT              ,   $encoding_layer;
-binmode STDERR              ,   $encoding_layer;
+use     open ':std'                     ,   "$encoding_layer";  # :std affect is global.
+binmode STDIN                           ,   $encoding_layer;
+binmode STDOUT                          ,   $encoding_layer;
+binmode STDERR                          ,   $encoding_layer;
 
-$ENV{'PERL_UNICODE'}        =   'AS';               # A = Expect @ARGV values to be UTF-8 strings.
-                                                    # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
-                                                    # ENV settings are global for current thread and any forked processes.
+$ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @ARGV values to be UTF-8 strings.
+                                                                # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
+                                                                # ENV settings are global for current thread and any forked processes.
 
 =head1 PERL PACKAGES
 
@@ -176,6 +178,42 @@ $ENV{'PERL_UNICODE'}        =   'AS';               # A = Expect @ARGV values to
 Performs the change name operation.
 
 =cut
+
+package ChangeNameOperation::CommandlineAutoRun v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance issue if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    # Specific:
+    use     ChangeNameOperation::Config;
+    my      $config;
+    BEGIN {
+            $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
+    };
+
+    use     Getopt::Long;
+
+    use     Scalar::Util qw(
+                blessed
+                reftype
+            );
+
+    use     Data::Dumper;               # Used by logging related subroutines and _check_commandline_input sub.
+
+    # Data Dumper Settings:
+    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
+    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
+    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+    no warnings 'redefine';
+    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
+    use warnings 'redefine';
+
+}
 
 package ChangeNameOperation v1.0.0 {
 
@@ -191,7 +229,7 @@ package ChangeNameOperation v1.0.0 {
     use     ChangeNameOperation::Config;
     my      $config;
     BEGIN {
-            $config =   ChangeNameOperation::Config->new->load->get_data;
+            $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
     };
     use     lib '/opt/eprints3/perl_lib';
     use     EPrints;
@@ -1138,7 +1176,7 @@ To do.
                                             dumper_class_name_only  =>  [
                                                                             'repository',
                                                                             'list_of_results',
-                                                                            'dumper_default',
+                                                                            'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
                                                                         ],
                                             dumper_exclude          =>  [
                                                                             #'repository',
