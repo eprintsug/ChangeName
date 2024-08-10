@@ -188,11 +188,16 @@ package ChangeNameOperation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
+    use     ChangeNameOperation::Config;
+    my      $config;
+    BEGIN {
+            $config =   ChangeNameOperation::Config->new->load->get_data;
+    };
     use     lib '/opt/eprints3/perl_lib';
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
-    use     File::Basename; # Will use this to get the directory name that this file is in.
+    use     File::Basename; # Will use this to get the directory name that this file is in, when looking for yaml file.
     use     Getopt::Long;
 
     use     Scalar::Util qw(
@@ -2700,17 +2705,97 @@ our %Lexicon = (
 =cut
 
 
-=head2 ChangeNameOperation::Config::Load
+=head2 ChangeNameOperation::Config
 
 Package that loads configuration.
 
 =cut
 
-package ChangeNameOperation::Config::Load v1.0.0 {
+# Load Config Class first.
+BEGIN {
+package ChangeNameOperation::Config v1.0.0 {
 
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+                                    
+    # Specific:
+    use     File::Basename;         # Will use this to get the directory name that this file is in,
+                                    # when looking for yaml file.
+    use     CPAN::Meta::YAML qw(
+                LoadFile
+                Load
+            );                      # Standard module in Core Perl since Perl 5.14. 
+                                    # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
+                                    
+    sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
+    
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params);
+    
+        return $self;
+    }
 
+    sub _set_attributes {
 
+        # Initial Values:
+        my  ($self)                 =   shift;
+    
+        %{
+            $self
+        }                           =   (
+    
+            # Existing values in $self:
+            %{$self},
+
+            # Defaults:
+            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
+            data                    =>  undef,
+            
+        );
+        
+        return $self;
+            
+    }
+
+    sub get_default_yaml_filepath {
+        return shift->{default_yaml_filepath};
+    }
+
+    
+    sub load {
+        my  $self           =   shift;
+        my  $filepath       =   shift // $self->get_default_yaml_filepath;
+    
+        $self->{data}       =   # External YAML file:
+                                (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
+                        
+                                # Internal YAML __DATA__:
+                                Load(                                           # Will die on any load error.
+                                    do                                          # 'do' returns last value of block.
+                                    {
+                                        local $INPUT_RECORD_SEPARATOR = undef;  # Read until end of input.
+                                        <ChangeNameOperation::Config::YAML::DATA> # Input is __DATA__ at the bottom of this very file.
+                                    }
+                                );
+                                
+        return $self;
+        
+    };
+    
+    sub get_data {
+        return shift->{data};
+    }
 };
+}
 
 =head2 ChangeNameOperation::Config::YAML
 
