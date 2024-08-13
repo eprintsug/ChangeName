@@ -168,7 +168,7 @@ binmode STDERR                          ,   $encoding_layer;
 $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @ARGV values to be UTF-8 strings.
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
-                                                                
+                                                                 
 
 
 =head1 PERL PACKAGES
@@ -218,6 +218,29 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
     
     sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
+    
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params);
+    
+        return $self;    
+    }
+    
+    sub _set_attributes {
+
+        # Initial Values:
+        my  ($self)                 =   shift;
+    
+        %{
+            $self
+        }                           =   (
+            acceptable_utf8_options =>  (${^UNICODE} >= '39')
+                                        &&
+                                        (${^UNICODE} <= '63');
+        );
     
     }
 
@@ -259,27 +282,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
                                     );
                                             
-        if ($params->{live}) {
-            $class->delayed_localise->('LIVE mode - changes will be made at the end after confirmation.');
-        }
-        else {
-            $class->delayed_localise->('DRY RUN mode - no changes will be made.');
-            $class->delayed_localise->('Run again with the --live flag when ready to implement your changes.');
-        };
-    
-        if ($params->{debug}) {
-            $class->delayed_localise->('Commandline Params are...');
-            #say Dumper($params); # Not gonna work delayed.
-            $class->delayed_localise->('Commandline Input is...');
-            #say Dumper(@commandline_input); # Not gonna work delayed
-        };
+
     
         if (@input_that_requires_utf8) {
     
             # Definition:
-            my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
-                                                &&
-                                                (${^UNICODE} <= '63');
     
     
             if ($acceptable_utf8_options) {
@@ -299,6 +306,22 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     
     }
+    
+    
+#            if ($params->{live}) {
+#            $class->delayed_localise->('LIVE mode - changes will be made at the end after confirmation.');
+#        }
+#        else {
+#            $class->delayed_localise->('DRY RUN mode - no changes will be made.');
+#            $class->delayed_localise->('Run again with the --live flag when ready to implement your changes.');
+#        };
+#    
+#        if ($params->{debug}) {
+#            $class->delayed_localise->('Commandline Params are...');
+#            #say Dumper($params); # Not gonna work delayed.
+#            $class->delayed_localise->('Commandline Input is...');
+#            #say Dumper(@commandline_input); # Not gonna work delayed
+#        };
     
     sub setup_config {
     }
