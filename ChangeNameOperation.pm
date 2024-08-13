@@ -179,7 +179,7 @@ Performs the change name operation.
 
 =cut
 
-package ChangeNameOperation::CommandlineAutoRun v1.0.0 {
+package ChangeNameOperation::Commandline v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -189,12 +189,7 @@ package ChangeNameOperation::CommandlineAutoRun v1.0.0 {
                                     # due to a performance issue if they are invoked,
                                     # on Perl v5.18 or lower.
 
-    # Specific:
-    use     ChangeNameOperation::Config;
-    my      $config;
-    BEGIN {
             $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
-    };
 
     use     Getopt::Long;
 
@@ -203,16 +198,14 @@ package ChangeNameOperation::CommandlineAutoRun v1.0.0 {
                 reftype
             );
 
-    use     Data::Dumper;               # Used by logging related subroutines and _check_commandline_input sub.
+    ChangeNameOperation::Commandline->run(@ARGV) unless caller;
 
-    # Data Dumper Settings:
-    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
-    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
-    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-    no warnings 'redefine';
-    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
-    use warnings 'redefine';
-
+    sub run {
+        my  $class          =   shift;
+        my  @object_params  =   $class->get_commandline_arguments(@ARG);
+    
+        $class->_check_commandline_input(@object_params)->new(@object_params)->search->part_specific->display->confirm->change->finish;
+    }
 }
 
 package ChangeNameOperation v1.0.0 {
@@ -1814,7 +1807,7 @@ See L</new> method for info on acceptable object parameters.
         my  $self       =   {};
         bless $self, $class;
     
-        $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper;
+        $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper($self)->set_caller_depth(4);
     
         return $self;
     }
