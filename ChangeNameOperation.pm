@@ -168,6 +168,8 @@ binmode STDERR                          ,   $encoding_layer;
 $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @ARGV values to be UTF-8 strings.
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
+                                                                
+
 
 =head1 PERL PACKAGES
 
@@ -179,7 +181,7 @@ Performs the change name operation.
 
 =cut
 
-package ChangeNameOperation::Commandline v1.0.0 {
+package ChangeNameOperation::Modulino v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -191,21 +193,121 @@ package ChangeNameOperation::Commandline v1.0.0 {
 
             $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
 
+    # Specific:
     use     Getopt::Long;
 
     use     Scalar::Util qw(
                 blessed
                 reftype
             );
+    use     Data::Dumper;               # Used by logging related subroutines and _check_commandline_input sub.
 
-    ChangeNameOperation::Commandline->run(@ARGV) unless caller;
+    # Data Dumper Settings:
+    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
+    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
+    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+    no warnings 'redefine';
+    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
+    use warnings 'redefine';
+
+    ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        my  $class          =   shift;
-        my  @object_params  =   $class->get_commandline_arguments(@ARG);
-    
-        $class->_check_commandline_input(@object_params)->new(@object_params)->search->part_specific->display->confirm->change->finish;
+        my  $class  =   shift;
+        $class->new->check_utf8(@ARGV)->setup_config(@ARGV)->setup_logger(@ARGV)->start_operation;
     }
+    
+    sub new {
+    
+    }
+
+    sub localise {
+        my  $self   =   shift;
+        $self->delayed_localise(@ARG);
+        for my $what_to_localise ($self->{to_be_localised}) {
+            say $self->language->maketext(@{ $what_to_localise });
+        };
+
+        return $self;
+    }
+    
+    sub delayed_localise {
+        my  $self               =   shift;
+        my  @nothing            =   ();
+        my  @what_to_localise   =   @ARG? [@ARG]:
+                                    @nothing;
+        push @{ $self->{to_be_localised} }, @what_to_localise;
+        
+        return $self;
+    }
+    
+    sub check_utf8 {
+    
+        my  $class                      =   shift;
+        my  $params                     =   {@ARG};
+        my  @input_that_requires_utf8   =   map { defined $ARG && $ARG? $ARG:() } (
+        
+                                            # Arguments to be UTF-8:
+                                            $params->{archive_id},
+                                            $params->{search},
+                                            $params->{replace},
+                                            $params->{part},
+                                            
+                                            # Options where UTF-8 is important:
+                                            $params->{language},
+                                            $params->{config},
+
+                                    );
+                                            
+        if ($params->{live}) {
+            $class->delayed_localise->('LIVE mode - changes will be made at the end after confirmation.');
+        }
+        else {
+            $class->delayed_localise->('DRY RUN mode - no changes will be made.');
+            $class->delayed_localise->('Run again with the --live flag when ready to implement your changes.');
+        };
+    
+        if ($params->{debug}) {
+            $class->delayed_localise->('Commandline Params are...');
+            #say Dumper($params); # Not gonna work delayed.
+            $class->delayed_localise->('Commandline Input is...');
+            #say Dumper(@commandline_input); # Not gonna work delayed
+        };
+    
+        if (@input_that_requires_utf8) {
+    
+            # Definition:
+            my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
+                                                &&
+                                                (${^UNICODE} <= '63');
+    
+    
+            if ($acceptable_utf8_options) {
+                $class->delayed_localise->('commandline.utf8_enabled');
+            }
+            else {
+                $class->delayed_localise->('commandline.utf8_not_enabled');
+                die $localise->('commandline.end_program'); # not gonna work delayed.
+            };
+    
+        }
+        else {
+            $class->delayed_localise->('commandline.no_arguments');
+        };
+        
+        return $class;
+
+    
+    }
+    
+    sub setup_config {
+    }
+    
+    sub setup_logger {
+    }
+    
+    sub start_operation {
+    };
 }
 
 package ChangeNameOperation v1.0.0 {
