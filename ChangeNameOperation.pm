@@ -381,28 +381,32 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
 
     }
+
+    sub start_operation {
+        my  $self   =   shift;
+
     
-    sub _setup_logger {
-
-        my  $self       =   shift;
-        $self->{logger} =   ChangeNameOperation::Log->new(
-                                debug                   =>  $self->{options}->{debug},
-                                verbose                 =>  $self->{options}->{verbose},
-                                trace                   =>  $self->{options}->{trace},
-                                no_dumper               =>  $self->{options}->{no_dumper},
-                                no_trace                =>  $self->{options}->{no_trace},
-                                language                =>  $self->{language},
-                                archive_id              =>  $self->{arguments}->{archive_id}, # I swapped out repository for archive_id - but we might not actually have one. That means logger is still best called from within the operation...
-                                dumper_class_name_only  =>  [
-                                                                'repository',
-                                                                'list_of_results',
-                                                                'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
-                                                            ],
-                                dumper_exclude          =>  [
-                                                                #'repository',
-                                                            ],
-                            )
-
+        if (@commandline_input) {
+    
+            # Definition:
+            my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
+                                                &&
+                                                (${^UNICODE} <= '63');
+    
+    
+            if ($acceptable_utf8_options) {
+                say $localise->('commandline.utf8_enabled');
+            }
+            else {
+                say $localise->('commandline.utf8_not_enabled');
+                die $localise->('commandline.end_program');
+            };
+    
+        }
+        else {
+            say $localise->('commandline.no_arguments');
+        };
+        return $self;
     }
 
     sub localise {
@@ -425,46 +429,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
     }
     
-    sub check_utf8 {
-    
-        my  $class                      =   shift;
-        my  $params                     =   {@ARG};
-        my  @input_that_requires_utf8   =   map { defined $ARG && $ARG? $ARG:() } (
-        
-                                            # Arguments to be UTF-8:
-                                            $params->{archive_id},
-                                            $params->{search},
-                                            $params->{replace},
-                                            $params->{part},
-                                            
-                                            # Options where UTF-8 is important:
-                                            $params->{language},
-                                            $params->{config},
-
-                                    );
-                                            
-
-    
-        if (@input_that_requires_utf8) {
-    
-            # Definition:
-    
-    
-            if ($acceptable_utf8_options) {
-                $class->delayed_localise->('commandline.utf8_enabled');
-            }
-            else {
-                $class->delayed_localise->('commandline.utf8_not_enabled');
-                die $localise->('commandline.end_program'); # not gonna work delayed.
-            };
-    
-        }
-        else {
-            $class->delayed_localise->('commandline.no_arguments');
-        };
-        
-        return $class;
-
     
     }
     
