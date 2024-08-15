@@ -211,7 +211,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->_process_input(@ARGV)->_setup_config->set_eprints_library_globally->setup_logger->start_operation;
+        shift->new->_process_input(@ARGV)->utf8_check->_setup_config->_setup_language->set_eprints_library_globally->start_operation;
     }
     
     sub new {
@@ -236,7 +236,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
         }                           =   (
             acceptable_utf8_options =>  (${^UNICODE} >= '39')
                                         &&
-                                        (${^UNICODE} <= '63');
+                                        (${^UNICODE} <= '63'),
+            we_should_halt          =>  0,
         );
     
     }
@@ -309,8 +310,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
 
     }
-    
-    sub _setup_config {
+
+    sub utf8_check {
         my  $self                       =   shift;
         my  @nothing                    =   ();        
         my  @input_that_requires_utf8   =   map {
@@ -332,27 +333,50 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
                                             );
 
-        my  @config_filepath_or_nothing =   $self->{options}->{config}? ($self->{options}->{config}):
-                                            @nothing;
-        my  $self->{config}             =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data;
+        if (@input_that_requires_utf8) {
+            unless ($self->{acceptable_utf8_options}) {
+                $self->{we_should_halt} =   1;
+            }
+        };
         
         return $self;
     }
     
-    sub _set_eprints_library_globally {
+    sub _setup_config {
+        my  $self                       =   shift;
+        my  @nothing                    =   ();        
+        
+        my  @config_filepath_or_nothing =   $self->{options}->{config}? ($self->{options}->{config}):
+                                            @nothing;
+        $self->{config}                 =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data; # If nothing, will load default from YAML at bottom of this file.
+        
+        return $self;
+    }
 
-        # Do we want to take this approach? We could just say that this field always has to be set correctly in any config yaml, else standard INC error,
-        # rather than have any fallback error protection here.
+    sub _setup_language {
+        my  $self           =   shift;
+        
+        $self->{language}   =   ChangeNameOperation::Languages->try_or_die(
+                                    $self->{options}->{language}
+                                    // $self->{config}->{'Language Tag'}
+                                    # No further fall back, as the config should be enough 
+                                    # because the default YAML config is at the bottom of this file,
+                                    # and if an external YAML config is missing the setting, the try_or_die will handle it.
+                                );
+        return  $self;
+    }
+
+    sub _set_eprints_library_globally {
 
         my  $self                               =   shift;
         my  $path                               =   $self->{config}->{'EPrints Perl Library Path'};
         my  $path_exists_and_is_directory       =   $path && -e -d $path;
         
-        my  $fallback                           =   ChangeNameOperation::Config->new->load->get_data->{'EPrints Perl Library Path'}; # Fallback to setting in internal ChangeNameOperation::Config::YAML::__DATA__
-
+        die                                         $self->localise('modulino.error.perl_lib')
+                                                    unless $path_exists_and_is_directory;
+        
         # Update GLOBAL variable:
-        $global_path_to_eprints_perl_library    =   $path_exists_and_is_directory?  $path:
-                                                    $fallback;
+        $global_path_to_eprints_perl_library    =   $path;
                                      
         return $self;
 
@@ -368,7 +392,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                 no_dumper               =>  $self->{options}->{no_dumper},
                                 no_trace                =>  $self->{options}->{no_trace},
                                 language                =>  $self->{language},
-                                archive_id              =>  $self->{arguments}->{archive_id},
+                                archive_id              =>  $self->{arguments}->{archive_id}, # I swapped out repository for archive_id - but we might not actually have one. That means logger is still best called from within the operation...
                                 dumper_class_name_only  =>  [
                                                                 'repository',
                                                                 'list_of_results',
@@ -385,7 +409,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  $self   =   shift;
         $self->delayed_localise(@ARG);
         for my $what_to_localise ($self->{to_be_localised}) {
-            say $self->language->maketext(@{ $what_to_localise });
+            say $self->{language}->maketext(@{ $what_to_localise });
         };
 
         return $self;
@@ -2359,6 +2383,10 @@ my  @tokens = (
 'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
 
+'modulino.error.perl_lib'       =>
+'EPrints Perl Library Path either not defined in YAML config,
+or is a path to a directory that does not appear to exist.',
+
 'horizontal.rule'               =>  
 '
 -------
@@ -2701,6 +2729,10 @@ my  @tokens = (
 '
 -------
 ',
+
+'modulino.error.perl_lib'       =>
+'Der Pfad zur EPrints Perl-Bibliothek ist entweder nicht in der YAML-Konfiguration definiert
+oder ist ein Pfad zu einem Verzeichnis, das scheinbar nicht existiert.',
 
 'format_single_line_for_display.error.no_params' =>
 'Die Methode format_single_line_for_display erfordert,
@@ -3121,6 +3153,8 @@ __DATA__
 ---
 
 EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+Language Tag: en-GB
 
 Fields to search:
     -   creators_name
