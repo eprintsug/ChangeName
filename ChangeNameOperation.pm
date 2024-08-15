@@ -149,7 +149,7 @@ use     warnings;
 use     v5.16;
 use     utf8;
 
-my      @config_filepath_or_empty_list  =   ();
+my      $global_path_to_eprints_perl_library; # Populated later via ChangeNameOperation::Modulino->_set_eprints_library_globally
 
 # Global Encoding Settings:
 my      $encoding_layer;
@@ -191,8 +191,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                     # due to a performance issue if they are invoked,
                                     # on Perl v5.18 or lower.
 
-            $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
-
     # Specific:
     use     Getopt::Long;
 
@@ -213,8 +211,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        my  $class  =   shift;
-        $class->new->check_utf8(@ARGV)->setup_config(@ARGV)->setup_logger(@ARGV)->start_operation;
+        shift->new->_process_input(@ARGV)->_setup_config->set_eprints_library_globally->setup_logger->start_operation;
     }
     
     sub new {
@@ -232,7 +229,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub _set_attributes {
 
         # Initial Values:
-        my  ($self)                 =   shift;
+        my  ($self, $params)        =   @ARG;
     
         %{
             $self
@@ -242,6 +239,146 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                         (${^UNICODE} <= '63');
         );
     
+    }
+
+    sub _process_input {
+
+        my  $self           =   shift;
+
+        # Defaults:
+        $self->{options}    =   {
+            language        =>  undef,
+            live            =>  0,
+            verbose         =>  0,
+            debug           =>  0,
+            trace           =>  0,
+            no_dumper       =>  0,
+            no_trace        =>  0,
+            config          =>  undef,
+            exact           =>  0,
+        };
+    
+        # Command Line Options:    
+        Getopt::Long::Parser->new->getoptionsfromarray(
+            \@ARG,                  # Array to get options from.
+            $options,                # Hash to store options to.
+    
+            # Actual options:
+            'language|lang:s',      # Optional string.
+                                    # Use 'language' for the hash ref key, 
+                                    # accept '--language' or '--lang' from the commandline.
+                                    # Syntax can be --lang=en-GB or --lang en-GB
+    
+            'config:s',             # Optional string.
+                                    # Use 'config' for the hash ref key, 
+                                    # accept '--config' from the commandline.
+                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+     
+            'live!',                # if --live present,    set $live to 1,
+                                    # if --nolive present,  set $live to 0.
+    
+            'verbose+',             # if --verbose present,    set $verbose
+                                    # to the number of times it is present.
+                                    # i.e. --verbose --verbose would set $verbose to 2.
+    
+            'debug!',               # if --debug present,    set $debug to 1,
+                                    # if --nodebug present,  set $debug to 0.
+    
+            'trace!',               # if --trace present,    set $trace to 1,
+                                    # if --notrace present,  set $trace to 0.
+                                
+            'no_dumper'.
+            '|no_dump'.
+            '|nodumper'.
+            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
+    
+            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
+            
+            'exact!',               # if --exact present,   set $exact to 1,
+                                    # if --noexact present, set $exact to 0.
+    
+        );
+
+        $self->{arguments}  =   {
+            archive_id      =>  shift,
+            search          =>  shift,
+            replace         =>  shift,
+            part            =>  shift,
+        };
+
+        return $self;
+
+    }
+    
+    sub _setup_config {
+        my  $self                       =   shift;
+        my  @nothing                    =   ();        
+        my  @input_that_requires_utf8   =   map {
+                                                defined $ARG && $ARG?   $ARG:
+                                                @nothing
+                                            }
+
+                                            (
+
+                                                # Arguments to be UTF-8:
+                                                $self->{arguments}->{archive_id},
+                                                $self->{arguments}->{search},
+                                                $self->{arguments}->{replace},
+                                                $self->{arguments}->{part},
+                                                
+                                                # Options where UTF-8 is important:
+                                                $self->{options}->{language},
+                                                $self->{options}->{config},    
+
+                                            );
+
+        my  @config_filepath_or_nothing =   $self->{options}->{config}? ($self->{options}->{config}):
+                                            @nothing;
+        my  $self->{config}             =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data;
+        
+        return $self;
+    }
+    
+    sub _set_eprints_library_globally {
+
+        # Do we want to take this approach? We could just say that this field always has to be set correctly in any config yaml, else standard INC error,
+        # rather than have any fallback error protection here.
+
+        my  $self                               =   shift;
+        my  $path                               =   $self->{config}->{'EPrints Perl Library Path'};
+        my  $path_exists_and_is_directory       =   $path && -e -d $path;
+        
+        my  $fallback                           =   ChangeNameOperation::Config->new->load->get_data->{'EPrints Perl Library Path'}; # Fallback to setting in internal ChangeNameOperation::Config::YAML::__DATA__
+
+        # Update GLOBAL variable:
+        $global_path_to_eprints_perl_library    =   $path_exists_and_is_directory?  $path:
+                                                    $fallback;
+                                     
+        return $self;
+
+    }
+    
+    sub _setup_logger {
+
+        my  $self       =   shift;
+        $self->{logger} =   ChangeNameOperation::Log->new(
+                                debug                   =>  $self->{options}->{debug},
+                                verbose                 =>  $self->{options}->{verbose},
+                                trace                   =>  $self->{options}->{trace},
+                                no_dumper               =>  $self->{options}->{no_dumper},
+                                no_trace                =>  $self->{options}->{no_trace},
+                                language                =>  $self->{language},
+                                archive_id              =>  $self->{arguments}->{archive_id},
+                                dumper_class_name_only  =>  [
+                                                                'repository',
+                                                                'list_of_results',
+                                                                'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
+                                                            ],
+                                dumper_exclude          =>  [
+                                                                #'repository',
+                                                            ],
+                            )
+
     }
 
     sub localise {
@@ -327,6 +464,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
     
     sub setup_logger {
+    
+    
     }
     
     sub start_operation {
