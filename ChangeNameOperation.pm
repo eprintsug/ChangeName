@@ -2089,7 +2089,7 @@ See L</new> method for info on acceptable object parameters.
             no_dumper               =>  $params->{no_dumper} // 0,
             no_trace                =>  $params->{no_trace} // 0,
 
-            repository              =>  $params->{repository} // undef,
+            repository              =>  $self->valid_repository($params->{repository}),
             caller_depth            =>  3,
             
             dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
@@ -2104,6 +2104,19 @@ See L</new> method for info on acceptable object parameters.
         $self->{dumper_default}     =  $self;
         
         return  $self;
+    }
+
+    sub valid_repository {
+        my  $self               =   shift;
+        my  $value              =   shift // $self->{respository};
+        my  $value_is_valid     =   defined $value
+                                    && blessed($value)
+                                    && $value->isa('EPrints::Repository');
+        warn                        $self->localise('log.valid_repository.error.invalid')
+                                    unless $repository; # Should this use _log instead of warn?
+
+        return  $value_is_valid?    $value:
+                undef;
     }
 
     sub get_default_language {
@@ -2131,16 +2144,13 @@ See L</new> method for info on acceptable object parameters.
     }
 
     sub set_repository {
-        my  $self   =   shift;
-        my  $value  =   shift;
-        my  $acceptable_value   =   defined $value
-                                    && blessed($value)
-                                    && $value->isa('EPrints::Repository');
-
+        my  $self       =   shift;
+        my  $repository =   $self->valid_repository(shift); # Valid or undef.
+        
         warn                        $self->localise('log.set_repository.error.bad_value')
-                                    unless $acceptable_value; # Should this use _log instead of warn?
+                                    unless $repository; # Should this use _log instead of warn?
 
-        $self->{repository}     =   $value;
+        $self->{repository}     =   $repository;
 
         return $self;
     }
@@ -2370,6 +2380,8 @@ my  @tokens = (
 'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
 
+'log.valid_repository.error.invalid'    =>
+'Value passed to valid_repository method not a valid repository.',
 
 'log.set_repository.error.bad_value'    =>
 'Value passed to set_repository method not a repository. Value left unchanged.',
