@@ -3225,13 +3225,12 @@ __END__
 
 Logger
 	Construct from within operation.::DONE
-	Have fall back ways to log if no valid repository submitted
-	cluck does the same as the longmess trace
-		so we could use that instead
+	Have fall back ways to log if no valid repository submitted::DONE
+	cluck does the same as the longmess trace, so we could use that instead::SKIP
 		# cluck, longmess and shortmess not exported by default
 		use Carp qw(cluck longmess shortmess);
 		cluck "This is how we got here!"; # warn with stack backtrace
-	Could add a set_repository method for setting the repository attribute after object construction.
+	Could add a set_repository method for setting the repository attribute after object construction.::DONE
 
 Logging before logger:
 	Use localise methods
