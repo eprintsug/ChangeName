@@ -2288,7 +2288,15 @@ package ChangeNameOperation::Languages v1.0.0 {
                 || die  $error->{'language'};
     }
     
-    
+    sub fallback_language_classes {
+        # I believe these are to be given as relative to ChangeNameOperation::Languages
+        # rather than a full qualified class name like ChangeNameOperation::Languages::en_gb
+        my  @list_of_classes    =   (
+            'en_gb',
+        );
+        return @list_of_classes;
+    }
+
     1;
 }; # ChangeNameOperation::Languages Package.
 
