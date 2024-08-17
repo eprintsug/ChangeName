@@ -2733,6 +2733,9 @@ my  @tokens = (
 -------
 ',
 
+'log.valid_repository.error.invalid'    =>
+'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
+
 'log.set_repository.error.bad_value'    =>
 'Der an die Methode „set_repository“ übergebene Wert ist kein Repository. Der Wert bleibt unverändert.',
 
