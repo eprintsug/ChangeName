@@ -2232,33 +2232,37 @@ See L</new> method for info on acceptable object parameters.
     
         my  $self       =   shift;
     
-        # Premature exit:
-        die                 $self->localise('_log.error.no_repository')
-                            unless blessed($self->{repository}) && $self->{repository}->isa('EPrints::Repository');
-    
         # Initial Values:
-        my  $type       =   shift;
-        my  $use_prefix =   $self->{verbose} > 1 || $self->{debug};
+        my  $type               =   shift;
+        my  $use_prefix         =   $self->{verbose} > 1 || $self->{debug};
+
+        my  $valid_repository   =   $self->valid_repository($self->{repository});
+
+        # Content:
+        my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
+                                    q{};
     
-        my  $prefix     =   $use_prefix?    $self->_get_log_prefix(uc($type)):
-                            q{};
-    
+        my  $message            =   $prefix.(
+                                        $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+                                        $self->localise(@ARG)
+                                    );
+
         # Log:
-        $self->{repository}->log(
-            $prefix.(
-                $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-                $self->localise(@ARG)
-            ),
-        );
-    
+        $self->{repository}->log($message)  if      $valid_repository;
+        say STDERR $message                 unless  $valid_repository;
+
+        # Premature log-only exit:
+        return $self unless $self->{trace};
+
         # Stack trace:
-        if ($self->{trace}) {
-            $self->{repository}->log(
-                $self->_get_log_prefix('TRACE')
-            );
-            EPrints->trace;
-        };
+        my  $trace_prefix   =   $self->_get_log_prefix('TRACE');
+
+        $self->{repository}->log($trace_prefix) if      $valid_repository;
+        say STDERR $trace_prefix                unless  $valid_repository;
+
+        EPrints->trace;
         
+        # Final log-and-trace exit:
         return $self;
     }
     
