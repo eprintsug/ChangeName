@@ -2130,6 +2130,21 @@ See L</new> method for info on acceptable object parameters.
         return $self;
     }
 
+    sub set_repository {
+        my  $self   =   shift;
+        my  $value  =   shift;
+        my  $acceptable_value   =   defined $value
+                                    && blessed($value)
+                                    && $value->isa('EPrints::Repository');
+
+        warn                        $self->localise('log.set_repository.error.bad_value')
+                                    unless $acceptable_value; # Should this use _log instead of warn?
+
+        $self->{repository}     =   $value;
+
+        return $self;
+    }
+
     sub verbose {
         my  $self   =   shift;
     
@@ -2354,6 +2369,10 @@ my  @tokens = (
 'name.honourific'               =>  'Honourific Name',
 'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
+
+
+'log.set_repository.error.bad_value'    =>
+'Value passed to set_repository method not a repository. Value left unchanged.',
 
 'modulino.error.perl_lib'       =>
 'EPrints Perl Library Path either not defined in YAML config,
@@ -2701,6 +2720,9 @@ my  @tokens = (
 '
 -------
 ',
+
+'log.set_repository.error.bad_value'    =>
+'Der an die Methode „set_repository“ übergebene Wert ist kein Repository. Der Wert bleibt unverändert.',
 
 'modulino.error.perl_lib'       =>
 'Der Pfad zur EPrints Perl-Bibliothek ist entweder nicht in der YAML-Konfiguration definiert
@@ -3183,7 +3205,7 @@ Search Field Merge Type: ANY
 __END__
 
 Logger
-	Construct from within operation.
+	Construct from within operation.::DONE
 	Have fall back ways to log if no valid repository submitted
 	cluck does the same as the longmess trace
 		so we could use that instead
