@@ -3180,3 +3180,45 @@ Search Field Merge Type: ANY
 # Three dots to end current YAML document.
 
 
+__END__
+
+Logger
+	Construct from within operation.
+	Have fall back ways to log if no valid repository submitted
+	cluck does the same as the longmess trace
+		so we could use that instead
+		# cluck, longmess and shortmess not exported by default
+		use Carp qw(cluck longmess shortmess);
+		cluck "This is how we got here!"; # warn with stack backtrace
+	Could add a set_repository method for setting the repository attribute after object construction.
+
+Logging before logger:
+	Use localise methods
+Localiser
+	language tag - use it
+		if no -CAS then halt
+	no language tag - load from config
+	fallback in effect via languages base class
+	We could pass in $config->{messages} or similar, to store any logging we want.
+localise
+	Check if you really want the say. You may want to have different methods for stdout and stderr
+
+Config
+	As normal. If path faulty, it will fall back to internal config.
+	Store messages instead of logging.
+		Alternatively, we could pass in the modulino object, and store to the hash it has for deferred logs? Slightly pointless, it's only saving values to a hash.
+	$config->{messages}->{verbose}
+	$config->{messages}->{debug}
+	$config->{messages}->{normal}
+Halt
+	To come after config and language.
+
+In summary....
+
+What we appear to have is 
+
+An approach to load config despite halt,
+[if there are errors they will halt the program for us]
+An approach to load a language despite a halt
+[if there are errors, it will fall back to a known class]
+...and the ability to log messages within the config, that can be displayed later.
