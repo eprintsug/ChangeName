@@ -211,7 +211,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->_process_input(@ARGV)->utf8_check->_setup_config->_setup_language->set_eprints_library_globally->start_operation;
+        shift->new->_process_input(@ARGV)->utf8_check->_setup_config->_setup_localiser->set_eprints_library_globally->start_operation;
     }
     
     sub new {
@@ -353,10 +353,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
     }
 
-    sub _setup_language {
+    sub _setup_localiser {
         my  $self           =   shift;
         
-        $self->{language}   =   ChangeNameOperation::Languages->try_or_die(
+        $self->{localiser}   =   ChangeNameOperation::Languages->try_or_die(
                                     $self->{options}->{language}
                                     // $self->{config}->{'Language Tag'}
                                     # No further fall back, as the config should be enough 
@@ -410,13 +410,16 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
 
     sub localise {
-        my  $self   =   shift;
+        my  $self       =   shift;
+        my  $content    =   q{};
+        
         $self->delayed_localise(@ARG);
+
         for my $what_to_localise ($self->{to_be_localised}) {
-            say $self->{language}->maketext(@{ $what_to_localise });
+            $content    .=  $self->{language}->maketext(@{ $what_to_localise });
         };
 
-        return $self;
+        return $content;
     }
     
     sub delayed_localise {
@@ -3235,11 +3238,11 @@ Logger
 Logging before logger:
 	Use localise methods
 Localiser
-	language tag - use it
-		if no -CAS then halt
-	no language tag - load from config
-	fallback in effect via languages base class
-	We could pass in $config->{messages} or similar, to store any logging we want.
+	language tag - use it::ALREADY-DONE
+		if no -CAS then halt::DONE EARLIER VIA UTF-8 Check.
+	no language tag - load from config::ALREADY-DONE
+	fallback in effect via languages base class::ALREADY-DONE
+	We could pass in $config->{messages} or similar, to store any logging we want.::NOT-APPLICABLE - localiser uses MakeText, and not our Log.
 localise
 	Check if you really want the say. You may want to have different methods for stdout and stderr
 
