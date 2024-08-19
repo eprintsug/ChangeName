@@ -312,28 +312,30 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
 
     sub utf8_check {
-        my  $self                       =   shift;
-        my  @nothing                    =   ();        
-        my  @input_that_requires_utf8   =   map {
-                                                defined $ARG && $ARG?   $ARG:
-                                                @nothing
-                                            }
+        my  $self                               =   shift;
+        my  @nothing                            =   ();        
+        my  $self->{input_that_requires_utf8}   =   [
+                                                        map {
+                                                            defined $ARG && $ARG?   $ARG:
+                                                            @nothing
+                                                        }
+            
+                                                        (
+            
+                                                            # Arguments to be UTF-8:
+                                                            $self->{arguments}->{archive_id},
+                                                            $self->{arguments}->{search},
+                                                            $self->{arguments}->{replace},
+                                                            $self->{arguments}->{part},
+                                                            
+                                                            # Options where UTF-8 is important:
+                                                            $self->{options}->{language},
+                                                            $self->{options}->{config},    
+            
+                                                        )
+                                                    ];
 
-                                            (
-
-                                                # Arguments to be UTF-8:
-                                                $self->{arguments}->{archive_id},
-                                                $self->{arguments}->{search},
-                                                $self->{arguments}->{replace},
-                                                $self->{arguments}->{part},
-                                                
-                                                # Options where UTF-8 is important:
-                                                $self->{options}->{language},
-                                                $self->{options}->{config},    
-
-                                            );
-
-        if (@input_that_requires_utf8) {
+        if (@{ $self->{input_that_requires_utf8} }) {
             unless ($self->{acceptable_utf8_options}) {
                 $self->{we_should_halt} =   1;
             }
@@ -346,7 +348,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  $self                       =   shift;
         my  @nothing                    =   ();        
         
-        my  @config_filepath_or_nothing =   $self->{options}->{config}? ($self->{options}->{config}):
+        my  @config_filepath_or_nothing =   exists $self->{options}->{config}
+                                            && $self->{options}->{config}?  ($self->{options}->{config}):
                                             @nothing;
         $self->{config}                 =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data; # If nothing, will load default from YAML at bottom of this file.
         
@@ -386,27 +389,35 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  $self   =   shift;
 
     
-        if (@commandline_input) {
+        if (@{ $self->{input_that_requires_utf8} }) {
     
-            # Definition:
-            my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
-                                                &&
-                                                (${^UNICODE} <= '63');
-    
-    
-            if ($acceptable_utf8_options) {
-                say $localise->('commandline.utf8_enabled');
+            if ($self->{acceptable_utf8_options}) {
+                say $self->localise->('commandline.utf8_enabled');
             }
             else {
-                say $localise->('commandline.utf8_not_enabled');
-                die $localise->('commandline.end_program');
+                say $self->localise->('commandline.utf8_not_enabled');
             };
     
         }
         else {
             say $localise->('commandline.no_arguments');
         };
-        return $self;
+        
+        die $self->localise->('commandline.end_program') if $self->{we_should_halt};
+        
+        my  @object_params  =   (
+
+            @{
+                $self->{options}
+            },
+
+            @{
+                $self->{arguments}
+            },
+
+        );
+        
+        return ChangeNameOperation->new(@object_params)->search->part_specific->display->confirm->change->finish;
     }
 
     sub localise {
@@ -3115,21 +3126,69 @@ package ChangeNameOperation::Config v1.0.0 {
 
     
     sub load {
-        my  $self           =   shift;
-        my  $filepath       =   shift // $self->get_default_yaml_filepath;
-    
-        $self->{data}       =   # External YAML file:
-                                (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
+
+        # Initial Values:
+        my  $self                   =   shift;
+        my  $external_filepath      =   shift;
+        my  $default_filepath       =   $self->get_default_yaml_filepath;
+
+        # Definitions:    
+        my  $external               =   defined $external_filepath
+                                        && (
+                                            $external_filepath ne '0'?  $external_filepath:
+                                            1
+                                        )
+                                        && -e $external_filepath;
+
+        my  $external_not_found     =   defined $external_filepath
+                                        && (
+                                            $external_filepath ne '0'?  $external_filepath:
+                                            1
+                                        )
+                                        && !(-e $external_filepath);
+
+        my  $default                =   defined $default_filepath
+                                        && $default_filepath
+                                        && -e $default_filepath;
+
+        my  $fellback_to_default    =   $external?  undef:
+                                        $default?   1:
+                                        undef;
+
+        my  $internal               =   $external?  undef:
+                                        $default?   undef:
+                                        1;
+
+        # Processing:
+        $self->{data}               =   # External YAML file:
+                                        $external?  LoadFile($external_filepath):           # Will die on any load error.
+                                        $default?   LoadFile($default_filepath):            # Will die on any load error.
                         
-                                # Internal YAML __DATA__:
-                                Load(                                           # Will die on any load error.
-                                    do                                          # 'do' returns last value of block.
-                                    {
-                                        local $INPUT_RECORD_SEPARATOR = undef;  # Read until end of input.
-                                        <ChangeNameOperation::Config::YAML::DATA> # Input is __DATA__ at the bottom of this very file.
-                                    }
-                                );
-                                
+                                        # Internal YAML __DATA__:
+                                        Load(                                               # Will die on any load error.
+                                            do {                                            # 'do' returns last value of block.
+                                                local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
+                                                <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                            }
+                                        );
+
+        # Messages:                                    
+        push @{ $self->{messages}->{verbose} }  ,   ['Loaded Config from [_1]', $external_filepath]
+                                                    if $external;
+
+        push @{ $self->{messages}->{error} }    ,   ['Config file [_1] not found.', $external_filepath]
+                                                    if $external_not_found;
+
+        push @{ $self->{messages}->{verbose} }  ,   ['Loaded Config from [_1]', $default_filepath]
+                                                    if $fellback_to_default;
+
+        push @{ $self->{messages}->{debug} }    ,   ['Default external config file [_1] not found.', $default_filepath]
+                                                    unless $default;
+
+        push @{ $self->{messages}->{verbose} }  ,   ['Loading internal configuration.']
+                                                    if $internal;
+
+        # Output:             
         return $self;
         
     };
@@ -3137,6 +3196,19 @@ package ChangeNameOperation::Config v1.0.0 {
     sub get_data {
         return shift->{data};
     }
+    
+    sub get_data_and_messages {
+        my  $self   =   shift;
+
+        return  wantarray?   ($self->{data}, $self->{messages}):
+                [$self->{data}, $self->{messages}];
+    }
+    
+    sub get_messages {
+        return shift->{messages};
+    }
+    
+
 };
 }
 
@@ -3244,17 +3316,29 @@ Localiser
 	fallback in effect via languages base class::ALREADY-DONE
 	We could pass in $config->{messages} or similar, to store any logging we want.::NOT-APPLICABLE - localiser uses MakeText, and not our Log.
 localise
-	Check if you really want the say. You may want to have different methods for stdout and stderr
+	Check if you really want the say. You may want to have different methods for stdout and stderr::IMPROVED/DONE
 
 Config
-	As normal. If path faulty, it will fall back to internal config.
-	Store messages instead of logging.
+	As normal. If path faulty, it will fall back to internal config.::DONE
+	Store messages instead of logging.::DONE
 		Alternatively, we could pass in the modulino object, and store to the hash it has for deferred logs? Slightly pointless, it's only saving values to a hash.
 	$config->{messages}->{verbose}
 	$config->{messages}->{debug}
 	$config->{messages}->{normal}
 Halt
 	To come after config and language.
+	
+Cleanup:
+    You need to clean up the way localise and delayed localise is working within Modulino.
+        You need to store messages,
+        then later simply display them as appropriate.
+        This needs some thought. Are we printing different types to different handles?
+        Or all sequentially in order?
+        The gist is to move the messages from start_operation to utf8_check, using the delayed feature,
+        then print them all effectively in start_operation.
+        My guess is all is much simpler than we think.
+        Alternatively we could do an output_messages method before the start_operation.
+        Give it some thought and do it tomorrow.
 
 In summary....
 
