@@ -417,7 +417,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         );
         
-        return ChangeNameOperation->new(@object_params)->search->part_specific->display->confirm->change->finish;
+        return ChangeNameOperation->start(@object_params);
     }
 
     sub localise {
@@ -574,9 +574,7 @@ See L</new> method for info on acceptable object parameters.
 
 =cut
 
-    # Command Line Auto-run:
-    ChangeNameOperation->start_from_commandline(@ARGV) unless caller;
-    
+   
 =head3 CLASS METHODS
 
 =head4 $class->start_from_commandline(@ARGV);
@@ -628,12 +626,11 @@ and proceding to finish (L</finish>).
 
     # Start Method:
     
-    sub start_from_commandline {
+    sub start {
         my  $class          =   shift;
-        my  @object_params  =   $class->_get_commandline_arguments(@ARG);
+        my  @object_params  =   @ARG;
     
-        $class->_check_commandline_input(@object_params)->new(@object_params)->search->part_specific->display->confirm->change->finish;
-    
+        $class->new(@object_params)->search->part_specific->display->confirm->change->finish;
     }
     
     # Program Flow Methods:
