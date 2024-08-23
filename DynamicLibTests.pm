@@ -12,7 +12,6 @@ my      $eprints_perl_lib_path;
 
 BEGIN {
     my  $encoding_to_use        =   'UTF-8';
-        $eprints_perl_lib_path  =   '/opt/eprints3/perl_lib';
         $encoding_layer         =   ":encoding($encoding_to_use)";
 };
 
@@ -24,6 +23,16 @@ $ENV{'PERL_UNICODE'}            =   'AS';               # A = Expect @ARGV value
 binmode STDIN                   ,   $encoding_layer;
 binmode STDOUT                  ,   $encoding_layer;
 binmode STDERR                  ,   $encoding_layer;
+
+package DoesIt v1.0.0 {
+
+    DoesIt->run() unless caller;
+
+    run {
+            $eprints_perl_lib_path  =   '/opt/eprints3/perl_lib';
+    }
+
+}
 
 package DynamicLibTests v1.0.0 {
 
