@@ -9,6 +9,7 @@ use     utf8;
 # Global Encoding Settings:
 my      $encoding_layer;
 my      $eprints_perl_lib_path;
+my      $global_path_to_eprints_perl_library; # Populated later 
 
 BEGIN {
     my  $encoding_to_use        =   'UTF-8';
@@ -30,7 +31,7 @@ package DoesIt v1.0.0 {
     DoesIt->run() unless caller;
 
     sub run {
-            $eprints_perl_lib_path  =   '/opt/eprints3/perl_lib';
+            #$eprints_perl_lib_path  =   '/opt/eprints3/perl_lib';
     }
 
 }
@@ -44,10 +45,20 @@ package DynamicLibTests v1.0.0 {
                                     # except the regex match variables
                                     # due to a performance if they are invoked,
                                     # on Perl v5.18 or lower.
+    my  $provided_filepath;
+    my  $filepath;
+    use Getopt::Long;
+    BEGIN {
+        $provided_filepath  =   undef;
+        GetOptions(
+            "config:s"      =>  \$provided_filepath
+        );
+        $filepath           =   '/opt/eprints3/perl_lib';
+    }
 
     say $encoding_layer;
-    use lib $eprints_perl_lib_path;
-    use EPrints;
-    say "Used it.";
+    use lib $provided_filepath? $provided_filepath:
+            $filepath;
+    say join "\n", @INC;
                                     
 };
