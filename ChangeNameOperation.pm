@@ -194,24 +194,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
     # Specific:
     use     Getopt::Long;
 
-    use     Scalar::Util qw(
-                blessed
-                reftype
-            );
-    use     Data::Dumper;               # Used by logging related subroutines and _check_commandline_input sub.
-
-    # Data Dumper Settings:
-    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
-    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
-    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-    no warnings 'redefine';
-    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
-    use warnings 'redefine';
-
+    # Modulino:
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->_process_input(@ARGV)->utf8_check->_setup_config->_setup_localiser->set_eprints_library_globally->start_operation;
+        shift->new->_process_input(@ARG)->utf8_check->_setup_config->_setup_localiser->set_eprints_library_globally->start_operation;
     }
     
     sub new {
@@ -314,7 +301,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub utf8_check {
         my  $self                               =   shift;
         my  @nothing                            =   ();        
-        my  $self->{input_that_requires_utf8}   =   [
+        $self->{input_that_requires_utf8}       =   scalar (
                                                         map {
                                                             defined $ARG && $ARG?   $ARG:
                                                             @nothing
@@ -333,79 +320,99 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                             $self->{options}->{config},    
             
                                                         )
-                                                    ];
+                                                    );
 
-        if (@{ $self->{input_that_requires_utf8} }) {
+        if ($self->{input_that_requires_utf8}) {
+
             unless ($self->{acceptable_utf8_options}) {
+
                 $self->{we_should_halt} =   1;
-            }
+
+            };
+
         };
         
         return $self;
+
     }
     
     sub _setup_config {
+
+        # Initial Values:
         my  $self                       =   shift;
         my  @nothing                    =   ();        
         
-        my  @config_filepath_or_nothing =   exists $self->{options}->{config}
-                                            && $self->{options}->{config}?  ($self->{options}->{config}):
+        # Definitions:
+        my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
+                                            &&      $self->{options}->{config}? ($self->{options}->{config}):
                                             @nothing;
+
+        # Processing:
         $self->{config}                 =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data; # If nothing, will load default from YAML at bottom of this file.
-        
+
+        # Output:        
         return $self;
+
     }
 
     sub _setup_localiser {
+
         my  $self           =   shift;
         
-        $self->{localiser}   =   ChangeNameOperation::Languages->try_or_die(
+        $self->{localiser}  =   ChangeNameOperation::Languages->try_or_die(
                                     $self->{options}->{language}
                                     // $self->{config}->{'Language Tag'}
                                     # No further fall back, as the config should be enough 
                                     # because the default YAML config is at the bottom of this file,
-                                    # and if an external YAML config is missing the setting, the try_or_die will handle it.
+                                    # and if an external YAML config is missing the setting, the try_or_die will handle it,
+                                    # with its own fallback, if necessary.
                                 );
         return  $self;
+
     }
 
     sub _set_eprints_library_globally {
 
+        # Initial Values:
         my  $self                               =   shift;
         my  $path                               =   $self->{config}->{'EPrints Perl Library Path'};
-        my  $path_exists_and_is_directory       =   $path && -e -d $path;
-        
-        die                                         $self->localise('modulino.error.perl_lib')
+
+        # Definitions:
+        my  $path_true_or_zero                  =   $path || ($path eq '0');
+        my  $path_exists_and_is_directory       =   $path_true_or_zero
+                                                    && -e -d $path;
+
+        # Processing:        
+        die                                         $self->localise('modulino.error.perl_lib').
+                                                    (
+                                                        $path_true_or_zero?    $self->localise('modulino.perl_lib_path', $path):
+                                                        q{}
+                                                    )
                                                     unless $path_exists_and_is_directory;
         
         # Update GLOBAL variable:
         $global_path_to_eprints_perl_library    =   $path;
-                                     
+
+        # Output:                                             
         return $self;
 
     }
 
     sub start_operation {
-        my  $self   =   shift;
 
-    
-        if (@{ $self->{input_that_requires_utf8} }) {
-    
-            if ($self->{acceptable_utf8_options}) {
-                say $self->localise->('commandline.utf8_enabled');
-            }
-            else {
-                say $self->localise->('commandline.utf8_not_enabled');
-            };
-    
-        }
-        else {
-            say $localise->('commandline.no_arguments');
-        };
+        # Initial Values:
+        my  $self           =   shift;
+
+        # Processing:    
+        say $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
+                                                $self->localise->('commandline.utf8_not_enabled'):
+        $localise->('commandline.no_arguments');
         
         die $self->localise->('commandline.end_program') if $self->{we_should_halt};
-        
+
         my  @object_params  =   (
+
+            # Flatten to one list - arguments overwrite options:
 
             @{
                 $self->{options}
@@ -416,63 +423,15 @@ package ChangeNameOperation::Modulino v1.0.0 {
             },
 
         );
-        
-        return ChangeNameOperation->start(@object_params);
-    }
-
-    sub localise {
-        my  $self       =   shift;
-        my  $content    =   q{};
-        
-        $self->delayed_localise(@ARG);
-
-        for my $what_to_localise ($self->{to_be_localised}) {
-            $content    .=  $self->{language}->maketext(@{ $what_to_localise });
-        };
-
-        return $content;
-    }
     
-    sub delayed_localise {
-        my  $self               =   shift;
-        my  @nothing            =   ();
-        my  @what_to_localise   =   @ARG? [@ARG]:
-                                    @nothing;
-        push @{ $self->{to_be_localised} }, @what_to_localise;
-        
+        ChangeNameOperation->start(@object_params);
+
+        # Output:        
         return $self;
+
     }
-    
-    
-    }
-    
-    
-#            if ($params->{live}) {
-#            $class->delayed_localise->('LIVE mode - changes will be made at the end after confirmation.');
-#        }
-#        else {
-#            $class->delayed_localise->('DRY RUN mode - no changes will be made.');
-#            $class->delayed_localise->('Run again with the --live flag when ready to implement your changes.');
-#        };
-#    
-#        if ($params->{debug}) {
-#            $class->delayed_localise->('Commandline Params are...');
-#            #say Dumper($params); # Not gonna work delayed.
-#            $class->delayed_localise->('Commandline Input is...');
-#            #say Dumper(@commandline_input); # Not gonna work delayed
-#        };
-    
-    sub setup_config {
-    }
-    
-    sub setup_logger {
-    
-    
-    }
-    
-    sub start_operation {
-    };
-}
+
+} # ChangeNameOperation::Modulino Package.
 
 package ChangeNameOperation v1.0.0 {
 
@@ -485,11 +444,6 @@ package ChangeNameOperation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     ChangeNameOperation::Config;
-    my      $config;
-    BEGIN {
-            $config =   ChangeNameOperation::Config->new->load($config_filepath_or_blank)->get_data;
-    };
     use     lib '/opt/eprints3/perl_lib';
     use     EPrints;
     use     EPrints::Repository;
@@ -2405,6 +2359,10 @@ my  @tokens = (
 'EPrints Perl Library Path either not defined in YAML config,
 or is a path to a directory that does not appear to exist.',
 
+'modulino.perl_lib_path' =>
+'The EPrints Perl Library Path value was:
+[_1]',
+
 'horizontal.rule'               =>  
 '
 -------
@@ -2757,6 +2715,10 @@ my  @tokens = (
 'modulino.error.perl_lib'       =>
 'Der Pfad zur EPrints Perl-Bibliothek ist entweder nicht in der YAML-Konfiguration definiert
 oder ist ein Pfad zu einem Verzeichnis, das scheinbar nicht existiert.',
+
+'modulino.perl_lib_path' =>
+'Der Wert des EPrints Perl-Bibliothekspfads war:
+[_1]',
 
 'format_single_line_for_display.error.no_params' =>
 'Die Methode format_single_line_for_display erfordert,
