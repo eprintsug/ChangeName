@@ -24,14 +24,16 @@ binmode STDIN                   ,   $encoding_layer;
 binmode STDOUT                  ,   $encoding_layer;
 binmode STDERR                  ,   $encoding_layer;
 
+BEGIN {
 package DoesIt v1.0.0 {
 
     DoesIt->run() unless caller;
 
-    run {
+    sub run {
             $eprints_perl_lib_path  =   '/opt/eprints3/perl_lib';
     }
 
+}
 }
 
 package DynamicLibTests v1.0.0 {
