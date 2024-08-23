@@ -37,8 +37,6 @@ package DoesIt v1.0.0 {
 }
 }
 
-BEGIN {
-
 
 package FilePath {
 
@@ -63,8 +61,6 @@ package Config {
         return $provided_filepath?  $provided_filepath:
         $filepath;
     }
-}
-
 }
 
 package DynamicLibTests v1.0.0 {
