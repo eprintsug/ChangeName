@@ -38,11 +38,33 @@ package DoesIt v1.0.0 {
 }
 
 BEGIN {
-package Config {
+
+
+package FilePath {
+
     sub filepath {
         return '/opt/eprints3/perl_lib';
     }
+
 }
+
+package Config {
+        use Getopt::Long;
+    sub filepath {
+
+
+        my $provided_filepath  =   undef;
+
+        GetOptions(
+            "config:s"      =>  \$provided_filepath
+        );
+        my $filepath           =   FilePath->filepath();
+        
+        return $provided_filepath?  $provided_filepath:
+        $filepath;
+    }
+}
+
 }
 
 package DynamicLibTests v1.0.0 {
@@ -55,19 +77,12 @@ package DynamicLibTests v1.0.0 {
                                     # on Perl v5.18 or lower.
     my  $provided_filepath;
     my  $filepath;
-    use Getopt::Long;
-    BEGIN {
-        $provided_filepath  =   undef;
-        GetOptions(
-            "config:s"      =>  \$provided_filepath
-        );
-        $filepath           =   Config->filepath();
-    }
+
 
     say $encoding_layer;
-    use lib $provided_filepath? $provided_filepath:
-            $filepath;
+    use lib Config->filepath();
     use EPrints;
     say join "\n", @INC;
                                     
 };
+
