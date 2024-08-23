@@ -37,6 +37,14 @@ package DoesIt v1.0.0 {
 }
 }
 
+BEGIN {
+package Config {
+    sub filepath {
+        return '/opt/eprints3/perl_lib';
+    }
+}
+}
+
 package DynamicLibTests v1.0.0 {
 
     use     English qw(
@@ -53,7 +61,7 @@ package DynamicLibTests v1.0.0 {
         GetOptions(
             "config:s"      =>  \$provided_filepath
         );
-        $filepath           =   '/opt/eprints3/perl_lib';
+        $filepath           =   Config->filepath();
     }
 
     say $encoding_layer;
