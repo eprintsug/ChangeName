@@ -59,6 +59,7 @@ package DynamicLibTests v1.0.0 {
     say $encoding_layer;
     use lib $provided_filepath? $provided_filepath:
             $filepath;
+    use EPrints;
     say join "\n", @INC;
                                     
 };
