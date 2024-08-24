@@ -149,8 +149,6 @@ use     warnings;
 use     v5.16;
 use     utf8;
 
-my      $global_path_to_eprints_perl_library; # Populated later via ChangeNameOperation::Modulino->_set_eprints_library_globally
-
 # Global Encoding Settings:
 my      $encoding_layer;
 
@@ -198,7 +196,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->_process_input(@ARG)->utf8_check->_setup_config->_setup_localiser->set_eprints_library_globally->start_operation;
+        shift->new->_process_input(@ARG)->utf8_check->_setup_config->_setup_localiser->start_operation;
     }
     
     sub new {
@@ -371,33 +369,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     }
 
-    sub _set_eprints_library_globally {
-
-        # Initial Values:
-        my  $self                               =   shift;
-        my  $path                               =   $self->{config}->{'EPrints Perl Library Path'};
-
-        # Definitions:
-        my  $path_true_or_zero                  =   $path || ($path eq '0');
-        my  $path_exists_and_is_directory       =   $path_true_or_zero
-                                                    && -e -d $path;
-
-        # Processing:        
-        die                                         $self->localise('modulino.error.perl_lib').
-                                                    (
-                                                        $path_true_or_zero?    $self->localise('modulino.perl_lib_path', $path):
-                                                        q{}
-                                                    )
-                                                    unless $path_exists_and_is_directory;
-        
-        # Update GLOBAL variable:
-        $global_path_to_eprints_perl_library    =   $path;
-
-        # Output:                                             
-        return $self;
-
-    }
-
     sub start_operation {
 
         # Initial Values:
@@ -422,6 +393,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
+            config  =>  $self->{config};
+
         );
     
         ChangeNameOperation->start(@object_params);
@@ -432,6 +405,171 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
 
 } # ChangeNameOperation::Modulino Package.
+
+package ChangeNameOperation::Config v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+                                    
+    # Specific:
+    use     File::Basename;         # Will use this to get the directory name that this file is in,
+                                    # when looking for yaml file.
+    use     CPAN::Meta::YAML qw(
+                LoadFile
+                Load
+            );                      # Standard module in Core Perl since Perl 5.14. 
+                                    # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
+                                    
+    sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
+    
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params);
+    
+        return $self;
+    }
+
+    sub _set_attributes {
+
+        # Initial Values:
+        my  ($self)                 =   shift;
+    
+        %{
+            $self
+        }                           =   (
+    
+            # Existing values in $self:
+            %{$self},
+
+            # Defaults:
+            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
+            data                    =>  undef,
+            
+        );
+        
+        return $self;
+            
+    }
+
+    sub get_default_yaml_filepath {
+        return shift->{default_yaml_filepath};
+    }
+
+    
+    sub load {
+
+        # Initial Values:
+        my  $self                   =   shift;
+        my  $external_filepath      =   shift;
+        my  $default_filepath       =   $self->get_default_yaml_filepath;
+
+        # Definitions:    
+        my  $external               =   defined $external_filepath
+                                        && (
+                                            $external_filepath eq '0'?  1:
+                                            $external_filepath
+                                        )
+                                        && -e $external_filepath;
+
+        my  $external_not_found     =   defined $external_filepath
+                                        && (
+                                            $external_filepath eq '0'?  1:
+                                            $external_filepath
+                                        )
+                                        && !(-e $external_filepath);
+
+        my  $default                =   defined $default_filepath
+                                        && $default_filepath
+                                        && -e $default_filepath;
+
+        my  $fellback_to_default    =   $external?  undef:
+                                        $default?   1:
+                                        undef;
+
+        my  $internal               =   $external?  undef:
+                                        $default?   undef:
+                                        1;
+
+        # Processing:
+        $self->{data}               =   # External YAML file:
+                                        $external?  LoadFile($external_filepath):           # Will die on any load error.
+                                        $default?   LoadFile($default_filepath):            # Will die on any load error.
+                        
+                                        # Internal YAML __DATA__:
+                                        Load(                                               # Will die on any load error.
+                                            do {                                            # 'do' returns last value of block.
+                                                local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
+                                                <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                            }
+                                        );
+
+        # Messages:                                    
+        push @{ $self->{messages}->{error} }    ,   ['Config file [_1] not found.', $external_filepath]
+                                                    if $external_not_found;
+
+        push @{ $self->{messages}->{debug} }    ,   ['Default external config file [_1] not found.', $default_filepath]
+                                                    unless $default;
+
+        push @{ $self->{messages}->{verbose} }  ,   $external?              ['Loaded Config from [_1]', $external_filepath]:
+                                                    $fellback_to_default?   ['Loaded Config from [_1]', $default_filepath]:
+                                                    $internal?              ['Loading internal configuration.']:
+                                                    ();
+
+
+        # Output:             
+        return $self;
+        
+    };
+    
+    sub get_data {
+        return shift->{data};
+    }
+    
+    sub get_data_and_messages {
+        my  $self   =   shift;
+
+        return  wantarray?   ($self->{data}, $self->{messages}):
+                [$self->{data}, $self->{messages}];
+    }
+    
+    sub get_messages {
+        return shift->{messages};
+    }
+    
+
+};
+
+package ChangeNameOperation::CompileTimeValues {
+
+
+    use Getopt::Long;
+    
+    sub path_to_eprints_perl_library {
+    
+        my  @nothing                    =   (); 
+        my  $provided_filepath          =   undef;
+
+        GetOptions(
+            "config:s"                  =>  \$provided_filepath
+        );
+        
+        my  @config_filepath_or_blank   =   $provided_filepath? ($provided_filepath):
+                                            @nothing;
+        
+        return ChangeNameOperation::Config->new->load(@config_filepath_or_blank)->get_data->{'EPrints Perl Library Path'};
+
+    }
+
+}
+
 
 package ChangeNameOperation v1.0.0 {
 
@@ -444,7 +582,7 @@ package ChangeNameOperation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     lib '/opt/eprints3/perl_lib';
+    use     lib ChangeNameOperation::CompileTimeValues->path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
@@ -1945,7 +2083,7 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     lib '/opt/eprints3/perl_lib';
+    use     lib ChangeNameOperation::CompileTimeValues->path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
@@ -3025,151 +3163,7 @@ Package that loads configuration.
 =cut
 
 # Load Config Class first.
-BEGIN {
-package ChangeNameOperation::Config v1.0.0 {
 
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance if they are invoked,
-                                    # on Perl v5.18 or lower.
-                                    
-    # Specific:
-    use     File::Basename;         # Will use this to get the directory name that this file is in,
-                                    # when looking for yaml file.
-    use     CPAN::Meta::YAML qw(
-                LoadFile
-                Load
-            );                      # Standard module in Core Perl since Perl 5.14. 
-                                    # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
-                                    
-    sub new {
-        my  $class      =   shift;
-        my  $params     =   {@ARG};
-    
-        my  $self       =   {};
-        bless $self, $class;
-    
-        $self->_set_attributes($params);
-    
-        return $self;
-    }
-
-    sub _set_attributes {
-
-        # Initial Values:
-        my  ($self)                 =   shift;
-    
-        %{
-            $self
-        }                           =   (
-    
-            # Existing values in $self:
-            %{$self},
-
-            # Defaults:
-            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
-            data                    =>  undef,
-            
-        );
-        
-        return $self;
-            
-    }
-
-    sub get_default_yaml_filepath {
-        return shift->{default_yaml_filepath};
-    }
-
-    
-    sub load {
-
-        # Initial Values:
-        my  $self                   =   shift;
-        my  $external_filepath      =   shift;
-        my  $default_filepath       =   $self->get_default_yaml_filepath;
-
-        # Definitions:    
-        my  $external               =   defined $external_filepath
-                                        && (
-                                            $external_filepath ne '0'?  $external_filepath:
-                                            1
-                                        )
-                                        && -e $external_filepath;
-
-        my  $external_not_found     =   defined $external_filepath
-                                        && (
-                                            $external_filepath ne '0'?  $external_filepath:
-                                            1
-                                        )
-                                        && !(-e $external_filepath);
-
-        my  $default                =   defined $default_filepath
-                                        && $default_filepath
-                                        && -e $default_filepath;
-
-        my  $fellback_to_default    =   $external?  undef:
-                                        $default?   1:
-                                        undef;
-
-        my  $internal               =   $external?  undef:
-                                        $default?   undef:
-                                        1;
-
-        # Processing:
-        $self->{data}               =   # External YAML file:
-                                        $external?  LoadFile($external_filepath):           # Will die on any load error.
-                                        $default?   LoadFile($default_filepath):            # Will die on any load error.
-                        
-                                        # Internal YAML __DATA__:
-                                        Load(                                               # Will die on any load error.
-                                            do {                                            # 'do' returns last value of block.
-                                                local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
-                                                <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
-                                            }
-                                        );
-
-        # Messages:                                    
-        push @{ $self->{messages}->{verbose} }  ,   ['Loaded Config from [_1]', $external_filepath]
-                                                    if $external;
-
-        push @{ $self->{messages}->{error} }    ,   ['Config file [_1] not found.', $external_filepath]
-                                                    if $external_not_found;
-
-        push @{ $self->{messages}->{verbose} }  ,   ['Loaded Config from [_1]', $default_filepath]
-                                                    if $fellback_to_default;
-
-        push @{ $self->{messages}->{debug} }    ,   ['Default external config file [_1] not found.', $default_filepath]
-                                                    unless $default;
-
-        push @{ $self->{messages}->{verbose} }  ,   ['Loading internal configuration.']
-                                                    if $internal;
-
-        # Output:             
-        return $self;
-        
-    };
-    
-    sub get_data {
-        return shift->{data};
-    }
-    
-    sub get_data_and_messages {
-        my  $self   =   shift;
-
-        return  wantarray?   ($self->{data}, $self->{messages}):
-                [$self->{data}, $self->{messages}];
-    }
-    
-    sub get_messages {
-        return shift->{messages};
-    }
-    
-
-};
-}
 
 =head2 ChangeNameOperation::Config::YAML
 

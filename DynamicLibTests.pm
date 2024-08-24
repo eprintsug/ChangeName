@@ -49,11 +49,12 @@ package FilePath {
 package Config {
         use Getopt::Long;
     sub filepath {
-
+        my  $class  =   shift;
 
         my $provided_filepath  =   undef;
 
-        GetOptions(
+        Getopt::Long::Parser->new->getoptionsfromarray(
+            \@_,
             "config:s"      =>  \$provided_filepath
         );
         my $filepath           =   FilePath->filepath();
@@ -76,9 +77,10 @@ package DynamicLibTests v1.0.0 {
 
 
     say $encoding_layer;
-    use lib Config->filepath();
+    use lib Config->filepath(@ARGV);
     use EPrints;
     say join "\n", @INC;
+    say join "\n", @ARGV;
                                     
 };
 
