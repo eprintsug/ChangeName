@@ -179,233 +179,6 @@ Performs the change name operation.
 
 =cut
 
-package ChangeNameOperation::Modulino v1.0.0 {
-
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance issue if they are invoked,
-                                    # on Perl v5.18 or lower.
-
-    # Specific:
-    use     Getopt::Long;
-
-    # Modulino:
-    ChangeNameOperation::Modulino->run(@ARGV) unless caller;
-
-    sub run {
-        shift->new->_process_input(@ARG)->utf8_check->_setup_config->_setup_localiser->start_operation;
-    }
-    
-    sub new {
-        my  $class      =   shift;
-        my  $params     =   {@ARG};
-    
-        my  $self       =   {};
-        bless $self, $class;
-    
-        $self->_set_attributes($params);
-    
-        return $self;    
-    }
-    
-    sub _set_attributes {
-
-        # Initial Values:
-        my  ($self, $params)        =   @ARG;
-    
-        %{
-            $self
-        }                           =   (
-            acceptable_utf8_options =>  (${^UNICODE} >= '39')
-                                        &&
-                                        (${^UNICODE} <= '63'),
-            we_should_halt          =>  0,
-        );
-    
-    }
-
-    sub _process_input {
-
-        my  $self           =   shift;
-
-        # Defaults:
-        $self->{options}    =   {
-            language        =>  undef,
-            live            =>  0,
-            verbose         =>  0,
-            debug           =>  0,
-            trace           =>  0,
-            no_dumper       =>  0,
-            no_trace        =>  0,
-            config          =>  undef,
-            exact           =>  0,
-        };
-    
-        # Command Line Options:    
-        Getopt::Long::Parser->new->getoptionsfromarray(
-            \@ARG,                  # Array to get options from.
-            $options,                # Hash to store options to.
-    
-            # Actual options:
-            'language|lang:s',      # Optional string.
-                                    # Use 'language' for the hash ref key, 
-                                    # accept '--language' or '--lang' from the commandline.
-                                    # Syntax can be --lang=en-GB or --lang en-GB
-    
-            'config:s',             # Optional string.
-                                    # Use 'config' for the hash ref key, 
-                                    # accept '--config' from the commandline.
-                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
-     
-            'live!',                # if --live present,    set $live to 1,
-                                    # if --nolive present,  set $live to 0.
-    
-            'verbose+',             # if --verbose present,    set $verbose
-                                    # to the number of times it is present.
-                                    # i.e. --verbose --verbose would set $verbose to 2.
-    
-            'debug!',               # if --debug present,    set $debug to 1,
-                                    # if --nodebug present,  set $debug to 0.
-    
-            'trace!',               # if --trace present,    set $trace to 1,
-                                    # if --notrace present,  set $trace to 0.
-                                
-            'no_dumper'.
-            '|no_dump'.
-            '|nodumper'.
-            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
-    
-            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
-            
-            'exact!',               # if --exact present,   set $exact to 1,
-                                    # if --noexact present, set $exact to 0.
-    
-        );
-
-        $self->{arguments}  =   {
-            archive_id      =>  shift,
-            search          =>  shift,
-            replace         =>  shift,
-            part            =>  shift,
-        };
-
-        return $self;
-
-    }
-
-    sub utf8_check {
-        my  $self                               =   shift;
-        my  @nothing                            =   ();        
-        $self->{input_that_requires_utf8}       =   scalar (
-                                                        map {
-                                                            defined $ARG && $ARG?   $ARG:
-                                                            @nothing
-                                                        }
-            
-                                                        (
-            
-                                                            # Arguments to be UTF-8:
-                                                            $self->{arguments}->{archive_id},
-                                                            $self->{arguments}->{search},
-                                                            $self->{arguments}->{replace},
-                                                            $self->{arguments}->{part},
-                                                            
-                                                            # Options where UTF-8 is important:
-                                                            $self->{options}->{language},
-                                                            $self->{options}->{config},    
-            
-                                                        )
-                                                    );
-
-        if ($self->{input_that_requires_utf8}) {
-
-            unless ($self->{acceptable_utf8_options}) {
-
-                $self->{we_should_halt} =   1;
-
-            };
-
-        };
-        
-        return $self;
-
-    }
-    
-    sub _setup_config {
-
-        # Initial Values:
-        my  $self                       =   shift;
-        my  @nothing                    =   ();        
-        
-        # Definitions:
-        my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
-                                            &&      $self->{options}->{config}? ($self->{options}->{config}):
-                                            @nothing;
-
-        # Processing:
-        $self->{config}                 =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data; # If nothing, will load default from YAML at bottom of this file.
-
-        # Output:        
-        return $self;
-
-    }
-
-    sub _setup_localiser {
-
-        my  $self           =   shift;
-        
-        $self->{localiser}  =   ChangeNameOperation::Languages->try_or_die(
-                                    $self->{options}->{language}
-                                    // $self->{config}->{'Language Tag'}
-                                    # No further fall back, as the config should be enough 
-                                    # because the default YAML config is at the bottom of this file,
-                                    # and if an external YAML config is missing the setting, the try_or_die will handle it,
-                                    # with its own fallback, if necessary.
-                                );
-        return  $self;
-
-    }
-
-    sub start_operation {
-
-        # Initial Values:
-        my  $self           =   shift;
-
-        # Processing:    
-        say $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
-                                                $self->localise->('commandline.utf8_not_enabled'):
-        $localise->('commandline.no_arguments');
-        
-        die $self->localise->('commandline.end_program') if $self->{we_should_halt};
-
-        my  @object_params  =   (
-
-            # Flatten to one list - arguments overwrite options:
-
-            @{
-                $self->{options}
-            },
-
-            @{
-                $self->{arguments}
-            },
-
-            config  =>  $self->{config};
-
-        );
-    
-        ChangeNameOperation->start(@object_params);
-
-        # Output:        
-        return $self;
-
-    }
-
-} # ChangeNameOperation::Modulino Package.
-
 package ChangeNameOperation::Config v1.0.0 {
 
     # Standard:
@@ -512,17 +285,16 @@ package ChangeNameOperation::Config v1.0.0 {
                                         );
 
         # Messages:                                    
-        push @{ $self->{messages}->{error} }    ,   ['Config file [_1] not found.', $external_filepath]
+        push @{ $self->{messages}->{error} }    ,   ['config.load.error.custom_external_not_found', $external_filepath]
                                                     if $external_not_found;
 
-        push @{ $self->{messages}->{debug} }    ,   ['Default external config file [_1] not found.', $default_filepath]
+        push @{ $self->{messages}->{debug} }    ,   ['config.load.debug.default_external_not_found', $default_filepath]
                                                     unless $default;
 
-        push @{ $self->{messages}->{verbose} }  ,   $external?              ['Loaded Config from [_1]', $external_filepath]:
-                                                    $fellback_to_default?   ['Loaded Config from [_1]', $default_filepath]:
-                                                    $internal?              ['Loading internal configuration.']:
+        push @{ $self->{messages}->{verbose} }  ,   $external?              ['config.load.verbose.loaded_file', $external_filepath]:
+                                                    $fellback_to_default?   ['config.load.verbose.loaded_file', $default_filepath]:
+                                                    $internal?              ['config.load.verbose.internal']:
                                                     ();
-
 
         # Output:             
         return $self;
@@ -545,31 +317,295 @@ package ChangeNameOperation::Config v1.0.0 {
     }
     
 
-};
+}; # ChangeNameOperation::Config Package.
 
-package ChangeNameOperation::CompileTimeValues {
+package ChangeNameOperation::Modulino v1.0.0 {
 
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance issue if they are invoked,
+                                    # on Perl v5.18 or lower.
 
-    use Getopt::Long;
+    # Specific:
+    use     Getopt::Long;
+
+    # Modulino:
+    ChangeNameOperation::Modulino->run(@ARGV) unless caller;
+
+    sub run {
+        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_localiser->say_config_messages->start_operation;
+    }
     
-    sub path_to_eprints_perl_library {
+    sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
     
-        my  @nothing                    =   (); 
-        my  $provided_filepath          =   undef;
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params);
+    
+        return $self;    
+    }
+    
+    sub _set_attributes {
 
-        GetOptions(
-            "config:s"                  =>  \$provided_filepath
+        # Initial Values:
+        my  ($self, $params)        =   @ARG;
+    
+        %{
+            $self
+        }                           =   (
+            acceptable_utf8_options =>  (${^UNICODE} >= '39')
+                                        &&
+                                        (${^UNICODE} <= '63'),
+            we_should_halt          =>  0,
         );
-        
-        my  @config_filepath_or_blank   =   $provided_filepath? ($provided_filepath):
-                                            @nothing;
-        
-        return ChangeNameOperation::Config->new->load(@config_filepath_or_blank)->get_data->{'EPrints Perl Library Path'};
+    
+    }
+
+    sub process_input {
+
+        my  $self           =   shift;
+
+        # Defaults:
+        $self->{options}    =   {
+            language        =>  undef,
+            live            =>  0,
+            verbose         =>  0,
+            debug           =>  0,
+            trace           =>  0,
+            no_dumper       =>  0,
+            no_trace        =>  0,
+            config          =>  undef,
+            exact           =>  0,
+        };
+    
+        # Command Line Options:    
+        Getopt::Long::Parser->new->getoptionsfromarray(
+            \@ARG,                  # Array to get options from.
+            $options,                # Hash to store options to.
+    
+            # Actual options:
+            'language|lang:s',      # Optional string.
+                                    # Use 'language' for the hash ref key, 
+                                    # accept '--language' or '--lang' from the commandline.
+                                    # Syntax can be --lang=en-GB or --lang en-GB
+    
+            'config:s',             # Optional string.
+                                    # Use 'config' for the hash ref key, 
+                                    # accept '--config' from the commandline.
+                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+     
+            'live!',                # if --live present,    set $live to 1,
+                                    # if --nolive present,  set $live to 0.
+    
+            'verbose+',             # if --verbose present,    set $verbose
+                                    # to the number of times it is present.
+                                    # i.e. --verbose --verbose would set $verbose to 2.
+    
+            'debug!',               # if --debug present,    set $debug to 1,
+                                    # if --nodebug present,  set $debug to 0.
+    
+            'trace!',               # if --trace present,    set $trace to 1,
+                                    # if --notrace present,  set $trace to 0.
+                                
+            'no_dumper'.
+            '|no_dump'.
+            '|nodumper'.
+            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
+    
+            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
+            
+            'exact!',               # if --exact present,   set $exact to 1,
+                                    # if --noexact present, set $exact to 0.
+    
+        );
+
+        $self->{arguments}  =   {
+            archive_id      =>  shift,
+            search          =>  shift,
+            replace         =>  shift,
+            part            =>  shift,
+        };
+
+        return $self;
 
     }
 
-}
+    sub utf8_check {
+        my  $self                               =   shift;
+        my  @nothing                            =   ();        
+        $self->{input_that_requires_utf8}       =   scalar (
+                                                        map {
+                                                            defined $ARG && $ARG?   $ARG:
+                                                            @nothing
+                                                        }
+            
+                                                        (
+            
+                                                            # Arguments to be UTF-8:
+                                                            $self->{arguments}->{archive_id},
+                                                            $self->{arguments}->{search},
+                                                            $self->{arguments}->{replace},
+                                                            $self->{arguments}->{part},
+                                                            
+                                                            # Options where UTF-8 is important:
+                                                            $self->{options}->{language},
+                                                            $self->{options}->{config},    
+            
+                                                        )
+                                                    );
 
+        if ($self->{input_that_requires_utf8}) {
+
+            unless ($self->{acceptable_utf8_options}) {
+
+                $self->{we_should_halt} =   1;
+
+            };
+
+        };
+        
+        return $self;
+
+    }
+    
+    sub setup_config {
+
+        # Initial Values:
+        my  $self                       =   shift;
+        my  @nothing                    =   ();        
+        
+        # Definitions:
+        my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
+                                            &&      $self->{options}->{config}? ($self->{options}->{config}):
+                                            @nothing;
+
+        # Processing:
+        (
+            $self->{config},
+            $self->{config_messages}
+        )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
+
+        # Output:        
+        return $self;
+
+    }
+
+    sub setup_localiser {
+
+        my  $self           =   shift;
+        
+        $self->{localiser}  =   ChangeNameOperation::Languages->try_or_die(
+                                    $self->{options}->{language}
+                                    // $self->{config}->{'Language Tag'}
+                                    # No further fall back, as the config should be enough 
+                                    # because the default YAML config is at the bottom of this file,
+                                    # and if an external YAML config is missing the setting, the try_or_die will handle it,
+                                    # with its own fallback, if necessary.
+                                );
+        return  $self;
+
+    }
+    
+    sub say_config_messages {
+
+        my  $self           =   shift;
+        
+        # Premature exit:
+        return $self            unless $self->{config_messages}
+                                && (
+                                    $self->{config_messages}->{verbose} 
+                                    || $self->{config_messages}->{debug}
+                                    || $self->{config_messages}->{error}
+                                );
+                            
+        # Definitions:
+        my  $verbose_mode   =   $self->{options}->{verbose}
+                                || $self->{options}->{debug};
+
+        my  $debug_mode     =   $self->{options}->{debug}
+                                || (
+                                    $self->{options}->{verbose} > 1
+                                );
+        
+        # Processing:
+
+        # Display order is Error, Debug, Verbose, by design. 
+        # See ChangeNameOperation::Config::load for context.
+
+        say STDERR $self->localise(@{$ARG})     for @{$self->{config_messages}->{error}}; # Always show an error.
+
+        if ($debug_mode) {    
+            say STDOUT $self->localise(@{$ARG}) for @{$self->{config_messages}->{debug}};
+        };
+
+        if ($verbose_mode) {
+            say STDOUT $self->localise(@{$ARG}) for @{$self->{config_messages}->{verbose}};
+        };
+
+        # Output:     
+        return $self;
+        
+    }
+
+    sub start_operation {
+
+        # Initial Values:
+        my  $self           =   shift;
+
+        # Processing:    
+        say $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
+                                                $self->localise->('commandline.utf8_not_enabled'):
+        $localise->('commandline.no_arguments');
+        
+        die $self->localise->('commandline.end_program') if $self->{we_should_halt};
+
+        my  @object_params  =   (
+
+            # Flatten to one list - arguments overwrite options:
+
+            @{
+                $self->{options}
+            },
+
+            @{
+                $self->{arguments}
+            },
+
+            config  =>  $self->{config};
+
+        );
+    
+        ChangeNameOperation->start(@object_params);
+
+        # Output:        
+        return $self;
+
+    }
+    
+    sub localise {
+            return shift->{localiser}->maketext(@ARG);
+    }
+    
+    sub get_config {
+        return shift->{config};
+    }
+
+} # ChangeNameOperation::Modulino Package.
+
+package ChangeNameOperation::CompileTimeValues {
+    
+    sub path_to_eprints_perl_library {
+        my  $class  =   shift;
+        return ChangeNameOperation::Modulino->new->process_input(@ARG)->setup_config->setup_localiser->say_config_messages->get_config->{'EPrints Perl Library Path'};
+    }
+
+} # ChangeNameOperation::CompileTimeValues Package.
 
 package ChangeNameOperation v1.0.0 {
 
@@ -2487,6 +2523,18 @@ my  @tokens = (
 'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
 
+'config.load.error.custom_external_not_found'=>
+'Config file [_1] not found.',
+
+'config.load.debug.default_external_not_found'=>
+'Default external config file [_1] not found.',
+
+'config.load.verbose.loaded_file'=>
+'Loaded Config from [_1]',
+
+'config.load.verbose.internal'=>
+'Loading internal configuration.',
+
 'log.valid_repository.error.invalid'    =>
 'Value passed to valid_repository method not a valid repository.',
 
@@ -2843,6 +2891,18 @@ my  @tokens = (
 '
 -------
 ',
+
+'config.load.error.custom_external_not_found'=>
+'Konfigurationsdatei [_1] nicht gefunden.',
+
+'config.load.debug.default_external_not_found'=>
+'Standard-externe Konfigurationsdatei [_1] nicht gefunden.',
+
+'config.load.verbose.loaded_file'=>
+'Konfiguration von [_1] geladen',
+
+'config.load.verbose.internal'=>
+'Interne Konfiguration wird geladen.',
 
 'log.valid_repository.error.invalid'    =>
 'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
