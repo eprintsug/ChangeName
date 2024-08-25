@@ -95,4 +95,18 @@ package UnrelatedClass {
 say 'List of child classes:';
 say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
 say Dumper @{ mro::get_linear_isa('MyBaseClass') };
+
+# Copy and pasted examples:
+
+package A { 1; }
+package B { our @ISA = 'A' }
+
+package X { 1; }
+
+package Y { our @ISA = 'X' }
+
+package F { our @ISA = qw(B Y) }
+
+say "resolution order is @{ mro::get_linear_isa( 'F' ) }";
+
 1;
