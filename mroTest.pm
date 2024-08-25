@@ -37,9 +37,9 @@ package MyBaseClass {
     }
 
 }
-BEGIN {
+
 package MyBaseClass::ChildClassOne {
-ChangeNameOperation::Languages->import;
+MyBaseClass->import;
     sub child_class_one_method_one {
     }
 
@@ -49,7 +49,7 @@ ChangeNameOperation::Languages->import;
 }
 
 package MyBaseClass::ChildClassTwo {
-ChangeNameOperation::Languages->import;
+MyBaseClass->import;
     sub child_class_two_method_one {
     }
 
@@ -59,7 +59,7 @@ ChangeNameOperation::Languages->import;
 }
 
 package MyBaseClass::UglyDuckling {
-ChangeNameOperation::Languages->import;
+MyBaseClass->import;
     sub ugly_duckling_method_one {
     }
 
@@ -87,12 +87,8 @@ package UnrelatedClass {
     }
 
 }
-}
 
-package OutputMRO {
-use English;
-use     mro;
 say 'List of child classes:';
 say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
-}
+
 1;
