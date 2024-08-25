@@ -37,9 +37,9 @@ package MyBaseClass {
     }
 
 }
-
+BEGIN {
 package MyBaseClass::ChildClassOne {
-MyBaseClass->import;
+use parent -norequire, 'MyBaseClass';
     sub child_class_one_method_one {
     }
 
@@ -49,7 +49,7 @@ MyBaseClass->import;
 }
 
 package MyBaseClass::ChildClassTwo {
-MyBaseClass->import;
+use parent -norequire, 'MyBaseClass';
     sub child_class_two_method_one {
     }
 
@@ -59,7 +59,7 @@ MyBaseClass->import;
 }
 
 package MyBaseClass::UglyDuckling {
-MyBaseClass->import;
+use parent -norequire, 'MyBaseClass';
     sub ugly_duckling_method_one {
     }
 
@@ -87,7 +87,7 @@ package UnrelatedClass {
     }
 
 }
-
+}
 say 'List of child classes:';
 say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
 
