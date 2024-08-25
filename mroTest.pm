@@ -37,9 +37,10 @@ package MyBaseClass {
     }
 
 }
-BEGIN {
+CHILDREN_FIRST: BEGIN {
 package MyBaseClass::ChildClassOne {
-use parent -norequire, 'MyBaseClass';
+MyBaseClass->import;
+our @ISA = ('MyBaseClass');
     sub child_class_one_method_one {
     }
 
@@ -49,7 +50,8 @@ use parent -norequire, 'MyBaseClass';
 }
 
 package MyBaseClass::ChildClassTwo {
-use parent -norequire, 'MyBaseClass';
+MyBaseClass->import;
+our @ISA = ('MyBaseClass');
     sub child_class_two_method_one {
     }
 
@@ -59,7 +61,8 @@ use parent -norequire, 'MyBaseClass';
 }
 
 package MyBaseClass::UglyDuckling {
-use parent -norequire, 'MyBaseClass';
+MyBaseClass->import;
+our @ISA = ('MyBaseClass');
     sub ugly_duckling_method_one {
     }
 
@@ -88,7 +91,8 @@ package UnrelatedClass {
 
 }
 }
+
 say 'List of child classes:';
 say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
-
+say Dumper @{ mro::get_linear_isa('MyBaseClass') };
 1;
