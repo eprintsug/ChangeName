@@ -514,7 +514,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
     
     sub say_config_messages {
 
+        # Initial Values:
         my  $self           =   shift;
+        my  $prefix         =   shift // '[ChangeNameOperation::Modulino::say_config_messages] - ';
+        my  $no_prefix      =   q{};
         
         # Premature exit:
         return $self            unless $self->{config_messages}
@@ -533,19 +536,23 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                     $self->{options}->{verbose} > 1
                                 );
         
+        # Definition Dependent Values:
+        my  $prefix_or_not  =   $debug_mode? $prefix:
+                                $no_prefix;
+
         # Processing:
 
         # Display order is Error, Debug, Verbose, by design. 
         # See ChangeNameOperation::Config::load for context.
 
-        say STDERR $self->localise(@{$ARG})     for @{$self->{config_messages}->{error}}; # Always show an error.
+        say STDERR $prefix_or_not.$self->localise(@{$ARG})     for @{$self->{config_messages}->{error}}; # Always show an error.
 
         if ($debug_mode) {    
-            say STDOUT $self->localise(@{$ARG}) for @{$self->{config_messages}->{debug}};
+            say STDOUT $prefix_or_not.$self->localise(@{$ARG}) for @{$self->{config_messages}->{debug}};
         };
 
         if ($verbose_mode) {
-            say STDOUT $self->localise(@{$ARG}) for @{$self->{config_messages}->{verbose}};
+            say STDOUT $prefix_or_not.$self->localise(@{$ARG}) for @{$self->{config_messages}->{verbose}};
         };
 
         # Output:     
@@ -598,11 +605,29 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
 } # ChangeNameOperation::Modulino Package.
 
-package ChangeNameOperation::CompileTimeValues {
-    
-    sub path_to_eprints_perl_library {
-        my  $class  =   shift;
-        return ChangeNameOperation::Modulino->new->process_input(@ARG)->setup_config->setup_localiser->say_config_messages->get_config->{'EPrints Perl Library Path'};
+package ChangeNameOperation::CompileTimeConfigValues {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance issue if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    sub new {
+        my  $class      =   shift;
+        my  $prefix     =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  $self       =   {
+            config  =>  ChangeNameOperation::Modulino->new->process_input(@ARG)->setup_config->setup_localiser->say_config_messages($prefix)->get_config,
+        };
+        bless $self, $class;
+
+        return $self;
+    }
+
+    sub get_path_to_eprints_perl_library {
+        return shift->config->{'EPrints Perl Library Path'};
     }
 
 } # ChangeNameOperation::CompileTimeValues Package.
