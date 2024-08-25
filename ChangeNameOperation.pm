@@ -616,13 +616,19 @@ package ChangeNameOperation::CompileTimeConfigValues {
                                     # on Perl v5.18 or lower.
 
     sub new {
-        my  $class      =   shift;
-        my  $prefix     =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  $self       =   {
+        # Initial Values:
+        my  $class  =   shift;
+        my  $prefix =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+
+        # Set Attributes:
+        my  $self   =   {
             config  =>  ChangeNameOperation::Modulino->new->process_input(@ARG)->setup_config->setup_localiser->say_config_messages($prefix)->get_config,
         };
-        bless $self, $class;
 
+        # Make Object:
+        bless $self ,   $class;
+
+        # Output:
         return $self;
     }
 
@@ -643,7 +649,7 @@ package ChangeNameOperation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     lib ChangeNameOperation::CompileTimeValues->path_to_eprints_perl_library;
+    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
@@ -2144,7 +2150,7 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     lib ChangeNameOperation::CompileTimeValues->path_to_eprints_perl_library;
+    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
