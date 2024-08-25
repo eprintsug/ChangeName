@@ -152,7 +152,7 @@ use     utf8;
 # Global Encoding Settings:
 my      $encoding_layer;
 
-BEGIN {
+SET_ENCODING_LAYER_AT_COMPILE_TIME: BEGIN {
     my  $encoding_to_use                =   'UTF-8';
         
     $encoding_layer                     =   ":encoding($encoding_to_use)";
@@ -2507,8 +2507,7 @@ These lexicons contain language specific configurations, tokens, and phrases.
 
 =cut
 
-# Load Language Classes before all else:
-BEGIN {
+LOAD_LANGUAGE_CLASSES_FIRST: BEGIN {
 
 =item ChangeNameOperation::Languages::en_gb
 
@@ -3252,8 +3251,6 @@ our %Lexicon = (
 Package that loads configuration.
 
 =cut
-
-# Load Config Class first.
 
 
 =head2 ChangeNameOperation::Config::YAML
