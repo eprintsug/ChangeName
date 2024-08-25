@@ -336,7 +336,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_localiser->say_config_messages->start_operation;
+        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_localiser->say_debug_messages->say_config_messages->start_operation;
     }
     
     sub new {
@@ -511,13 +511,29 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return  $self;
 
     }
+ 
+    sub say_debug_messages {
+    
+        my  $self   =   shift;
+        
+        # Premature Exit:
+        return $self unless $self->{options}->{debug};
+        
+        # Processing:
+        say $self->localise->('Commandline Options are...');
+        say Dumper($self->{options});
+        say $self->localise->('Commandline Arguments are...');
+        say Dumper($self->{arguments});
+        
+        # Output:
+        return $self;
+    
+    }
     
     sub say_config_messages {
 
         # Initial Values:
         my  $self           =   shift;
-        my  $prefix         =   shift // '[ChangeNameOperation::Modulino::say_config_messages] - ';
-        my  $no_prefix      =   q{};
         
         # Premature exit:
         return $self            unless $self->{config_messages}
@@ -526,6 +542,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                     || $self->{config_messages}->{debug}
                                     || $self->{config_messages}->{error}
                                 );
+        # Values:
+        my  $prefix         =   shift // '[ChangeNameOperation::Modulino::say_config_messages] - ';
+        my  $no_prefix      =   q{};
                             
         # Definitions:
         my  $verbose_mode   =   $self->{options}->{verbose}
@@ -594,7 +613,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
 
     }
+
+         
+    sub say_process_input_debug_messages {
+        my  $self   =   shift;
+        return $self unless scalar @{ $self->{process_input_debug_messages}
+    }
     
+ 
     sub localise {
             return shift->{localiser}->maketext(@ARG);
     }
@@ -1527,12 +1553,7 @@ To do.
             say $localise->('Run again with the --live flag when ready to implement your changes.');
         };
     
-        if ($params->{debug}) {
-            say $localise->('Commandline Params are...');
-            say Dumper($params);
-            say $localise->('Commandline Input is...');
-            say Dumper(@commandline_input);
-        };
+
     
         if (@commandline_input) {
     
@@ -2785,8 +2806,8 @@ Confirmation | Record To Change...
 
 my  @phrases = (
     'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
-    'Commandline Params are...'         =>  'Commandline Params are...',
-    'Commandline Input is...'           =>  'Commandline Input is...',
+    'Commandline Options are...'        =>  'Commandline Options are...',
+    'Commandline Arguments are...'      =>  'Commandline Arguments are...',
     'Language set to [_1].'             =>  'Language set to [_1].',
     'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Archive, repository, and log related params were all required for log methods.',
@@ -3154,8 +3175,8 @@ Bestätigung | Zum Ändern aufzeichnen...
 
 my  @phrases = (
     'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
-    'Commandline Params are...'         =>  'Befehlszeilenparameter sind...',
-    'Commandline Input is...'           =>  'Befehlszeileneingabe ist...',
+    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
+    'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
     'Language set to [_1].'             =>  'Sprache auf [_1] eingestellt.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Für die Protokollierung Methoden waren Archiv- und Repository-Attribute sowie mit der Protokollierung verbundene Parameter erforderlich.',
