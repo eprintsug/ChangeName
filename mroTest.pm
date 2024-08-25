@@ -29,15 +29,17 @@ binmode STDERR                  ,   $encoding_layer;
 
 say 'Can you label a begin?'.$encoding_layer; # We'll soon find out!
 
+use Data::Dumper;
+
 package MyBaseClass {
 
     sub my_base_class_method_one {
     }
 
 }
-
+BEGIN {
 package MyBaseClass::ChildClassOne {
-
+ChangeNameOperation::Languages->import;
     sub child_class_one_method_one {
     }
 
@@ -47,7 +49,7 @@ package MyBaseClass::ChildClassOne {
 }
 
 package MyBaseClass::ChildClassTwo {
-
+ChangeNameOperation::Languages->import;
     sub child_class_two_method_one {
     }
 
@@ -57,7 +59,7 @@ package MyBaseClass::ChildClassTwo {
 }
 
 package MyBaseClass::UglyDuckling {
-
+ChangeNameOperation::Languages->import;
     sub ugly_duckling_method_one {
     }
 
@@ -85,8 +87,12 @@ package UnrelatedClass {
     }
 
 }
+}
 
+package OutputMRO {
+use English;
+use     mro;
 say 'List of child classes:';
 say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
-
+}
 1;
