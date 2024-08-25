@@ -35,40 +35,39 @@ package MyBaseClass {
 
     sub my_base_class_method_one {
     }
-
+1;
 }
-CHILDREN_FIRST: BEGIN {
 package MyBaseClass::ChildClassOne {
-MyBaseClass->import;
-our @ISA = ('MyBaseClass');
+#MyBaseClass->import;
+our @ISA = 'MyBaseClass';
     sub child_class_one_method_one {
     }
 
     sub child_class_one_method_two {
     }
-
+1;
 }
 
 package MyBaseClass::ChildClassTwo {
-MyBaseClass->import;
-our @ISA = ('MyBaseClass');
+#MyBaseClass->import;
+our @ISA = 'MyBaseClass';
     sub child_class_two_method_one {
     }
 
     sub child_class_two_method_two {
     }
-
+1;
 }
 
 package MyBaseClass::UglyDuckling {
-MyBaseClass->import;
-our @ISA = ('MyBaseClass');
+#MyBaseClass->import;
+our @ISA = 'MyBaseClass';
     sub ugly_duckling_method_one {
     }
 
     sub ugly_duckling_method_two {
     }
-
+1;
 }
 
 package MyDiffBaseClass::ChildClassOne {
@@ -78,7 +77,7 @@ package MyDiffBaseClass::ChildClassOne {
 
     sub diff_child_class_one_method_two {
     }
-
+1;
 }
 
 package UnrelatedClass {
@@ -88,13 +87,13 @@ package UnrelatedClass {
 
     sub unrelated_class_method_two {
     }
+1;
+}
 
-}
-}
 
 say 'List of child classes:';
-say $ARG for @{ mro::get_linear_isa('MyBaseClass') };
-say Dumper @{ mro::get_linear_isa('MyBaseClass') };
+say $ARG for @{ mro::get_isarev('MyBaseClass') };
+say Dumper @{ mro::get_isarev('MyBaseClass') };
 
 # Copy and pasted examples:
 
@@ -108,5 +107,7 @@ package Y { our @ISA = 'X' }
 package F { our @ISA = qw(B Y) }
 
 say "resolution order is @{ mro::get_linear_isa( 'F' ) }";
+
+say $ARG for @{ mro::get_linear_isa('A') };
 
 1;
