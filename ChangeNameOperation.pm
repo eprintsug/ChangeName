@@ -336,7 +336,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_localiser->say_debug_messages->say_config_messages->start_operation;
+        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
     }
     
     sub new {
@@ -386,43 +386,39 @@ package ChangeNameOperation::Modulino v1.0.0 {
     
         # Command Line Options:    
         Getopt::Long::Parser->new->getoptionsfromarray(
-            \@ARG,                  # Array to get options from.
-            $options,                # Hash to store options to.
+            \@ARG,                                              # Array to get options from.
+            $options,                                           # Hash to store options to.
     
             # Actual options:
-            'language|lang:s',      # Optional string.
-                                    # Use 'language' for the hash ref key, 
-                                    # accept '--language' or '--lang' from the commandline.
-                                    # Syntax can be --lang=en-GB or --lang en-GB
+            $self->multilingual_options('language',     ':s'),  # Optional string.
+                                                                # Use 'language' for the hash ref key, 
+                                                                # accept '--language' or '--lang' from the commandline.
+                                                                # Syntax can be --lang=en-GB or --lang en-GB
     
-            'config:s',             # Optional string.
-                                    # Use 'config' for the hash ref key, 
-                                    # accept '--config' from the commandline.
-                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
+            $self->multilingual_options('config',       ':s'),  # Optional string.
+                                                                # Use 'config' for the hash ref key, 
+                                                                # accept '--config' from the commandline.
+                                                                # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
      
-            'live!',                # if --live present,    set $live to 1,
-                                    # if --nolive present,  set $live to 0.
+            $self->multilingual_options('live',         '!'),   # if --live present,    set $live to 1,
+                                                                # if --nolive present,  set $live to 0.
     
-            'verbose+',             # if --verbose present,    set $verbose
-                                    # to the number of times it is present.
-                                    # i.e. --verbose --verbose would set $verbose to 2.
+            $self->multilingual_options('verbose',      '+'),   # if --verbose present,    set $verbose
+                                                                # to the number of times it is present.
+                                                                # i.e. --verbose --verbose would set $verbose to 2.
     
-            'debug!',               # if --debug present,    set $debug to 1,
-                                    # if --nodebug present,  set $debug to 0.
+            $self->multilingual_options('debug',        '!'),   # if --debug present,    set $debug to 1,
+                                                                # if --nodebug present,  set $debug to 0.
     
-            'trace!',               # if --trace present,    set $trace to 1,
-                                    # if --notrace present,  set $trace to 0.
+            $self->multilingual_options('trace',        '!'),   # if --trace present,    set $trace to 1,
+                                                                # if --notrace present,  set $trace to 0.
                                 
-            'no_dumper'.
-            '|no_dump'.
-            '|nodumper'.
-            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
+            $self->multilingual_options('no_dumper',    '+'),   # if --no_dumper present set $no_dumper to 1.
     
-            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
+            $self->multilingual_options('no_trace',     '+'),   # if --no_trace present  set $no_trace  to 1.
             
-            'exact!',               # if --exact present,   set $exact to 1,
-                                    # if --noexact present, set $exact to 0.
-    
+            $self->multilingual_options('exact',        '!'),   # if --exact present,   set $exact to 1,
+                                                                # if --noexact present, set $exact to 0.
         );
 
         $self->{arguments}  =   {
@@ -434,6 +430,22 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         return $self;
 
+    }
+
+    sub multilingual_options {
+        # Initial Values:
+        my ($self, $option, $option_suffix) =   @ARG;
+        
+        # Default Values:
+        $option_suffix //=  q{};
+
+        # Processing:
+        
+        # TODO
+        
+        #Output:
+        # TODO
+        return;
     }
 
     sub utf8_check {
@@ -496,11 +508,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     }
 
-    sub setup_localiser {
+    sub setup_language {
 
         my  $self           =   shift;
         
-        $self->{localiser}  =   ChangeNameOperation::Languages->try_or_die(
+        $self->{language}   =   ChangeNameOperation::Languages->try_or_die(
                                     $self->{options}->{language}
                                     // $self->{config}->{'Language Tag'}
                                     # No further fall back, as the config should be enough 
@@ -585,9 +597,12 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  $self           =   shift;
 
         # Processing:    
-        say $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
-                                                $self->localise->('commandline.utf8_not_enabled'):
-        $localise->('commandline.no_arguments');
+        say (scalar $self->{arguments})?    $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
+                                                                                $self->localise->('commandline.utf8_not_enabled'):
+                                            $self->localise->('commandline.utf8_not_needed'):
+        $self->localise->('commandline.no_arguments');
+
+
         
         die $self->localise->('commandline.end_program') if $self->{we_should_halt};
 
@@ -613,16 +628,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
 
     }
-
-         
-    sub say_process_input_debug_messages {
-        my  $self   =   shift;
-        return $self unless scalar @{ $self->{process_input_debug_messages}
-    }
-    
  
     sub localise {
-            return shift->{localiser}->maketext(@ARG);
+            return shift->{language}->maketext(@ARG);
     }
     
     sub get_config {
@@ -2541,6 +2549,7 @@ package ChangeNameOperation::Languages::en_gb {
 # Use --lang=en-GB at the commandline to use it.
 
 ChangeNameOperation::Languages->import;
+our @ISA                        =   ('ChangeNameOperation::Languages');
 
 # ----------------------------------
 
@@ -2557,6 +2566,16 @@ my  @configurations = (
 );
 
 my  @tokens = (
+
+'options.language'              =>  'language lang',
+'options.config'                =>  'config configuration',
+'options.live'                  =>  'live',
+'options.verbose'               =>  'verbose',
+'options.debug'                 =>  'debug',
+'options.trace'                 =>  'trace stacktrace',
+'options.no_dumper'             =>  'no_dumper no_dump nodumper nodump',
+'options.no_trace'              =>  'no_trace notrace no_stacktrace nostacktrace',
+'options.exact'                 =>  'exact',
 
 'input.yes_letter'              =>  'Y',
 'input.no_letter'               =>  'N',
@@ -2620,6 +2639,7 @@ and no such params were provided.',
 'commandline.end_program'       =>  'This program will now end...'.$new_line,
 'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
+'commandline.utf8_not_needed'   =>  'No UTF-8 critical commandline options or arguments given.',
 'commandline.no_arguments'      =>  'No commandline arguments given.',
 'commandline.utf8_enabled'      =>  'UTF-8 commandline arguments enabled.',
 
@@ -2905,6 +2925,7 @@ package ChangeNameOperation::Languages::de_de {
 
 # Specific:
 ChangeNameOperation::Languages->import;
+our @ISA                        =   ('ChangeNameOperation::Languages');
 
 # ----------------------------------
 
@@ -2921,6 +2942,16 @@ my  @configurations = (
 );
 
 my  @tokens = (
+
+'options.language'              =>  'sprache spr',
+'options.config'                =>  'konfig konfiguration',
+'options.live'                  =>  'live',
+'options.verbose'               =>  'ausführlich ausführl',
+'options.debug'                 =>  'debug',
+'options.trace'                 =>  'stacktrace trace',
+'options.no_dumper'             =>  'kein_dumper kein_dump keindumper keindump',
+'options.no_trace'              =>  'kein_trace keintrace kein_stacktrace kein_stacktrace',
+'options.exact'                 =>  'exakt genau genaue',
 
 'input.yes_letter'              =>  'J',
 'input.no_letter'               =>  'N',
@@ -2942,6 +2973,8 @@ my  @tokens = (
 '
 -------
 ',
+
+
 
 'config.load.error.custom_external_not_found'=>
 'Konfigurationsdatei [_1] nicht gefunden.',
@@ -2983,6 +3016,8 @@ und es wurden keine derartigen Parameter bereitgestellt.',
 
 'commandline.end_program'       =>  'Dieses Programm wird nun beendet...'.$new_line,
 'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
+
+'commandline.utf8_not_needed'   =>  'Keine UTF-8-kritischen Befehlszeilenoptionen oder Argumente als Eingabe angegeben.',
 
 'commandline.no_arguments'      =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
 'commandline.utf8_enabled'      =>  'UTF-8-Befehlszeilenargumente aktiviert.',
