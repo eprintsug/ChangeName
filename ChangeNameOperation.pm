@@ -439,7 +439,26 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Default Values:
         $option_suffix //=  q{};
 
+        # Regex:
+        my  $matches_and_captures_language_handle   =   qr/
+                                                            (                       # Start capture group.
+                                                                ?<language_handle>  # Name the capture group.
+                                                                [^:]+               # One or more of anything except a colon.
+                                                            )                       # End capture group.
+                                                            $                       # End of string.
+                                                        /x;                         # x flag - Ignore white space and allow comments.
+        
+
         # Processing:
+        for my $language_class (@{ mro::get_isarev('ChangeNameOperation::Languages') }) {
+            my  $language_handle    =   $language_class 
+                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{language_handle}:
+                                        undef;
+            if ($language_handle) {
+                split(/(\+/, $language_base_class->$language_handle->maketext($option)
+            }
+        }
+        $self->
         
         # TODO
         
