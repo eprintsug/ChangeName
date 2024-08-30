@@ -434,28 +434,54 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub multilingual_options {
         # Initial Values:
-        my ($self, $option, $option_suffix) =   @ARG;
+        my ($self, $option, $option_suffix)         =   @ARG;
         
         # Default Values:
-        $option_suffix //=  q{};
+        $option_suffix                              //= q{};
+        my  $language_base_class                    =   'ChangeNameOperation::Languages';
 
         # Regex:
         my  $matches_and_captures_language_handle   =   qr/
                                                             (                       # Start capture group.
-                                                                ?<language_handle>  # Name the capture group.
+                                                                ?<captured_language_handle>  # Name the capture group.
                                                                 [^:]+               # One or more of anything except a colon.
                                                             )                       # End capture group.
                                                             $                       # End of string.
                                                         /x;                         # x flag - Ignore white space and allow comments.
         
+        my  $contiguous_white_space     =   qr/
+                                                [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
+                                                +                                           # Anything in the set one or more times.
+                                            /x;                                             # x - to allow whitespace and comments in regex.
+                                                                                            # Note x does not allow whitespace within the angled brackets,
+                                                                                            # and xx would allow it in Perl 5.26 or higher.
+
+        my  $matches_leading_whitespace =   qr/
+                                                ^                                           # Start of string.
+                                                $contiguous_white_space                     # White Space however previously defined.
+                                                (?<data>                                    # Begin Capturing Group.
+                                                    .*                                      # Zero or more of anything.
+                                                )                                           # End capturing group.
+                                                $                                           # End of string.
+                                            /xs;                                            # x - to allow whitespace and comments in regex.
+                                                                                            # s - to include newlines in 'anything'.
+
+    $test_data_string               =   $test_data_string =~ $matches_leading_whitespace?   $+{data}:
+                                        $test_data_string;
+
+
 
         # Processing:
         for my $language_class (@{ mro::get_isarev('ChangeNameOperation::Languages') }) {
-            my  $language_handle    =   $language_class 
-                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{language_handle}:
-                                        undef;
+            my  $language_handle                    =   $language_class
+                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
+                                                        undef;
             if ($language_handle) {
-                split(/(\+/, $language_base_class->$language_handle->maketext($option)
+                my  $localised_option               =   $language_base_class->$language_handle->maketext($option);
+                    $localised_option               =   $localised_option =~ $matches_leading_whitespace?   $+{data}:
+                                                        $localised_option;
+
+                my  @values                         =   split $contiguous_white_space, $localisaed_option;
             }
         }
         $self->
