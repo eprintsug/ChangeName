@@ -481,7 +481,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                     $localised_option               =   $localised_option =~ $matches_leading_whitespace?   $+{data}:
                                                         $localised_option;
 
-                my  @values                         =   split $contiguous_white_space, $localisaed_option;
+                my  @values                         =   split $contiguous_white_space, $localised_option;
             }
         }
         $self->
