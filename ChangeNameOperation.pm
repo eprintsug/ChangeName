@@ -434,63 +434,68 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub multilingual_options {
         # Initial Values:
-        my ($self, $option, $option_suffix)         =   @ARG;
+        my ($self, $option, $option_suffix) =   @ARG;
+        my  $multilingual_options_hashref   =   ChangeNameOperation::Languages->maketext_in_all_languages($option);
         
-        # Default Values:
-        $option_suffix                              //= q{};
-        my  $language_base_class                    =   'ChangeNameOperation::Languages';
-
-        # Regex:
-        my  $matches_and_captures_language_handle   =   qr/
-                                                            (                       # Start capture group.
-                                                                ?<captured_language_handle>  # Name the capture group.
-                                                                [^:]+               # One or more of anything except a colon.
-                                                            )                       # End capture group.
-                                                            $                       # End of string.
-                                                        /x;                         # x flag - Ignore white space and allow comments.
+        # Premature exits:
+        return () unless ($option || ($option eq '0'));
+        return () unless $multilingual_options_hashref && (scalar %{ $multilingual_options_hashref });
         
-        my  $contiguous_white_space     =   qr/
-                                                [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
-                                                +                                           # Anything in the set one or more times.
-                                            /x;                                             # x - to allow whitespace and comments in regex.
-                                                                                            # Note x does not allow whitespace within the angled brackets,
-                                                                                            # and xx would allow it in Perl 5.26 or higher.
+        # Further Initial Values:
+        $option_suffix                      //= q{};
+        my  @skip                           =   ();
+        my  $option_separator               =   '|';
 
-        my  $matches_leading_whitespace =   qr/
-                                                ^                                           # Start of string.
-                                                $contiguous_white_space                     # White Space however previously defined.
-                                                (?<data>                                    # Begin Capturing Group.
-                                                    .*                                      # Zero or more of anything.
-                                                )                                           # End capturing group.
-                                                $                                           # End of string.
-                                            /xs;                                            # x - to allow whitespace and comments in regex.
-                                                                                            # s - to include newlines in 'anything'.
+        # Regular Expressions:
+        my  $contiguous_white_space         =   qr/
+                                                    [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
+                                                    +                                           # Anything in the set one or more times.
+                                                /x;                                             # x - to allow whitespace and comments in regex.
+                                                                                                # Note x does not allow whitespace within the angled brackets,
+                                                                                                # and xx would allow it in Perl 5.26 or higher.
 
-    $test_data_string               =   $test_data_string =~ $matches_leading_whitespace?   $+{data}:
-                                        $test_data_string;
-
-
+        my  $matches_leading_whitespace     =   qr/
+                                                    ^                                           # Start of string.
+                                                    $contiguous_white_space                     # White Space however previously defined.
+                                                    (?<data>                                    # Begin Capturing Group.
+                                                        .*                                      # Zero or more of anything.
+                                                    )                                           # End capturing group.
+                                                    $                                           # End of string.
+                                                /xs;                                            # x - to allow whitespace and comments in regex.
+                                                                                                # s - to include newlines in 'anything'.
 
         # Processing:
-        for my $language_class (@{ mro::get_isarev('ChangeNameOperation::Languages') }) {
-            my  $language_handle                    =   $language_class
-                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
-                                                        undef;
-            if ($language_handle) {
-                my  $localised_option               =   $language_base_class->$language_handle->maketext($option);
-                    $localised_option               =   $localised_option =~ $matches_leading_whitespace?   $+{data}:
-                                                        $localised_option;
+        
+        # Build our option:
+        my  $our_option_string              =   $option;
+        my  $used_already = {
+            "$option"                       =>  1
+        };
 
-                my  @values                         =   split $contiguous_white_space, $localised_option;
-            }
-        }
-        $self->
+        # Add translations to option:        
+        foreach my $translation (values %{ $multilingual_options_hashref }) {
+                
+            $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
+                                            $translation;
+
+            my  @values                 =   map {
+                                                my  $value              =   $ARG;
+                                                
+                                                return                      @skip
+                                                                            if $used_already{$value};
+
+                                                $used_already{$value}   =   1;
+
+                                                return                      $value;
+                                            }
+                                            split $contiguous_white_space, $translation;
+
+            $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
+                                            $our_option_string;
+        };
         
-        # TODO
-        
-        #Output:
-        # TODO
-        return;
+        $our_option_string              .=  $option_suffix;
+        return  $our_option_string;
     }
 
     sub utf8_check {
