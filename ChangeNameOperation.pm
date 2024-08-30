@@ -2570,6 +2570,48 @@ package ChangeNameOperation::Languages v1.0.0 {
         return @list_of_classes;
     }
 
+    sub maketext_in_all_languages {
+        # Initial Values:
+        my  $self                                   =   shift;
+        my  @in_all_languages                       =   ();
+        my  $language_base_class                    =   __PACKAGE__;
+
+        # Regex:
+        my  $matches_and_captures_language_handle   =   qr/
+                                                            (                               # Start capture group.
+                                                                ?<captured_language_handle> # Name the capture group.
+                                                                [^:]+                       # One or more of anything except a colon.
+                                                            )                               # End capture group.
+                                                            $                               # End of string.
+                                                        /x;                                 # x flag - Ignore white space and allow comments.
+
+        # Processing:
+        for my $language_class (@{ mro::get_isarev($language_base_class) }) {
+
+            my  $language_handle                    =   $language_class
+                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
+                                                        undef;
+
+            if ($language_handle) {
+
+                my  $phrase                         =   $language_base_class->$language_handle->maketext(@ARG);
+                my  $language_tag                   =   uc $language_base_class->$language_handle->language_tag;
+
+                push @in_all_languages, (
+                    "$language_tag"                 =>  $phrase?    $phrase:
+                                                        undef,
+                );
+
+            };
+
+        };
+
+        #Output:
+        return  wantarray?  @in_all_languages:  # Array
+                {@in_all_languages};            # Hashref
+    }
+
+
     1;
 }; # ChangeNameOperation::Languages Package.
 
