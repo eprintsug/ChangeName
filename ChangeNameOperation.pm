@@ -337,7 +337,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub run {
 #        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
-#        shift->new->process_input(@ARG)->setup_logger->utf8_check->setup_config->start_operation;
+        shift->new->process_input(@ARG)->setup_logger->utf8_check->setup_config->start_operation;
     }
     
     sub new {
@@ -501,8 +501,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub setup_logger {
         my  $self           =   shift;
-        my  $params         =   $self->{options}
-        my  $self->{logger} =   ChangeNameOperation::Log->new();
+        my  $self->{logger} =   ChangeNameOperation::Log->new($self->{options});
+        return $self;
     }
 
     sub utf8_check {
