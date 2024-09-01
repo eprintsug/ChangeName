@@ -336,7 +336,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
+#        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
+#        shift->new->process_input(@ARG)->setup_logger->utf8_check->setup_config->start_operation;
     }
     
     sub new {
@@ -496,6 +497,12 @@ package ChangeNameOperation::Modulino v1.0.0 {
         
         $our_option_string              .=  $option_suffix;
         return  $our_option_string;
+    }
+
+    sub setup_logger {
+        my  $self           =   shift;
+        my  $params         =   $self->{options}
+        my  $self->{logger} =   ChangeNameOperation::Log->new();
     }
 
     sub utf8_check {
@@ -2173,11 +2180,19 @@ To do.
     # Log Stuff:
     
     sub log_verbose {
-        return shift->{logger}->set_caller_depth(4)->verbose(@ARG);
+        my  $self   =   shift;
+
+        $self->{logger}->set_caller_depth(4)->verbose(@ARG);
+
+        return $self;
     }
     
     sub log_debug {
-        return shift->{logger}->set_caller_depth(4)->debug(@ARG);
+        my  $self   =   shift;
+        
+        $self->{logger}->set_caller_depth(4)->debug(@ARG);
+
+        return $self;
     }
     
     sub dumper {
