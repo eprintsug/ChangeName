@@ -435,11 +435,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub multilingual_options {
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
-        my  $multilingual_options_hashref   =   ChangeNameOperation::Languages->maketext_in_all_languages($option);
+        my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages($option);
         
         # Premature exits:
         return () unless ($option || ($option eq '0'));
-        return () unless $multilingual_options_hashref && (scalar %{ $multilingual_options_hashref });
+        return () unless %multilingual_options_hash;
         
         # Further Initial Values:
         $option_suffix                      //= q{};
@@ -473,7 +473,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         };
 
         # Add translations to option:        
-        foreach my $translation (values %{ $multilingual_options_hashref }) {
+        foreach my $translation (values %multilingual_options_hash }) {
                 
             $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
                                             $translation;
@@ -2579,7 +2579,9 @@ package ChangeNameOperation::Languages v1.0.0 {
         # Initial Values:
         my  $self                                   =   shift;
         my  @in_all_languages                       =   ();
+        my  $in_all_languages_string                =   q{};
         my  $language_base_class                    =   __PACKAGE__;
+        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
 
         # Regex:
         my  $matches_and_captures_language_handle   =   qr/
@@ -2597,23 +2599,32 @@ package ChangeNameOperation::Languages v1.0.0 {
                                                         && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
                                                         undef;
 
-            if ($language_handle) {
+            my  $language_tag                       =   $language_base_class->$language_handle->language_tag # Typically lower-case.
+                                                        || undef; # Or undefined.
+
+            if ($language_handle && $language_tag) {
 
                 my  $phrase                         =   $language_base_class->$language_handle->maketext(@ARG);
-                my  $language_tag                   =   uc $language_base_class->$language_handle->language_tag;
+                my  $phrase_is_valid                =   $phrase || $phrase eq '0';
 
+                # Build hash-compatible list
                 push @in_all_languages, (
-                    "$language_tag"                 =>  $phrase?    $phrase:
-                                                        undef,
+                    "$language_tag"             =>  $phrase_is_valid?   $phrase:
+                                                    undef,
                 );
+
+                # Build string - or skip if no valid phrase:
+                if ($phrase_is_valid) {
+                    $in_all_languages_string   .=  sprintf($format, uc($language_tag), $phrase);
+                };
 
             };
 
         };
 
         #Output:
-        return  wantarray?  @in_all_languages:  # Array
-                {@in_all_languages};            # Hashref
+        return  wantarray?  @in_all_languages:
+                $in_all_languages_string;
     }
 
 
