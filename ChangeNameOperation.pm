@@ -2346,7 +2346,8 @@ See L</new> method for info on acceptable object parameters.
             dumper_exclude          =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
+            language                =>  $params->{language}?    ChangeNameOperation::Languages->try_or_die($params->{language}):
+                                        undef;
     
         );
 
@@ -2367,14 +2368,15 @@ See L</new> method for info on acceptable object parameters.
         return  $value_is_valid?    $value:
                 undef;
     }
-
-    sub get_default_language {
-        return 'en-GB';
-    }
     
     sub localise {
-            return shift->{language}->maketext(@ARG);
+            my  $self   =   shift;
+            
+            return $self->{language}?   $self->{language}->maketext(@ARG):
+            ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
+    
+    
     
     sub set_dumper_default {
         my  $self   =   shift;
@@ -2400,6 +2402,15 @@ See L</new> method for info on acceptable object parameters.
                                     unless $repository; # Should this use _log instead of warn?
 
         $self->{repository}     =   $repository;
+
+        return $self;
+    }
+
+    sub set_language {
+        my  $self           =   shift;
+        
+        $self->{language}   =   @ARG?   ChangeNameOperation::Languages->try_or_die(@ARG):
+                                $self->{language};
 
         return $self;
     }
@@ -2514,10 +2525,37 @@ See L</new> method for info on acceptable object parameters.
         # Final log-and-trace exit:
         return $self;
     }
+
+    sub ensure_single_line {
+
+        # Passed in arguments:
+        my  $self       =   shift;
+        my  $string     =   shift;
+        
+        # Premature death:
+        die unless $string;
+
+        # Initial Values:
+        my  $replace_with_divider   =   quotemeta(' / ');
+        my  $find_newline           =   qr/\n/;
+        
+        # Processing:
+        $string                     =~  s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
+        
+        # Output:
+        return $string;
+        
+    }
     
     sub _get_log_prefix {
         my  $self   =   shift;
         my  $type   =   shift;
+        my  $localised_type =   $type?  $self->ensure_single_line(
+                                            $self->localise(
+                                                'log.type.'.lc($type)
+                                            )
+                                        ):
+                                q{};
         return sprintf(
              '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
     
@@ -2527,7 +2565,7 @@ See L</new> method for info on acceptable object parameters.
                                                     # and get the 3rd array index value
                                                     # - the perl module and subroutine name.
     
-             uc($type),                             # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
+             uc($localised_type),                   # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
          );
     }
 
@@ -2695,6 +2733,12 @@ my  @tokens = (
 'name.honourific'               =>  'Honourific Name',
 'name.lineage'                  =>  'Lineage Name',
 'display_line'                  =>  'Record [_1]: [_2].',
+
+'log.type.verbose'              =>  'verbose',
+'log.type.log'                  =>  'log',
+'log.type.debug'                =>  'debug',
+'log.type.dumper'               =>  'dumper',
+'log.type.trace'                =>  'trace',
 
 'config.load.error.custom_external_not_found'=>
 'Config file [_1] not found.',
@@ -3077,7 +3121,11 @@ my  @tokens = (
 -------
 ',
 
-
+'log.type.verbose'              =>  'ausführlich',
+'log.type.log'                  =>  'protokoll',
+'log.type.debug'                =>  'debug',
+'log.type.dumper'               =>  'dumper',
+'log.type.trace'                =>  'stacktrace',
 
 'config.load.error.custom_external_not_found'=>
 'Konfigurationsdatei [_1] nicht gefunden.',
