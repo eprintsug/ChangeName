@@ -337,42 +337,18 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub run {
 #        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
-        shift->new->process_input(@ARG)->setup_logger->utf8_check->setup_config->start_operation;
+        shift->new(@ARG)->start;
     }
     
     sub new {
-        my  $class      =   shift;
-        my  $params     =   {@ARG};
+        my  $class          =   shift;
     
-        my  $self       =   {};
+        my  $self           =   {};        
+        
         bless $self, $class;
-    
-        $self->_set_attributes($params);
-    
-        return $self;    
-    }
-    
-    sub _set_attributes {
-
-        # Initial Values:
-        my  ($self, $params)        =   @ARG;
-    
-        %{
-            $self
-        }                           =   (
-            acceptable_utf8_options =>  (${^UNICODE} >= '39')
-                                        &&
-                                        (${^UNICODE} <= '63'),
-            we_should_halt          =>  0,
-        );
-    
-    }
-
-    sub process_input {
-
-        my  $self           =   shift;
 
         # Defaults:
+        $self->{input}      =   scalar @ARG;
         $self->{options}    =   {
             language        =>  undef,
             live            =>  0,
@@ -428,10 +404,13 @@ package ChangeNameOperation::Modulino v1.0.0 {
             replace         =>  shift,
             part            =>  shift,
         };
-
-        return $self;
-
+        
+        $self->{logger}     =   ChangeNameOperation::Log->new($self->{options});
+        
+        return $self->utf8_check->setup;
+    
     }
+    
 
     sub multilingual_options {
         # Initial Values:
@@ -499,49 +478,55 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return  $our_option_string;
     }
 
-    sub setup_logger {
-        my  $self           =   shift;
-        my  $self->{logger} =   ChangeNameOperation::Log->new($self->{options});
-        return $self;
-    }
-
     sub utf8_check {
-        my  $self                               =   shift;
-        my  @nothing                            =   ();        
-        $self->{input_that_requires_utf8}       =   scalar (
-                                                        map {
-                                                            defined $ARG && $ARG?   $ARG:
-                                                            @nothing
-                                                        }
-            
-                                                        (
-            
-                                                            # Arguments to be UTF-8:
-                                                            $self->{arguments}->{archive_id},
-                                                            $self->{arguments}->{search},
-                                                            $self->{arguments}->{replace},
-                                                            $self->{arguments}->{part},
-                                                            
-                                                            # Options where UTF-8 is important:
-                                                            $self->{options}->{language},
-                                                            $self->{options}->{config},    
-            
-                                                        )
-                                                    );
+        my  $self                       =   shift;
+        my  $continue                   =   1;
+        my  @nothing                    =   ();        
+        my  $input_that_requires_utf8   =   scalar (
+                                                map {
+                                                    defined $ARG && $ARG?   $ARG:
+                                                    @nothing
+                                                }
+                                            
+                                                (
+                                            
+                                                    # Arguments to be UTF-8:
+                                                    $self->{arguments}->{archive_id},
+                                                    $self->{arguments}->{search},
+                                                    $self->{arguments}->{replace},
+                                                    $self->{arguments}->{part},
+                                                    
+                                                    # Options where UTF-8 is possibly/arguably important:
+                                                    $self->{options}->{language},
+                                                    $self->{options}->{config},    
+                                            
+                                                )
+                                            );
 
-        if ($self->{input_that_requires_utf8}) {
+        my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
+                                            &&
+                                            (${^UNICODE} <= '63');
 
-            unless ($self->{acceptable_utf8_options}) {
-
-                $self->{we_should_halt} =   1;
-
-            };
-
+        if ($input_that_requires_utf8) {
+            $continue   =   $acceptable_utf8_options?   1:
+                            0;
         };
-        
-        return $self;
 
+
+        $self->{logger}->debug(
+            $self->{input}? $input_that_requires_utf8?  $acceptable_utf8_options?   $self->localise->('commandline.utf8_enabled'):
+                                                        $self->localise->('commandline.utf8_not_enabled'):
+                            $self->localise->('commandline.utf8_not_needed'):
+            $self->localise->('commandline.no_arguments')
+        );
+
+
+
+        return $self;
     }
+    
+    sub setup {
+    } 
     
     sub setup_config {
 
