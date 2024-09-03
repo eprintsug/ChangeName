@@ -348,7 +348,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         bless $self, $class;
 
         # Defaults:
-        $self->{input}      =   scalar @ARG;
+        $self->{no_input}   =   !(scalar @ARG);
         $self->{options}    =   {
             language        =>  undef,
             live            =>  0,
@@ -431,7 +431,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                     [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
                                                     +                                           # Anything in the set one or more times.
                                                 /x;                                             # x - to allow whitespace and comments in regex.
-                                                                                                # Note x does not allow whitespace within the angled brackets,
+                                                                                                # Note x does not allow whitespace within the angled brackets
                                                                                                 # and xx would allow it in Perl 5.26 or higher.
 
         my  $matches_leading_whitespace     =   qr/
@@ -479,56 +479,55 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
 
     sub utf8_check {
-        my  $self                       =   shift;
-        my  $continue                   =   1;
-        my  @nothing                    =   ();        
-        my  $input_that_requires_utf8   =   scalar (
-                                                map {
-                                                    defined $ARG && $ARG?   $ARG:
-                                                    @nothing
-                                                }
-                                            
-                                                (
-                                            
-                                                    # Arguments to be UTF-8:
-                                                    $self->{arguments}->{archive_id},
-                                                    $self->{arguments}->{search},
-                                                    $self->{arguments}->{replace},
-                                                    $self->{arguments}->{part},
-                                                    
-                                                    # Options where UTF-8 is possibly/arguably important:
-                                                    $self->{options}->{language},
-                                                    $self->{options}->{config},    
-                                            
-                                                )
-                                            );
+        my  $self                           =   shift;
+        my  $continue                       =   1;
+        my  @nothing                        =   ();        
+        my  $input_that_requires_utf8       =   scalar (
+                                                    map {
+                                                        defined $ARG && $ARG?   $ARG:
+                                                        @nothing
+                                                    }
+                                                
+                                                    (
+                                                
+                                                        # Arguments to be UTF-8:
+                                                        $self->{arguments}->{archive_id},
+                                                        $self->{arguments}->{search},
+                                                        $self->{arguments}->{replace},
+                                                        $self->{arguments}->{part},
+                                                        
+                                                        # Options where UTF-8 is possibly/arguably important:
+                                                        $self->{options}->{language},
+                                                        $self->{options}->{config},    
+                                                
+                                                    )
+                                                );
+        my  $no_input_that_requires_utf8    =  !$input_that_requires_utf8; 
 
-        my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
-                                            &&
-                                            (${^UNICODE} <= '63');
+        my  $acceptable_utf8_options        =   (${^UNICODE} >= '39')
+                                                &&
+                                                (${^UNICODE} <= '63');
 
         if ($input_that_requires_utf8) {
-            $continue   =   $acceptable_utf8_options?   1:
-                            0;
+            $continue                       =   $acceptable_utf8_options?   1:
+                                                0;
         };
 
-
         $self->{logger}->debug(
-            $self->{input}? $input_that_requires_utf8?  $acceptable_utf8_options?   $self->localise->('commandline.utf8_enabled'):
-                                                        $self->localise->('commandline.utf8_not_enabled'):
-                            $self->localise->('commandline.utf8_not_needed'):
-            $self->localise->('commandline.no_arguments')
+            $self->{no_input}?                  'commandline.no_arguments':
+            $no_input_that_requires_utf8?       'commandline.utf8_not_needed':
+            $acceptable_utf8_options?           'commandline.utf8_enabled':
+            'commandline.utf8_not_enabled'
         );
-
-
+        
+        die                                     $self->{logger}->localise->('commandline.end_program')
+                                                unless $continue;
 
         return $self;
     }
     
-    sub setup {
-    } 
     
-    sub setup_config {
+    sub setup {
 
         # Initial Values:
         my  $self                       =   shift;
@@ -544,6 +543,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
             $self->{config},
             $self->{config_messages}
         )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
+
+        my  $language_tag               =   $self->{options}->{language}
+                                            // $self->{config}->{'Language Tag'};
+
+        $self->{logger}->set_language($language_tag)->verbose(
+            'Language set to [_1]', $self->{logger}->localise('language.name')
+        );
+
 
         # Output:        
         return $self;
@@ -2603,6 +2610,14 @@ package ChangeNameOperation::Languages v1.0.0 {
         return  $self->get_handle($language)
                 || die  $error->{'language'};
     }
+
+    sub language_or_undef {
+    
+        my  ($self, $language)  =   @ARG;
+    
+        return  $language?  $self->get_handle($language):
+                undef;
+    }
     
     sub fallback_language_classes {
         # I believe these are to be given as relative to ChangeNameOperation::Languages
@@ -2707,6 +2722,8 @@ my  @configurations = (
 );
 
 my  @tokens = (
+
+'language.name'                 =>  'English (United Kingdom)',
 
 'options.language'              =>  'language lang',
 'options.config'                =>  'config configuration',
@@ -3089,6 +3106,8 @@ my  @configurations = (
 );
 
 my  @tokens = (
+
+'language.name'                 =>  'Deutsch (Deutschland)',
 
 'options.language'              =>  'sprache spr',
 'options.config'                =>  'konfig konfiguration',
