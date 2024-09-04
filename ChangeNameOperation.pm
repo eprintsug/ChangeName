@@ -336,7 +336,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-#        shift->new->process_input(@ARG)->utf8_check->setup_config->setup_language->say_debug_messages->say_config_messages->start_operation;
         shift->new(@ARG)->start;
     }
     
@@ -347,8 +346,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
         
         bless $self, $class;
 
-        # Defaults:
+        # Attributes:
         $self->{no_input}   =   !(scalar @ARG);
+
+        # Default Options:
         $self->{options}    =   {
             language        =>  undef,
             live            =>  0,
@@ -548,7 +549,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                             // $self->{config}->{'Language Tag'};
 
         $self->{logger}->set_language($language_tag)->verbose(
-            'Language set to [_1]', $self->{logger}->localise('language.name')
+            'Language set to [_1]',
+            $self->{logger}->localise('language.name'),
         );
 
 
