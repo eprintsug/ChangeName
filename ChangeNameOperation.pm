@@ -153,9 +153,9 @@ use     utf8;
 my      $encoding_layer;
 
 SET_ENCODING_LAYER_AT_COMPILE_TIME: BEGIN {
-    my  $encoding_to_use                =   'UTF-8';
+    my  $encoding_to_use                =   'UTF-8'; # Change this to desired encoding value.
         
-    $encoding_layer                     =   ":encoding($encoding_to_use)";
+    $encoding_layer                     =   ":encoding($encoding_to_use)";  # This is what actually gets used for the layer.
 };
 
 use     open ':std'                     ,   "$encoding_layer";  # :std affect is global.
