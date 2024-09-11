@@ -340,13 +340,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
     
     sub new {
+        # Initial Values:
         my  $class          =   shift;
-    
         my  $self           =   {};        
-        
+
+        # Object construction - blessed hash approach:
         bless $self, $class;
 
-        # Attributes:
+        # Object Attributes:
         $self->{no_input}   =   !(scalar @ARG);
 
         # Default Options:
@@ -540,7 +541,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                             @nothing;
 
         # Processing:
-        (
+        my  (
             $self->{config},
             $self->{config_messages}
         )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
@@ -548,50 +549,32 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  $language_tag               =   $self->{options}->{language}
                                             // $self->{config}->{'Language Tag'};
 
-        $self->{logger}->set_language($language_tag)->verbose(
+        $self->{logger}->set_language($language_tag)
+        ->verbose(
             'Language set to [_1]',
             $self->{logger}->localise('language.name'),
-        );
+        )
+        ->debug('Commandline Options are...')->dumper($self->{options})
+        ->debug('Commandline Arguments are...')->dumper($self->{arguments});
 
+        if ($self->{config_messages}) {
+
+            # Display order is Error, Debug, Verbose, by design. 
+            # See ChangeNameOperation::Config::load for context.
+
+            say '[ChangeNameOperation::Modulino::setup] - '.    # localise doesn't implement a prefix like logging methods.
+                $self->{logger}->localise   ($ARG)              for @{$self->{config_messages}->{error}};
+
+            say $self->{logger}->debug      ($ARG)              for @{$self->{config_messages}->{debug}};
+            say $self->{logger}->verbose    ($ARG)              for @{$self->{config_messages}->{verbose}};
+
+        }
 
         # Output:        
         return $self;
 
     }
-
-    sub setup_language {
-
-        my  $self           =   shift;
-        
-        $self->{language}   =   ChangeNameOperation::Languages->try_or_die(
-                                    $self->{options}->{language}
-                                    // $self->{config}->{'Language Tag'}
-                                    # No further fall back, as the config should be enough 
-                                    # because the default YAML config is at the bottom of this file,
-                                    # and if an external YAML config is missing the setting, the try_or_die will handle it,
-                                    # with its own fallback, if necessary.
-                                );
-        return  $self;
-
-    }
  
-    sub say_debug_messages {
-    
-        my  $self   =   shift;
-        
-        # Premature Exit:
-        return $self unless $self->{options}->{debug};
-        
-        # Processing:
-        say $self->localise->('Commandline Options are...');
-        say Dumper($self->{options});
-        say $self->localise->('Commandline Arguments are...');
-        say Dumper($self->{arguments});
-        
-        # Output:
-        return $self;
-    
-    }
     
     sub say_config_messages {
 
