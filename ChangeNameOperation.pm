@@ -412,7 +412,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self->utf8_check->setup;
     
     }
-    
 
     sub multilingual_options {
         # Initial Values:
@@ -527,8 +526,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         return $self;
     }
-    
-    
+
     sub setup {
 
         # Initial Values:
@@ -574,71 +572,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self;
 
     }
- 
-    
-    sub say_config_messages {
+
+    sub start {
 
         # Initial Values:
         my  $self           =   shift;
-        
-        # Premature exit:
-        return $self            unless $self->{config_messages}
-                                && (
-                                    $self->{config_messages}->{verbose} 
-                                    || $self->{config_messages}->{debug}
-                                    || $self->{config_messages}->{error}
-                                );
-        # Values:
-        my  $prefix         =   shift // '[ChangeNameOperation::Modulino::say_config_messages] - ';
-        my  $no_prefix      =   q{};
-                            
-        # Definitions:
-        my  $verbose_mode   =   $self->{options}->{verbose}
-                                || $self->{options}->{debug};
-
-        my  $debug_mode     =   $self->{options}->{debug}
-                                || (
-                                    $self->{options}->{verbose} > 1
-                                );
-        
-        # Definition Dependent Values:
-        my  $prefix_or_not  =   $debug_mode? $prefix:
-                                $no_prefix;
-
-        # Processing:
-
-        # Display order is Error, Debug, Verbose, by design. 
-        # See ChangeNameOperation::Config::load for context.
-
-        say STDERR $prefix_or_not.$self->localise(@{$ARG})     for @{$self->{config_messages}->{error}}; # Always show an error.
-
-        if ($debug_mode) {    
-            say STDOUT $prefix_or_not.$self->localise(@{$ARG}) for @{$self->{config_messages}->{debug}};
-        };
-
-        if ($verbose_mode) {
-            say STDOUT $prefix_or_not.$self->localise(@{$ARG}) for @{$self->{config_messages}->{verbose}};
-        };
-
-        # Output:     
-        return $self;
-        
-    }
-
-    sub start_operation {
-
-        # Initial Values:
-        my  $self           =   shift;
-
-        # Processing:    
-        say (scalar $self->{arguments})?    $self->{input_that_requires_utf8}?  $self->{acceptable_utf8_options}?   $self->localise->('commandline.utf8_enabled'):
-                                                                                $self->localise->('commandline.utf8_not_enabled'):
-                                            $self->localise->('commandline.utf8_not_needed'):
-        $self->localise->('commandline.no_arguments');
-
-
-        
-        die $self->localise->('commandline.end_program') if $self->{we_should_halt};
 
         my  @object_params  =   (
 
@@ -652,19 +590,15 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
-            config  =>  $self->{config};
+            config  =>  $self->get_config;
 
         );
-    
+
         ChangeNameOperation->start(@object_params);
 
         # Output:        
         return $self;
 
-    }
- 
-    sub localise {
-            return shift->{language}->maketext(@ARG);
     }
     
     sub get_config {
