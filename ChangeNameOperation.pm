@@ -1,8 +1,18 @@
 #!/usr/bin/env perl
 
-=pod FILENAME
+=pod LANGUAGES
 
 =encoding utf8
+
+=head1 LANGUAGES
+
+=head2 English
+
+English would go here...
+
+=cut
+
+=pod FILENAME
 
 =head1 FILENAME
 
