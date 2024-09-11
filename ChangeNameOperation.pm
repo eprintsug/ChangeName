@@ -341,26 +341,29 @@ package ChangeNameOperation::Modulino v1.0.0 {
     
     sub new {
         # Initial Values:
-        my  $class          =   shift;
-        my  $self           =   {};        
+        my  $class                      =   shift;
+        my  $self                       =   {};
+        my  $params                     =   {@ARG};
+
 
         # Object construction - blessed hash approach:
         bless $self, $class;
 
         # Object Attributes:
-        $self->{no_input}   =   !(scalar @ARG);
+        $self->{no_input}               =   !(scalar @ARG);
+        $self->{config_messages_prefix} =   $params->{config_messages_prefix} // undef;
 
         # Default Options:
-        $self->{options}    =   {
-            language        =>  undef,
-            live            =>  0,
-            verbose         =>  0,
-            debug           =>  0,
-            trace           =>  0,
-            no_dumper       =>  0,
-            no_trace        =>  0,
-            config          =>  undef,
-            exact           =>  0,
+        $self->{options}                =   {
+            language                    =>  undef,
+            live                        =>  0,
+            verbose                     =>  0,
+            debug                       =>  0,
+            trace                       =>  0,
+            no_dumper                   =>  0,
+            no_trace                    =>  0,
+            config                      =>  undef,
+            exact                       =>  0,
         };
     
         # Command Line Options:    
@@ -400,14 +403,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                                 # if --noexact present, set $exact to 0.
         );
 
-        $self->{arguments}  =   {
-            archive_id      =>  shift,
-            search          =>  shift,
-            replace         =>  shift,
-            part            =>  shift,
+        $self->{arguments}              =   {
+            archive_id                  =>  shift,
+            search                      =>  shift,
+            replace                     =>  shift,
+            part                        =>  shift,
         };
         
-        $self->{logger}     =   ChangeNameOperation::Log->new($self->{options});
+        $self->{logger}                 =   ChangeNameOperation::Log->new($self->{options});
         
         return $self->utf8_check->setup;
     
@@ -532,7 +535,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Initial Values:
         my  $self                       =   shift;
         my  @nothing                    =   ();        
-        
+        my  $prefix                     =   $self->{config_messages_prefix} // '[ChangeNameOperation::Modulino::setup] - ';
         # Definitions:
         my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
                                             &&      $self->{options}->{config}? ($self->{options}->{config}):
@@ -560,7 +563,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
             # Display order is Error, Debug, Verbose, by design. 
             # See ChangeNameOperation::Config::load for context.
 
-            say '[ChangeNameOperation::Modulino::setup] - '.    # localise doesn't implement a prefix like logging methods.
+            say $prefix.                                        # localise doesn't implement a prefix like logging methods, so we put one here.
                 $self->{logger}->localise   ($ARG)              for @{$self->{config_messages}->{error}};
 
             say $self->{logger}->debug      ($ARG)              for @{$self->{config_messages}->{debug}};
@@ -590,7 +593,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
-            config  =>  $self->get_config;
+            config  =>  $self->config;
 
         );
 
@@ -601,8 +604,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     }
     
-    sub get_config {
-        return shift->{config};
+    sub config {
+        return shift->{config}; # If not yet defined when called, we'll get an error.
     }
 
 } # ChangeNameOperation::Modulino Package.
@@ -619,12 +622,16 @@ package ChangeNameOperation::CompileTimeConfigValues {
 
     sub new {
         # Initial Values:
-        my  $class  =   shift;
-        my  $prefix =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  $class              =   shift;
+        my  $prefix             =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  @modulino_params    =   (
+                                        @ARG,
+                                        config_message_prefix   =>  $prefix,
+                                    );
 
         # Set Attributes:
         my  $self   =   {
-            config  =>  ChangeNameOperation::Modulino->new->process_input(@ARG)->setup_config->setup_localiser->say_config_messages($prefix)->get_config,
+            config  =>  ChangeNameOperation::Modulino->new(@modulino_params)->config, # Why are we using Modulino to get our config. Can we not directly use ChangeNameOperation::Config ...? No, because we are considering commandline arguments, that may affect the config file used for example.
         };
 
         # Make Object:
@@ -635,7 +642,7 @@ package ChangeNameOperation::CompileTimeConfigValues {
     }
 
     sub get_path_to_eprints_perl_library {
-        return shift->config->{'EPrints Perl Library Path'};
+        return shift->{config}->{'EPrints Perl Library Path'};
     }
 
 } # ChangeNameOperation::CompileTimeValues Package.
