@@ -422,7 +422,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
         
         $self->{logger}                 =   ChangeNameOperation::Log->new($self->{options});
         
-        return $self->utf8_check->setup;
+        # Set later via setup method, called in last line of this new method:
+        $self->{config}                 =   undef;
+        $self->{config_messages}        =   undef;
+
+        return $self->utf8_check->setup;    # Setup will attempt to define config and config_messages attributes.
     
     }
 
@@ -552,15 +556,15 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                             @nothing;
 
         # Processing:
-        my  (
+        (
             $self->{config},
             $self->{config_messages}
         )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
 
-        my  $language_tag               =   $self->{options}->{language}
-                                            // $self->{config}->{'Language Tag'};
+        my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
 
-        $self->{logger}->set_language($language_tag)
+        # Output:
+        $self->{logger}->set_language(@language_tag_or_nothing)
         ->verbose(
             'Language set to [_1]',
             $self->{logger}->localise('language.name'),
@@ -581,7 +585,6 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         }
 
-        # Output:        
         return $self;
 
     }
@@ -615,7 +618,12 @@ package ChangeNameOperation::Modulino v1.0.0 {
     }
     
     sub config {
-        return shift->{config}; # If not yet defined when called, we'll get an error.
+        my  $self   =   shift;
+
+        die             $self->{logger}->localise->('commandline.config_undefined')
+                        unless $self->{config};
+
+        return $self->{config};
     }
 
 } # ChangeNameOperation::Modulino Package.
@@ -632,16 +640,35 @@ package ChangeNameOperation::CompileTimeConfigValues {
 
     sub new {
         # Initial Values:
-        my  $class              =   shift;
-        my  $prefix             =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  @modulino_params    =   (
-                                        @ARG,
-                                        config_message_prefix   =>  $prefix,
-                                    );
+        my  $class                  =   shift;
+        my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  @modulino_params        =   (
+
+            # Existing params passed along:
+            @ARG,
+
+            # Our own params added:
+            config_message_prefix   =>  $prefix,
+
+        );
+        my  $modulino               =   ChangeNameOperation::Modulino->new(@modulino_params);
 
         # Set Attributes:
         my  $self   =   {
-            config  =>  ChangeNameOperation::Modulino->new(@modulino_params)->config, # Why are we using Modulino to get our config. Can we not directly use ChangeNameOperation::Config ...? No, because we are considering commandline arguments, that may affect the config file used for example.
+            config  =>  $modulino->config,  # Get config from a modulino instance,
+                                            # so any commandline arguments are considered,
+                                            # within its construction.
+                                            # Why? Why don't we ensure any commandline arguments that may affect config are processed in the config class,
+                                            # and not the modulino class?
+                                            # At present, it appears it makes sense to process and check all the commandline elements in one place,
+                                            # and that one place is the Modulino class. Yes, but how about this - you process only the command line options you need in each place,
+                                            # and the function to do utf-checks is a behaviour both classes can access?
+                                            # Well, only the Modulino needs to access that. The config will happily die if a path is wrong.
+                                            # So another approach you could take, would be to make config accept the single commandline option if present.
+                                            # Yet another approach, would be simply to pass the original Modulino instance in... so when another class is called at runtime... the config is directly accessible...
+                                            # ...and that is no use because we are seeking a compile time solution. So the previous idea was better.
+                                            # Right now, let's keep this as a Modulino instance's config, as while that is an odd arrangement, we first need to see if the code works.
+                                            # Once we know code works, we can swap up what classes bits of code are in.
         };
 
         # Make Object:
@@ -2736,6 +2763,9 @@ and no params were passed in.',
 to be passed in as an argument,
 and no such params were provided.',
 
+# Using q{} instead of single or double quotes in line below, so single and double quote characters are free to use within the string:
+'commandline.config_undefined'  =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
+
 'commandline.end_program'       =>  'This program will now end...'.$new_line,
 'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
@@ -3119,6 +3149,8 @@ und es wurden keine Parameter übergeben.',
 'Die Methode erfordert die Übergabe
 einer Namens-Hash-Referenz von Namensteilen als Argument,
 und es wurden keine derartigen Parameter bereitgestellt.',
+
+'commandline.config_undefined'  =>  'Beim Versuch, das „Config“-Attribut einer Modulino-Instanz abzurufen, wurde festgestellt, dass es noch nicht definiert war.',
 
 'commandline.end_program'       =>  'Dieses Programm wird nun beendet...'.$new_line,
 'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
