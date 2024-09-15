@@ -346,7 +346,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new(@ARG)->start;
+        shift->new(@ARG)->start_change_name_operation;
     }
     
     sub new {
@@ -589,7 +589,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     }
 
-    sub start {
+    sub start_change_name_operation {
 
         # Initial Values:
         my  $self           =   shift;
@@ -606,7 +606,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
-            config  =>  $self->config;
+            config  =>  $self->config,
+            logger  =>  $self->{logger},
 
         );
 
@@ -706,20 +707,6 @@ package ChangeNameOperation v1.0.0 {
                 blessed
                 reftype
             );
-    use     CPAN::Meta::YAML qw(
-                LoadFile
-                Load
-            ); # Standard module in Core Perl since Perl 5.14.
-
-    use     Data::Dumper;               # Used by logging related subroutines and _check_commandline_input sub.
-
-    # Data Dumper Settings:
-    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
-    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
-    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-    no warnings 'redefine';
-    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
-    use warnings 'redefine';
 
     
 =pod Name, Version
@@ -886,15 +873,13 @@ Returns the initial ChangeNameOperation object, now with list_of_results and rec
     
     sub search {
         my  $self                   =   shift;
-        
-        $self->log_debug('Entered method.')->dumper
+
+        $self
+        ->log_debug('Entered method.')->dumper
         ->log_debug('Using search settings...')->dumper($self->{search_settings})
         ->log_verbose(
             'Searching fields [_1] ...',
-            join(
-                $self->localise('separator.search_fields'),
-                @{$self->{fields_to_search}},
-            )
+            $self->stringify_arrayref($self->{fields_to_search}),
         );
         
         # Search:
@@ -1073,18 +1058,18 @@ To do.
 
     sub change {
     
-        my  $self   =   shift;
+        my  $self                               =   shift;
         
         $self->log_debug('Called change method.')->dumper;
     
-        my  $prerequisites              =   $self->{what_to_change}
-                                            && reftype($self->{what_to_change}) eq 'ARRAY'
-                                            && @{$self->{what_to_change}};
+        my  $prerequisites                      =   $self->{what_to_change}
+                                                    && reftype($self->{what_to_change}) eq 'ARRAY'
+                                                    && @{$self->{what_to_change}};
         
-        return                              $self->log_debug('Premature exit - Nothing to change.')
-                                            unless $prerequisites;
+        return                                      $self->log_debug('Premature exit - Nothing to change.')
+                                                    unless $prerequisites;
     
-        $self->{changes_made}           =   0;
+        $self->{changes_made}                   =   0;
     
         for my $details (@{$self->{what_to_change}}) {
     
@@ -1094,16 +1079,15 @@ To do.
                     $names,
                     $name,
                     $current,
-                )                       =   @{$details};
+                )                               =   @{$details};
     
-            my  $fresh_result           =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
-            my  $fresh_names            =   $fresh_result->get_value($search_field);
-            my  $fresh_name             =   $fresh_names->[$current];
-            my  $can_or_cannot          =   $fresh_result->is_locked?   'cannot':
-                                            'can';
+            my  $fresh_result                   =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+            my  $fresh_names                    =   $fresh_result->get_value($search_field);
+            my  $fresh_name                     =   $fresh_names->[$current];
+            my  $can_or_cannot                  =   $fresh_result->is_locked?   'cannot':
+                                                    'can';
     
             say $self->localise('horizontal.rule');
-            
             say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
     
             $name->{"$self->{'part'}"}          =   $self->{'replace'};
@@ -1128,7 +1112,7 @@ To do.
                     $self->{changes_made}++;
                 }
                 else {
-                    say $self->localise('Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.', $fresh_result->id);
+                    say $self->localise('change.locked', $fresh_result->id);
                 };
             }
             else {
@@ -1153,7 +1137,7 @@ To do.
     sub finish {
         my  $self   =   shift;
         say $self->localise('horizontal.rule');
-        say $self->localise('finish.change',$self->{changes_made}, scalar @{$self->{what_to_change}});
+        say $self->localise('finish.change', $self->{changes_made}, scalar @{$self->{what_to_change}});
         say $self->localise('finish.no_change') unless $self->{changes_made};
         say $self->localise('finish.thank_you');
         return $self;
@@ -1161,29 +1145,20 @@ To do.
     
     # Setters and Getters:
 
-    sub get_default_yaml_filepath {
-        return shift->{default_yaml_filepath};
-    }
-    
-    sub get_default_language {
-        return 'en-GB'
-    }
-    
     sub _set_archive {
         return shift->_set_or_prompt_for('archive' => shift, @ARG);
     }
-    
+
     sub _set_part {
         return shift->_set_or_prompt_for('part' => shift, @ARG);
     }
-    
+
     sub _set_find {
         return shift->_set_or_prompt_for('find' => shift, @ARG);
     }
-    
+
     sub _set_search_normal {
         return shift->_set_or_prompt_for('search' => shift, @ARG);
-    
     }
     
     sub _set_search_exact {
@@ -1192,16 +1167,20 @@ To do.
         return          $self
                         ->_set_find             ($value, @ARG)
                         ->_set_search_normal    ($value, @ARG)
-                        ->log_debug             ('Find attribute set to ([_1]).', $self->{find})
-                        ->log_debug             ('Search attribute set to ([_1]).', $self->{search})
+                        ->log_debug             ('Find attribute set to ([_1]).',   $self->{find}   )
+                        ->log_debug             ('Search attribute set to ([_1]).', $self->{search} )
                         ;
     }
-    
+
     sub _set_search {
         my  $self   =   shift;
         my  $value  =   shift;
-        return          $value && $self->{exact}?   $self->log_verbose('Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.', $value)->_set_search_exact($value, @ARG):
-                        $self->log_debug('Set search normally, as no --exact flag provided.')->_set_search_normal($value, @ARG);
+        return          $value && $self->{exact}?   $self
+                                                    ->log_verbose('Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.', $value)
+                                                    ->_set_search_exact($value, @ARG):
+                        $self
+                        ->log_debug('Set search normally, as no --exact flag provided.')
+                        ->_set_search_normal($value, @ARG);
     }
     
     sub _set_replace {
@@ -1258,27 +1237,7 @@ To do.
     }
     
     # Private Setters:
-    
-    sub _set_yaml {
-        my  $self           =   shift;
-        my  $filepath       =   shift // $self->get_default_yaml_filepath;
-    
-        $self->{yaml}       =   # External YAML file:
-                                (defined $filepath && -e $filepath)?    LoadFile($filepath):             # Will die on any load error.
-                        
-                                # Internal YAML __DATA__:
-                                Load(                                           # Will die on any load error.
-                                    do                                          # 'do' returns last value of block.
-                                    {
-                                        local $INPUT_RECORD_SEPARATOR = undef;  # Read until end of input.
-                                        <ChangeNameOperation::Config::YAML::DATA> # Input is __DATA__ at the bottom of this very file.
-                                    }
-                                );
-                                
-        return $self;
-    
-    }
-    
+
     sub _set_repository {
         my  $self           =   shift;
         my  $archive_id     =   shift;
@@ -1336,7 +1295,7 @@ To do.
     
     sub stringify_arrayref {
         my $self    =   shift;
-        return join ', ', @{ (shift) };
+        return join $self->localise('separator.stringify_arrayref'), @{ (shift) };
     }
     
     sub prompt_for {
@@ -1408,7 +1367,9 @@ To do.
             my  $confirmation;
             @prompt_arguments               =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
             my  $acceptable_input           =   join '|',
-                                                map {quotemeta $self->localise($ARG)}
+                                                map {
+                                                    quotemeta $self->localise($ARG)
+                                                }
                                                 (
                                                     'input.yes_letter',
                                                     'input.no_letter',
@@ -1469,159 +1430,43 @@ To do.
     }
     
     sub localise {
-            return shift->{language}->maketext(@ARG);
+            return shift->{logger}->localise(@ARG);
     }
     
     # Private subs:
     
-    sub _get_commandline_arguments {
-    
-        my  $self       =   shift;
-        
-        # Defaults:
-    
-        # Params:
-        my  $params     =   {
-            language    =>  undef,
-            live        =>  0,
-            verbose     =>  0,
-            debug       =>  0,
-            trace       =>  0,
-            no_dumper   =>  0,
-            no_trace    =>  0,
-            config      =>  undef,
-            exact       =>  0,
-        };
-    
-        # Command Line Options:    
-        Getopt::Long::Parser->new->getoptionsfromarray(
-            \@ARG,                  # Array to get options from.
-            $params,                # Hash to store options to.
-    
-            # Actual options:
-            'language|lang:s',      # Optional string.
-                                    # Use 'language' for the hash ref key, 
-                                    # accept '--language' or '--lang' from the commandline.
-                                    # Syntax can be --lang=en-GB or --lang en-GB
-    
-            'config:s',             # Optional string.
-                                    # Use 'config' for the hash ref key, 
-                                    # accept '--config' from the commandline.
-                                    # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
-     
-            'live!',                # if --live present,    set $live to 1,
-                                    # if --nolive present,  set $live to 0.
-    
-            'verbose+',             # if --verbose present,    set $verbose
-                                    # to the number of times it is present.
-                                    # i.e. --verbose --verbose would set $verbose to 2.
-    
-            'debug!',               # if --debug present,    set $debug to 1,
-                                    # if --nodebug present,  set $debug to 0.
-    
-            'trace!',               # if --trace present,    set $trace to 1,
-                                    # if --notrace present,  set $trace to 0.
-                                
-            'no_dumper'.
-            '|no_dump'.
-            '|nodumper'.
-            '|nodump+',             # if --no_dumper present set $no_dumper to 1.
-    
-            'no_trace|notrace+',    # if --no_trace present  set $no_trace  to 1.
-            
-            'exact!',               # if --exact present,   set $exact to 1,
-                                    # if --noexact present, set $exact to 0.
-    
-        );
-    
-        $params={
-            %{$params},
-            archive_id  =>  shift,
-            search      =>  shift,
-            replace     =>  shift,
-            part        =>  shift,
-        };
-    
-        return              wantarray?  %{$params}: # List context
-                            $params;                # Scalar or void contexts.
-    
-    }
-    
-    sub _check_commandline_input {
-    
-        my  $class              =   shift;
-        my  $params             =   {@ARG};
-        my  @commandline_input  =   map { defined $ARG && $ARG? $ARG:() } (
-                                        $params->{archive_id},
-                                        $params->{search},
-                                        $params->{replace},
-                                        $params->{part},
-                                    );
-    
-        my  $language_to_use    =   $params->{'language'}
-                                //  $class->get_default_language;
-    
-        my  $language           =   ChangeNameOperation::Languages->try_or_die($language_to_use);
-    
-        my  $localise           =   sub { $language->maketext(@ARG) };
-    
-        if ($params->{live}) {
-            say $localise->('LIVE mode - changes will be made at the end after confirmation.');
-        }
-        else {
-            say $localise->('DRY RUN mode - no changes will be made.');
-            say $localise->('Run again with the --live flag when ready to implement your changes.');
-        };
-    
-
-    
-        if (@commandline_input) {
-    
-            # Definition:
-            my  $acceptable_utf8_options    =   (${^UNICODE} >= '39')
-                                                &&
-                                                (${^UNICODE} <= '63');
-    
-    
-            if ($acceptable_utf8_options) {
-                say $localise->('commandline.utf8_enabled');
-            }
-            else {
-                say $localise->('commandline.utf8_not_enabled');
-                die $localise->('commandline.end_program');
-            };
-    
-        }
-        else {
-            say $localise->('commandline.no_arguments');
-        };
-        
-        return $class;
-    
-    }
-    
     sub _set_attributes {
-    
+
         # Initial Values:
         my  ($self, $params)        =   @ARG;
-    
+
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
 
+        my  $dumper_class_name_only =   [
+                                            'repository',
+                                            'list_of_results',
+                                            'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
+                                        ];
+        my  $dumper_exclude         =   [
+                                            #'repository',
+                                        ];
+
         $self->_set_repository          ($params->{archive_id});
-    
+
         %{
             $self
         }                           =   (
-    
+
             # Existing values in $self:
             %{$self},
-    
+
             # From params:
             live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
-            logger                  =>  ChangeNameOperation::Log->new(
+            logger                  =>  $params->{logger}?  $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):    # TODO: Code setters.
+                                        ChangeNameOperation::Log->new(
                                             debug                   =>  $params->{debug},
                                             verbose                 =>  $params->{verbose},
                                             trace                   =>  $params->{trace},
@@ -1629,33 +1474,20 @@ To do.
                                             no_trace                =>  $params->{no_trace},
                                             language                =>  $params->{language},
                                             repository              =>  $self->{repository},
-                                            dumper_class_name_only  =>  [
-                                                                            'repository',
-                                                                            'list_of_results',
-                                                                            'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
-                                                                        ],
-                                            dumper_exclude          =>  [
-                                                                            #'repository',
-                                                                        ],
+                                            dumper_class_name_only  =>  $dumper_class_name_only,
+                                            dumper_exclude          =>  $dumper_exclude,
                                         ),
-    
-            # Internationalisation:
-            language                =>  ChangeNameOperation::Languages->try_or_die($params->{language}//$self->get_default_language),
-    
-            # Defaults:
-            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
-    
+            yaml                    =>  $params->{config} // ChangeNameOperation::Config->new->load->get_data,  # TODO: Test this is a config hash
+
         );
 
         $self
-        ->log_verbose                   ('Language set to [_1].', $self->{language}->language_tag)
         ->log_debug                     ('Set initial instance attributes using params or defaults.')
         ->log_debug                     ('Archive, repository, and log related params were all required for log methods.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
-        ->_set_replace                  ($params->{replace},'no_prompt') # Optional on object instantiation, so no prompt for value needed if not set.
-        ->_set_part                     ($params->{part},'no_prompt') # Also optional on initialisation.
-        ->_set_yaml                     ($params->{config})
+        ->_set_replace                  ($params->{replace}, 'no_prompt')   # Optional on object instantiation, so no prompt for value needed if not set.
+        ->_set_part                     ($params->{part},    'no_prompt')   # Also optional on initialisation.
         ->dumper;
     
         %{
@@ -1686,7 +1518,7 @@ To do.
                                     &&
                                     (uc($self->{yaml}->{'Search Field Merge Type'}) =~ $matches_merge_types)?     uc $self->{yaml}->{'Search Field Merge Type'}:
                                     'ANY',
-    
+
         );
     
         %{
@@ -2023,30 +1855,32 @@ To do.
     
     sub _match {
     
-        my  $self       =   shift->log_debug('Entering method.');
-        my  $name       =   shift;
-    
-        my  $uniqueness =   q{};
-    
+        my  $self                   =   shift->log_debug('Entering method.');
+        my  $name                   =   shift;
+        my  $name_part_value        =   $name->{"$self->{'part'}"};
+        my  $valid_name_part_value  =   $name_part_value || $name_part_value eq '0'?    $name_part_value:
+                                        undef;
+        my  $uniqueness             =   q{};
+
         for my $name_part (@{$self->{'name_parts'}}) { # Array, so in specific order that's the same each time.
-    
-            $uniqueness .=  $name_part.($name->{"$name_part"}//q{});
-    
+
+            $uniqueness             .=  $name_part.($name->{"$name_part"}//q{});
+
         };
-    
-        $self->{matches}            =   $uniqueness
-                                        && ($uniqueness =~ $self->{'matches_unique_name'})                      # This name is the current unique name,
-                                        && ($name->{"$self->{'part'}"} || $name->{"$self->{'part'}"} eq '0')    # ...and we have a name part value to match against,
-                                        && ($name->{"$self->{'part'}"} =~ $self->{'matches_find'});             # ...and we have found a match with that value.
-                            
-    
+
+        my  $matched_unique_name    =   $uniqueness
+                                        && ($uniqueness =~ $self->{'matches_unique_name'});
+
+        $self->{matches}            =   $matched_unique_name
+                                        && ($valid_name_part_value)
+                                        && ($valid_name_part_value =~ $self->{'matches_find'});
+
         $self->{matches_auto_no}    =   $self->{auto_no}
                                         && $self->{auto_no} =~ $uniqueness;
-    
+
         $self->{matches_auto_yes}   =   $self->{auto_yes}
                                         && $self->{auto_yes} =~ $uniqueness;
-    
-    
+
         if ($self->{matches}) {
             $self->log_debug('Match found for: [_1]', $self->_stringify_name($name))
             ->log_debug('Matched "[_1]" in "[_2]" part of the following unique name...', $self->{'find'}, $self->{'part'})
@@ -2055,24 +1889,24 @@ To do.
         else {
             $self->log_debug('No match found.');
         };
-    
+
         return  $self;
     }
-    
+
     sub _set_or_prompt_for {
         my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
         #say 'in set and prompt_for';
-        $self->{"$attribute"}   =   defined $value?                                 $self->_validate($value):
-                                    defined $self->{"$attribute"}?                  $self->{"$attribute"}:
-                                    $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
-                                    $prompt_type?                                   $self->prompt_for($prompt_type):
-                                    $self->prompt_for($attribute);
-    
+        $self->{"$attribute"}                           =   defined $value?                                 $self->_validate($value):
+                                                            defined $self->{"$attribute"}?                  $self->{"$attribute"}:
+                                                            $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
+                                                            $prompt_type?                                   $self->prompt_for($prompt_type):
+                                                            $self->prompt_for($attribute);
+
         return $self;
     }
-    
+
     # Private Function-esque subs:
-    
+
     sub _stringify_name {
         my  $self           =   shift;
         my  $name           =   shift;
@@ -2080,26 +1914,26 @@ To do.
         # Premature Exit:
         die                     $self->localise('_stringify_name.error.no_params')
                                 unless $name; # hash ref check?
-        
+
         my  @order_or_omit  =   ();
-    
+
         for my $current_part (@{$self->{name_parts}}) {
             push @order_or_omit,
             $name->{"$current_part"} && $name->{"$current_part"} eq '0'?    "0 but true": # 0 is potentially a valid one character name - haha.
             $name->{"$current_part"}?                                       $name->{"$current_part"}:
             ();
         };
-    
+
         return                  @order_or_omit? join $self->localise('separator.name_parts'), @order_or_omit:
                                 undef;
     }
-    
+
     sub _validate {
-    
+
         # Initial Values:
         my  $self                           =   shift;
         my  @input                          =   @ARG;
-        
+
         # Definitions:
         my  $number_of_input_arguments      =   scalar @input;
         my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;    
@@ -2708,6 +2542,7 @@ my  @tokens = (
 'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
 'separator.search_fields'       =>  ', ', #comma space
+'separator.stringify_arrayref'  =>  ', ', #comma space
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
 'name.honourific'               =>  'Honourific Name',
@@ -2832,7 +2667,9 @@ Which do you wish to perform your change on first?
 
 ...?',
 
-'change.from.can'  =>
+'change.locked'     =>  'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+
+'change.from.can'   =>
 
 'Changing...
 
@@ -3015,7 +2852,6 @@ my  @phrases = (
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Since unique names are unique, we can leave unique name loop now we have processed a match.',
     'Exited unique name loop.'=>'Exited unique name loop.',
     'This item (Record [_1]) is under an edit lock.'=>'This item (Record [_1]) is under an edit lock.',
-    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
     'Nothing was found to match.'=>'Nothing was found to match.',
     'Premature exit - No search results to narrow down.'=>'Premature exit - No search results to narrow down.',
     'Premature Exit - our operation is already specific to a name part.'=>'Premature Exit - our operation is already specific to a name part.',
@@ -3095,6 +2931,7 @@ my  @tokens = (
 'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
 'separator.search_fields'       =>  ', ', #comma space
+'separator.stringify_arrayref'  =>  ', ', #comma space
 'name.given'                    =>  'Vorname',
 'name.family'                   =>  'Familienname',
 'name.honourific'               =>  'Ehrenname',
@@ -3221,7 +3058,9 @@ Wo möchten Sie Ihre Änderung zuerst durchführen?
 
 ...?',
 
-'change.from.can'  =>
+'change.locked'     =>  'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+
+'change.from.can'   =>
 
 'Ändern...
 
@@ -3407,7 +3246,6 @@ my  @phrases = (
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Da eindeutige Namen eindeutig sind, können wir die Schleife für eindeutige Namen verlassen, nachdem wir eine Übereinstimmung verarbeitet haben.',
     'Exited unique name loop.'=>'Aus der Schleife für eindeutige Namen ausgebrochen.',
     'This item (Record [_1]) is under an edit lock.'=>'Für dieses Element (Datensatz [_1]) besteht eine Bearbeitungssperre.',
-    'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.'=>'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
     'Nothing was found to match.'=>'Es wurde keine Übereinstimmung festgestellt.',
     'Premature exit - No search results to narrow down.'=>'Vorzeitiger Ausstieg – Keine Suchergebnisse zum Eingrenzen.',
     'Premature Exit - our operation is already specific to a name part.'=>'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
