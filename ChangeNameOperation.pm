@@ -224,6 +224,7 @@ package ChangeNameOperation::Config v1.0.0 {
 
         # Initial Values:
         my  ($self)                 =   shift;
+        my  $params                 =   shift;
     
         %{
             $self
@@ -237,7 +238,10 @@ package ChangeNameOperation::Config v1.0.0 {
             data                    =>  undef,
             
         );
-        
+
+        # Load data if any config filepath params provided:
+        #$self->load($params->{config}) if $params->{config};
+
         return $self;
             
     }
@@ -288,10 +292,71 @@ package ChangeNameOperation::Config v1.0.0 {
                         
                                         # Internal YAML __DATA__:
                                         Load(                                               # Will die on any load error.
-                                            do {                                            # 'do' returns last value of block.
-                                                local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
-                                                <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
-                                            }
+'
+# This is a YAML Configuration File:
+%YAML 1.2
+# Three dashes to start new YAML document.
+---
+
+EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+Language Tag: en-GB
+
+Fields to search:
+    -   creators_name
+    -   contributors_name
+    -   editors_name
+
+Dataset to use: eprint
+
+Force commit changes to database: yes
+
+# For the above, provide a yes or y (case insensitive) to force commit,
+# or anything else (such as no) to not force commit.
+
+Search Field Match Type: IN
+
+Search Field Merge Type: ANY
+
+# The "Search Field Match Type" parameter which can be one of:
+
+# IN
+# (short for index)
+# Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
+# In the case of subjects, match these subject ids or the those of any of their decendants in the subject tree.
+
+# EQ
+# (short for equal)
+# Treat the value as a single string. Match only fields which have this value.
+
+# EX
+# (short for exact)
+# If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+# In the case of subjects, match the specified subjects, but not their decendants.
+
+# SET
+# If the value is non-empty.
+
+# NO
+# This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+# The "Search Field Merge Type" parameter can be one of:
+
+# ANY
+# Match an item if any of the space-separated words in the value match.
+
+# ALL
+# Match an item only if all of the space-separated words in the value match.
+
+# "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+
+...
+# Three dots to end current YAML document.
+'
+                                            #do {                                            # 'do' returns last value of block.
+                                            #    local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
+                                            #    <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                            #}
                                         );
 
         # Messages:                                    
@@ -416,15 +481,13 @@ package ChangeNameOperation::CompileTimeConfigValues {
                                     # except the regex match variables
                                     # due to a performance issue if they are invoked,
                                     # on Perl v5.18 or lower.
-
-    # Specific:
-    ChangeNameOperation::Modulino->import;
+    use Data::Dumper;
 
     sub new {
         # Initial Values:
         my  $class                  =   shift;
         my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  @modulino_params        =   (
+        my  %object_params          =   (
 
             # Existing params passed along:
             @ARG,
@@ -433,34 +496,21 @@ package ChangeNameOperation::CompileTimeConfigValues {
             config_message_prefix   =>  $prefix,
 
         );
-        my  $modulino               =   ChangeNameOperation::Modulino->new(@modulino_params);
 
         # Set Attributes:
-        my  $self   =   {
-            config  =>  $modulino->config,  # Get config from a modulino instance,
-                                            # so any commandline arguments are considered,
-                                            # within its construction.
-                                            # Why? Why don't we ensure any commandline arguments that may affect config are processed in the config class,
-                                            # and not the modulino class?
-                                            # At present, it appears it makes sense to process and check all the commandline elements in one place,
-                                            # and that one place is the Modulino class. Yes, but how about this - you process only the command line options you need in each place,
-                                            # and the function to do utf-checks is a behaviour both classes can access?
-                                            # Well, only the Modulino needs to access that. The config will happily die if a path is wrong.
-                                            # So another approach you could take, would be to make config accept the single commandline option if present.
-                                            # Yet another approach, would be simply to pass the original Modulino instance in... so when another class is called at runtime... the config is directly accessible...
-                                            # ...and that is no use because we are seeking a compile time solution. So the previous idea was better.
-                                            # Right now, let's keep this as a Modulino instance's config, as while that is an odd arrangement, we first need to see if the code works.
-                                            # Once we know code works, we can swap up what classes bits of code are in.
+        my  $self                   =   {
+            config                  =>  ChangeNameOperation::Config->new(%object_params)->load(%object_params{config})->get_data,
         };
 
         # Make Object:
-        bless $self ,   $class;
+        bless $self                 ,   $class;
 
         # Output:
         return $self;
     }
 
     sub get_path_to_eprints_perl_library {
+        die Dumper shift->{config};
         return shift->{config}->{'EPrints Perl Library Path'};
     }
 
@@ -3433,56 +3483,3 @@ Search Field Merge Type: ANY
 # Three dots to end current YAML document.
 
 
-__END__
-
-Logger
-	Construct from within operation.::DONE
-	Have fall back ways to log if no valid repository submitted::DONE
-	cluck does the same as the longmess trace, so we could use that instead::SKIP
-		# cluck, longmess and shortmess not exported by default
-		use Carp qw(cluck longmess shortmess);
-		cluck "This is how we got here!"; # warn with stack backtrace
-	Could add a set_repository method for setting the repository attribute after object construction.::DONE
-
-Logging before logger:
-	Use localise methods
-Localiser
-	language tag - use it::ALREADY-DONE
-		if no -CAS then halt::DONE EARLIER VIA UTF-8 Check.
-	no language tag - load from config::ALREADY-DONE
-	fallback in effect via languages base class::ALREADY-DONE
-	We could pass in $config->{messages} or similar, to store any logging we want.::NOT-APPLICABLE - localiser uses MakeText, and not our Log.
-localise
-	Check if you really want the say. You may want to have different methods for stdout and stderr::IMPROVED/DONE
-
-Config
-	As normal. If path faulty, it will fall back to internal config.::DONE
-	Store messages instead of logging.::DONE
-		Alternatively, we could pass in the modulino object, and store to the hash it has for deferred logs? Slightly pointless, it's only saving values to a hash.
-	$config->{messages}->{verbose}
-	$config->{messages}->{debug}
-	$config->{messages}->{normal}
-Halt
-	To come after config and language.
-	
-Cleanup:
-    You need to clean up the way localise and delayed localise is working within Modulino.
-        You need to store messages,
-        then later simply display them as appropriate.
-        This needs some thought. Are we printing different types to different handles?
-        Or all sequentially in order?
-        The gist is to move the messages from start_operation to utf8_check, using the delayed feature,
-        then print them all effectively in start_operation.
-        My guess is all is much simpler than we think.
-        Alternatively we could do an output_messages method before the start_operation.
-        Give it some thought and do it tomorrow.
-
-In summary....
-
-What we appear to have is 
-
-An approach to load config despite halt,
-[if there are errors they will halt the program for us]
-An approach to load a language despite a halt
-[if there are errors, it will fall back to a known class]
-...and the ability to log messages within the config, that can be displayed later.
