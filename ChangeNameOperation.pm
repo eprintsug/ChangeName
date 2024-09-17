@@ -341,6 +341,7 @@ package ChangeNameOperation::Languages v1.0.0 {
     
     # Specific:
     use     parent qw(Locale::Maketext);
+    use     mro;
     
     sub fallback_language_classes {
         # I believe these are to be given as relative to ChangeNameOperation::Languages
@@ -361,10 +362,9 @@ package ChangeNameOperation::Languages v1.0.0 {
 
         # Regex:
         my  $matches_and_captures_language_handle   =   qr/
-                                                            (                               # Start capture group.
-                                                                ?<captured_language_handle> # Name the capture group.
+                                                            (?<captured_language_handle>    # Start named capture group.
                                                                 [^:]+                       # One or more of anything except a colon.
-                                                            )                               # End capture group.
+                                                            )                               # End named capture group.
                                                             $                               # End of string.
                                                         /x;                                 # x flag - Ignore white space and allow comments.
 
@@ -406,6 +406,433 @@ package ChangeNameOperation::Languages v1.0.0 {
 
     1;
 }; # ChangeNameOperation::Languages Package.
+
+package ChangeNameOperation::CompileTimeConfigValues {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance issue if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    # Specific:
+    ChangeNameOperation::Modulino->import;
+
+    sub new {
+        # Initial Values:
+        my  $class                  =   shift;
+        my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  @modulino_params        =   (
+
+            # Existing params passed along:
+            @ARG,
+
+            # Our own params added:
+            config_message_prefix   =>  $prefix,
+
+        );
+        my  $modulino               =   ChangeNameOperation::Modulino->new(@modulino_params);
+
+        # Set Attributes:
+        my  $self   =   {
+            config  =>  $modulino->config,  # Get config from a modulino instance,
+                                            # so any commandline arguments are considered,
+                                            # within its construction.
+                                            # Why? Why don't we ensure any commandline arguments that may affect config are processed in the config class,
+                                            # and not the modulino class?
+                                            # At present, it appears it makes sense to process and check all the commandline elements in one place,
+                                            # and that one place is the Modulino class. Yes, but how about this - you process only the command line options you need in each place,
+                                            # and the function to do utf-checks is a behaviour both classes can access?
+                                            # Well, only the Modulino needs to access that. The config will happily die if a path is wrong.
+                                            # So another approach you could take, would be to make config accept the single commandline option if present.
+                                            # Yet another approach, would be simply to pass the original Modulino instance in... so when another class is called at runtime... the config is directly accessible...
+                                            # ...and that is no use because we are seeking a compile time solution. So the previous idea was better.
+                                            # Right now, let's keep this as a Modulino instance's config, as while that is an odd arrangement, we first need to see if the code works.
+                                            # Once we know code works, we can swap up what classes bits of code are in.
+        };
+
+        # Make Object:
+        bless $self ,   $class;
+
+        # Output:
+        return $self;
+    }
+
+    sub get_path_to_eprints_perl_library {
+        return shift->{config}->{'EPrints Perl Library Path'};
+    }
+
+} # ChangeNameOperation::CompileTimeValues Package.
+
+package ChangeNameOperation::Log v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    # Specific:
+    ChangeNameOperation::CompileTimeConfigValues->import;
+    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
+    use     EPrints;
+    use     EPrints::Repository;
+    use     Scalar::Util qw(
+            blessed
+            reftype
+        );
+    use     Data::Dumper;
+
+    # Data Dumper Settings:
+    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
+    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
+    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+    no warnings 'redefine';
+    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
+    use warnings 'redefine';
+ 
+=pod Name, Version
+
+=encoding utf8
+
+=over
+
+=over
+
+=item MODULE NAME
+
+ChangeNameOperation
+
+=item VERSION
+
+v1.0.0
+
+=cut
+
+=pod Synopsis, Description
+
+=item SYNOPSIS
+
+    # Run at the command line:
+    perl -CAS ./ChangeNameOperation.pm
+    
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+
+
+=item DESCRIPTION
+
+Calls a subroutine when ran from the commandline.
+Currently set to call L</start_from_commandline>.
+
+    # Run from the command line:
+    perl -CAS ./ChangeNameOperation.pm
+
+Loads the class when used in another script.
+
+    # Use in a unit test or other Perl Script:
+    use ChangeNameOperation;
+    
+    my $object = ChangeNameOperation->new(@object_params);
+
+See L</new> method for info on acceptable object parameters.
+
+=back
+
+=back
+
+=cut
+ 
+    
+    sub new {
+        my  $class      =   shift;
+        my  $params     =   {@ARG};
+    
+        my  $self       =   {};
+        bless $self, $class;
+    
+        $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper($self)->set_caller_depth(4);
+    
+        return $self;
+    }
+
+    sub _set_attributes {
+        my  ($self, $params)        =   @ARG;
+
+        %{
+            $self
+        }                           =   (
+    
+            # Existing values in $self:
+            %{$self},
+    
+            # From params:
+            debug                   =>  $params->{debug} // 0,
+            verbose                 =>  $params->{verbose} // 0,
+            trace                   =>  (
+                                            $params->{no_trace} < 1
+                                            &&
+                                            (
+                                                $params->{verbose} > 2
+                                                || ($params->{debug} && $params->{verbose})
+                                                || ($params->{debug} && $params->{trace})
+                                            )
+                                        ),
+            no_dumper               =>  $params->{no_dumper} // 0,
+            no_trace                =>  $params->{no_trace} // 0,
+
+            repository              =>  $self->valid_repository($params->{repository}),
+            caller_depth            =>  3,
+            
+            dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
+
+            dumper_exclude          =>  $params->{dumper_exclude} // [],
+    
+            # Internationalisation:
+            language                =>  $params->{language}?    ChangeNameOperation::Language->new($params->{language}) || undef:
+                                        undef,
+    
+        );
+
+        $self->{dumper_default}     =  $self;
+        
+        return  $self;
+    }
+
+    sub set_dumper_class_name_only {
+        my  $self                       =   shift;
+        my  $value                      =   shift;
+        my  $valid_value                =   $value
+                                            && (reftype($value) eq 'ARRAY')?  $value:
+                                            undef;
+
+        $self->{dumper_class_name_only} =   $valid_value?   $valid_value:
+                                            $self->{dumper_class_name_only};
+                                            
+        return $self;
+    }
+
+    sub set_dumper_exclude {
+        my  $self                       =   shift;
+        my  $value                      =   shift;
+        my  $valid_value                =   $value
+                                            && (reftype($value) eq 'ARRAY')?  $value:
+                                            undef;
+
+        $self->{dumper_exclude}         =   $valid_value?   $valid_value:
+                                            $self->{dumper_exclude};
+                                            
+        return $self;
+    }
+
+    sub valid_repository {
+        my  $self               =   shift;
+        my  $value              =   shift // $self->{respository};
+        my  $value_is_valid     =   defined $value
+                                    && blessed($value)
+                                    && $value->isa('EPrints::Repository');
+        warn                        $self->localise('log.valid_repository.error.invalid')
+                                    unless $repository; # Should this use _log instead of warn?
+
+        return  $value_is_valid?    $value:
+                undef;
+    }
+
+    sub language {
+        my  $self           =   shift;
+        return $self->{language} unless @ARG;
+        return $self->{language}->set_language(@ARG);
+    }
+    
+    sub set_dumper_default {
+        my  $self   =   shift;
+
+        $self->{dumper_default} = shift // $self->{dumper_default};
+
+        return $self;
+    }
+
+    sub set_caller_depth {
+        my  $self   =   shift;
+
+        $self->{caller_depth} = shift // $self->{caller_depth};
+
+        return $self;
+    }
+
+    sub set_repository {
+        my  $self       =   shift;
+        my  $repository =   $self->valid_repository(shift); # Valid or undef.
+        
+        warn                        $self->localise('log.set_repository.error.bad_value')
+                                    unless $repository; # Should this use _log instead of warn?
+
+        $self->{repository}     =   $repository;
+
+        return $self;
+    }
+
+    sub verbose {
+        my  $self   =   shift;
+    
+        # Premature Exit:
+        return $self unless ($self->{verbose} || $self->{debug});
+    
+        return $self->_log('verbose',@ARG);
+    }
+    
+    sub debug {
+        my  $self   =   shift;
+    
+        # Premature Exit:
+        return $self unless $self->{debug};
+    
+        return $self->_log('debug',@ARG);
+    }
+    
+    sub dumper {
+        my  $self   =   shift;
+    
+        return $self if $self->{no_dumper};
+        return $self unless ($self->{debug} || $self->{verbose} > 1);
+    
+        # Default Params if no arguments passed in...
+        my  $exclude    =   join(
+    
+                                # Join by regex OR...
+                                '|',
+    
+                                # Regex safe:
+                                map {quotemeta($ARG)}
+    
+                                # List of attributes to exclude from dump...
+                                (
+                                #    'repository',
+                                    @{ $self->{dumper_exclude} },
+                                )
+                            );
+    
+        my  $class_only =   join(
+    
+                                # Join by regex OR...
+                                '|',
+    
+                                # Regex safe:
+                                map {quotemeta($ARG)}
+    
+                                # List of attributes
+                                # that are objects
+                                # we wish to dump only
+                                # the class names of:
+                                (
+                                    @{ $self->{dumper_class_name_only} },
+                                )
+                            );
+    
+        my  %default    =   map
+                            {
+                                $ARG =~ m/^($class_only)$/
+                                && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
+                                ($ARG => $self->{$ARG})
+                            }
+                            map {$ARG =~ m/^($exclude)$/? ():($ARG)}
+                            keys %{$self->{dumper_default}};
+    
+        # Set params:
+        my  @params     =   @ARG?   @ARG:
+                            (\%default);
+    
+        return $self->_log('dumper',@params);
+    }
+    
+    sub _log {
+    
+        my  $self       =   shift;
+    
+        # Initial Values:
+        my  $type               =   shift;
+        my  $use_prefix         =   $self->{verbose} > 1 || $self->{debug};
+
+        my  $valid_repository   =   $self->valid_repository($self->{repository});
+
+        # Content:
+        my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
+                                    q{};
+    
+        my  $message            =   $prefix.(
+                                        $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
+                                        $self->localise(@ARG)
+                                    );
+
+        # Log:
+        $self->{repository}->log($message)  if      $valid_repository;
+        say STDERR $message                 unless  $valid_repository;
+
+        # Premature log-only exit:
+        return $self unless $self->{trace};
+
+        # Stack trace:
+        my  $trace_prefix   =   $self->_get_log_prefix('TRACE');
+
+        $self->{repository}->log($trace_prefix) if      $valid_repository;
+        say STDERR $trace_prefix                unless  $valid_repository;
+
+        EPrints->trace;
+        
+        # Final log-and-trace exit:
+        return $self;
+    }
+
+    sub ensure_single_line {
+
+        # Passed in arguments:
+        my  $self       =   shift;
+        my  $string     =   shift;
+        
+        # Premature death:
+        die unless $string;
+
+        # Initial Values:
+        my  $replace_with_divider   =   quotemeta(' / ');
+        my  $find_newline           =   qr/\n/;
+        
+        # Processing:
+        $string                     =~  s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
+        
+        # Output:
+        return $string;
+        
+    }
+    
+    sub _get_log_prefix {
+        my  $self   =   shift;
+        my  $type   =   shift;
+        my  $localised_type =   $type?  $self->ensure_single_line(
+                                            $self->localise(
+                                                'log.type.'.lc($type)
+                                            )
+                                        ):
+                                q{};
+        return sprintf(
+             '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
+    
+             scalar localtime,                      # Human readable system time and date - linux's ctime(3).
+    
+             ((caller $self->{caller_depth})[3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
+                                                    # and get the 3rd array index value
+                                                    # - the perl module and subroutine name.
+    
+             uc($localised_type),                   # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
+         );
+    }
+
+}; # ChangeNameOperation::Log Package.
 
 package ChangeNameOperation::Modulino v1.0.0 {
 
@@ -715,61 +1142,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
 } # ChangeNameOperation::Modulino Package.
 
-package ChangeNameOperation::CompileTimeConfigValues {
 
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance issue if they are invoked,
-                                    # on Perl v5.18 or lower.
-
-    sub new {
-        # Initial Values:
-        my  $class                  =   shift;
-        my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  @modulino_params        =   (
-
-            # Existing params passed along:
-            @ARG,
-
-            # Our own params added:
-            config_message_prefix   =>  $prefix,
-
-        );
-        my  $modulino               =   ChangeNameOperation::Modulino->new(@modulino_params);
-
-        # Set Attributes:
-        my  $self   =   {
-            config  =>  $modulino->config,  # Get config from a modulino instance,
-                                            # so any commandline arguments are considered,
-                                            # within its construction.
-                                            # Why? Why don't we ensure any commandline arguments that may affect config are processed in the config class,
-                                            # and not the modulino class?
-                                            # At present, it appears it makes sense to process and check all the commandline elements in one place,
-                                            # and that one place is the Modulino class. Yes, but how about this - you process only the command line options you need in each place,
-                                            # and the function to do utf-checks is a behaviour both classes can access?
-                                            # Well, only the Modulino needs to access that. The config will happily die if a path is wrong.
-                                            # So another approach you could take, would be to make config accept the single commandline option if present.
-                                            # Yet another approach, would be simply to pass the original Modulino instance in... so when another class is called at runtime... the config is directly accessible...
-                                            # ...and that is no use because we are seeking a compile time solution. So the previous idea was better.
-                                            # Right now, let's keep this as a Modulino instance's config, as while that is an odd arrangement, we first need to see if the code works.
-                                            # Once we know code works, we can swap up what classes bits of code are in.
-        };
-
-        # Make Object:
-        bless $self ,   $class;
-
-        # Output:
-        return $self;
-    }
-
-    sub get_path_to_eprints_perl_library {
-        return shift->{config}->{'EPrints Perl Library Path'};
-    }
-
-} # ChangeNameOperation::CompileTimeValues Package.
 
 package ChangeNameOperation v1.0.0 {
 
@@ -2108,372 +2481,7 @@ to the EPrints log.
 
 =cut
 
-package ChangeNameOperation::Log v1.0.0 {
 
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance if they are invoked,
-                                    # on Perl v5.18 or lower.
-
-    # Specific:
-    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
-    use     EPrints;
-    use     EPrints::Repository;
-    use     Scalar::Util qw(
-            blessed
-            reftype
-        );
-    use     Data::Dumper;
-
-    # Data Dumper Settings:
-    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
-    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
-    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-    no warnings 'redefine';
-    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
-    use warnings 'redefine';
- 
-=pod Name, Version
-
-=encoding utf8
-
-=over
-
-=over
-
-=item MODULE NAME
-
-ChangeNameOperation
-
-=item VERSION
-
-v1.0.0
-
-=cut
-
-=pod Synopsis, Description
-
-=item SYNOPSIS
-
-    # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm
-    
-    # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
-    
-    my $object = ChangeNameOperation->new(@object_params);
-
-
-=item DESCRIPTION
-
-Calls a subroutine when ran from the commandline.
-Currently set to call L</start_from_commandline>.
-
-    # Run from the command line:
-    perl -CAS ./ChangeNameOperation.pm
-
-Loads the class when used in another script.
-
-    # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
-    
-    my $object = ChangeNameOperation->new(@object_params);
-
-See L</new> method for info on acceptable object parameters.
-
-=back
-
-=back
-
-=cut
- 
-    
-    sub new {
-        my  $class      =   shift;
-        my  $params     =   {@ARG};
-    
-        my  $self       =   {};
-        bless $self, $class;
-    
-        $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper($self)->set_caller_depth(4);
-    
-        return $self;
-    }
-
-    sub _set_attributes {
-        my  ($self, $params)        =   @ARG;
-
-        %{
-            $self
-        }                           =   (
-    
-            # Existing values in $self:
-            %{$self},
-    
-            # From params:
-            debug                   =>  $params->{debug} // 0,
-            verbose                 =>  $params->{verbose} // 0,
-            trace                   =>  (
-                                            $params->{no_trace} < 1
-                                            &&
-                                            (
-                                                $params->{verbose} > 2
-                                                || ($params->{debug} && $params->{verbose})
-                                                || ($params->{debug} && $params->{trace})
-                                            )
-                                        ),
-            no_dumper               =>  $params->{no_dumper} // 0,
-            no_trace                =>  $params->{no_trace} // 0,
-
-            repository              =>  $self->valid_repository($params->{repository}),
-            caller_depth            =>  3,
-            
-            dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
-
-            dumper_exclude          =>  $params->{dumper_exclude} // [],
-    
-            # Internationalisation:
-            language                =>  $params->{language}?    ChangeNameOperation::Language->new($params->{language}) || undef:
-                                        undef,
-    
-        );
-
-        $self->{dumper_default}     =  $self;
-        
-        return  $self;
-    }
-
-    sub set_dumper_class_name_only {
-        my  $self                       =   shift;
-        my  $value                      =   shift;
-        my  $valid_value                =   $value
-                                            && (reftype($value) eq 'ARRAY')?  $value:
-                                            undef;
-
-        $self->{dumper_class_name_only} =   $valid_value?   $valid_value:
-                                            $self->{dumper_class_name_only};
-                                            
-        return $self;
-    }
-
-    sub set_dumper_exclude {
-        my  $self                       =   shift;
-        my  $value                      =   shift;
-        my  $valid_value                =   $value
-                                            && (reftype($value) eq 'ARRAY')?  $value:
-                                            undef;
-
-        $self->{dumper_exclude}         =   $valid_value?   $valid_value:
-                                            $self->{dumper_exclude};
-                                            
-        return $self;
-    }
-
-    sub valid_repository {
-        my  $self               =   shift;
-        my  $value              =   shift // $self->{respository};
-        my  $value_is_valid     =   defined $value
-                                    && blessed($value)
-                                    && $value->isa('EPrints::Repository');
-        warn                        $self->localise('log.valid_repository.error.invalid')
-                                    unless $repository; # Should this use _log instead of warn?
-
-        return  $value_is_valid?    $value:
-                undef;
-    }
-
-    sub language {
-        my  $self           =   shift;
-        return $self->{language} unless @ARG;
-        return $self->{language}->set_language(@ARG);
-    }
-    
-    sub set_dumper_default {
-        my  $self   =   shift;
-
-        $self->{dumper_default} = shift // $self->{dumper_default};
-
-        return $self;
-    }
-
-    sub set_caller_depth {
-        my  $self   =   shift;
-
-        $self->{caller_depth} = shift // $self->{caller_depth};
-
-        return $self;
-    }
-
-    sub set_repository {
-        my  $self       =   shift;
-        my  $repository =   $self->valid_repository(shift); # Valid or undef.
-        
-        warn                        $self->localise('log.set_repository.error.bad_value')
-                                    unless $repository; # Should this use _log instead of warn?
-
-        $self->{repository}     =   $repository;
-
-        return $self;
-    }
-
-    sub verbose {
-        my  $self   =   shift;
-    
-        # Premature Exit:
-        return $self unless ($self->{verbose} || $self->{debug});
-    
-        return $self->_log('verbose',@ARG);
-    }
-    
-    sub debug {
-        my  $self   =   shift;
-    
-        # Premature Exit:
-        return $self unless $self->{debug};
-    
-        return $self->_log('debug',@ARG);
-    }
-    
-    sub dumper {
-        my  $self   =   shift;
-    
-        return $self if $self->{no_dumper};
-        return $self unless ($self->{debug} || $self->{verbose} > 1);
-    
-        # Default Params if no arguments passed in...
-        my  $exclude    =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
-                                # List of attributes to exclude from dump...
-                                (
-                                #    'repository',
-                                    @{ $self->{dumper_exclude} },
-                                )
-                            );
-    
-        my  $class_only =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
-                                # List of attributes
-                                # that are objects
-                                # we wish to dump only
-                                # the class names of:
-                                (
-                                    @{ $self->{dumper_class_name_only} },
-                                )
-                            );
-    
-        my  %default    =   map
-                            {
-                                $ARG =~ m/^($class_only)$/
-                                && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
-                                ($ARG => $self->{$ARG})
-                            }
-                            map {$ARG =~ m/^($exclude)$/? ():($ARG)}
-                            keys %{$self->{dumper_default}};
-    
-        # Set params:
-        my  @params     =   @ARG?   @ARG:
-                            (\%default);
-    
-        return $self->_log('dumper',@params);
-    }
-    
-    sub _log {
-    
-        my  $self       =   shift;
-    
-        # Initial Values:
-        my  $type               =   shift;
-        my  $use_prefix         =   $self->{verbose} > 1 || $self->{debug};
-
-        my  $valid_repository   =   $self->valid_repository($self->{repository});
-
-        # Content:
-        my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
-                                    q{};
-    
-        my  $message            =   $prefix.(
-                                        $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-                                        $self->localise(@ARG)
-                                    );
-
-        # Log:
-        $self->{repository}->log($message)  if      $valid_repository;
-        say STDERR $message                 unless  $valid_repository;
-
-        # Premature log-only exit:
-        return $self unless $self->{trace};
-
-        # Stack trace:
-        my  $trace_prefix   =   $self->_get_log_prefix('TRACE');
-
-        $self->{repository}->log($trace_prefix) if      $valid_repository;
-        say STDERR $trace_prefix                unless  $valid_repository;
-
-        EPrints->trace;
-        
-        # Final log-and-trace exit:
-        return $self;
-    }
-
-    sub ensure_single_line {
-
-        # Passed in arguments:
-        my  $self       =   shift;
-        my  $string     =   shift;
-        
-        # Premature death:
-        die unless $string;
-
-        # Initial Values:
-        my  $replace_with_divider   =   quotemeta(' / ');
-        my  $find_newline           =   qr/\n/;
-        
-        # Processing:
-        $string                     =~  s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
-        
-        # Output:
-        return $string;
-        
-    }
-    
-    sub _get_log_prefix {
-        my  $self   =   shift;
-        my  $type   =   shift;
-        my  $localised_type =   $type?  $self->ensure_single_line(
-                                            $self->localise(
-                                                'log.type.'.lc($type)
-                                            )
-                                        ):
-                                q{};
-        return sprintf(
-             '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
-    
-             scalar localtime,                      # Human readable system time and date - linux's ctime(3).
-    
-             ((caller $self->{caller_depth})[3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
-                                                    # and get the 3rd array index value
-                                                    # - the perl module and subroutine name.
-    
-             uc($localised_type),                   # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
-         );
-    }
-
-}; # ChangeNameOperation::Log Package.
 
 =head2 ChangeNameOperation::Languages
 
