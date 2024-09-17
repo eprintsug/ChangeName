@@ -379,7 +379,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Command Line Options:    
         Getopt::Long::Parser->new->getoptionsfromarray(
             \@ARG,                                              # Array to get options from.
-            $options,                                           # Hash to store options to.
+            $self->{options},                                   # Hash to store options to.
     
             # Actual options:
             $self->multilingual_options('language',     ':s'),  # Optional string.
@@ -471,7 +471,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         };
 
         # Add translations to option:        
-        foreach my $translation (values %multilingual_options_hash }) {
+        foreach my $translation (values %multilingual_options_hash) {
                 
             $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
                                             $translation;
@@ -1202,7 +1202,7 @@ To do.
         $self->log_debug('Entering method.')->log_debug('Name parts before we begin:')->dumper($self->{name_parts});
         
         my  $already_set        =   $self->{name_parts}
-                                    && ref($self->{name_parts}) eq 'ARRAY'
+                                    && reftype($self->{name_parts}) eq 'ARRAY'
                                     && @{$self->{name_parts}};
     
         return                      $self->log_debug('Premature exit - name parts already populated.')
