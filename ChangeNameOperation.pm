@@ -329,6 +329,84 @@ package ChangeNameOperation::Config v1.0.0 {
 
 }; # ChangeNameOperation::Config Package.
 
+package ChangeNameOperation::Languages v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+    
+    # Specific:
+    use     parent qw(Locale::Maketext);
+    
+    sub fallback_language_classes {
+        # I believe these are to be given as relative to ChangeNameOperation::Languages
+        # rather than a full qualified class name like ChangeNameOperation::Languages::en_gb
+        my  @list_of_classes    =   (
+            'en_gb',
+        );
+        return @list_of_classes;
+    }
+
+    sub maketext_in_all_languages {
+        # Initial Values:
+        my  $self                                   =   shift;
+        my  @in_all_languages                       =   ();
+        my  $in_all_languages_string                =   q{};
+        my  $language_base_class                    =   __PACKAGE__;
+        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
+
+        # Regex:
+        my  $matches_and_captures_language_handle   =   qr/
+                                                            (                               # Start capture group.
+                                                                ?<captured_language_handle> # Name the capture group.
+                                                                [^:]+                       # One or more of anything except a colon.
+                                                            )                               # End capture group.
+                                                            $                               # End of string.
+                                                        /x;                                 # x flag - Ignore white space and allow comments.
+
+        # Processing:
+        for my $language_class (@{ mro::get_isarev($language_base_class) }) {
+
+            my  $language_handle                    =   $language_class
+                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
+                                                        undef;
+
+            my  $language_tag                       =   $language_base_class->$language_handle->language_tag # Typically lower-case.
+                                                        || undef; # Or undefined.
+
+            if ($language_handle && $language_tag) {
+
+                my  $phrase                         =   $language_base_class->$language_handle->maketext(@ARG);
+                my  $phrase_is_valid                =   $phrase || $phrase eq '0';
+
+                # Build hash-compatible list
+                push @in_all_languages, (
+                    "$language_tag"             =>  $phrase_is_valid?   $phrase:
+                                                    undef,
+                );
+
+                # Build string - or skip if no valid phrase:
+                if ($phrase_is_valid) {
+                    $in_all_languages_string   .=  sprintf($format, uc($language_tag), $phrase);
+                };
+
+            };
+
+        };
+
+        #Output:
+        return  wantarray?  @in_all_languages: # key value pairs in a list
+                $in_all_languages_string;       # Multi-line string
+    }
+
+
+    1;
+}; # ChangeNameOperation::Languages Package.
+
 package ChangeNameOperation::Modulino v1.0.0 {
 
     # Standard:
@@ -480,9 +558,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 my  $value              =   $ARG;
                                                 
                                                 return                      @skip
-                                                                            if $used_already{$value};
+                                                                            if $used_already->{$value};
 
-                                                $used_already{$value}   =   1;
+                                                $used_already->{$value} =   1;
 
                                                 return                      $value;
                                             }
@@ -2454,84 +2532,6 @@ package ChangeNameOperation::Language v1.0.0 {
     }
 
 }
-
-package ChangeNameOperation::Languages v1.0.0 {
-
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance if they are invoked,
-                                    # on Perl v5.18 or lower.
-    
-    # Specific:
-    use     parent qw(Locale::Maketext);
-    
-    sub fallback_language_classes {
-        # I believe these are to be given as relative to ChangeNameOperation::Languages
-        # rather than a full qualified class name like ChangeNameOperation::Languages::en_gb
-        my  @list_of_classes    =   (
-            'en_gb',
-        );
-        return @list_of_classes;
-    }
-
-    sub maketext_in_all_languages {
-        # Initial Values:
-        my  $self                                   =   shift;
-        my  @in_all_languages                       =   ();
-        my  $in_all_languages_string                =   q{};
-        my  $language_base_class                    =   __PACKAGE__;
-        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
-
-        # Regex:
-        my  $matches_and_captures_language_handle   =   qr/
-                                                            (                               # Start capture group.
-                                                                ?<captured_language_handle> # Name the capture group.
-                                                                [^:]+                       # One or more of anything except a colon.
-                                                            )                               # End capture group.
-                                                            $                               # End of string.
-                                                        /x;                                 # x flag - Ignore white space and allow comments.
-
-        # Processing:
-        for my $language_class (@{ mro::get_isarev($language_base_class) }) {
-
-            my  $language_handle                    =   $language_class
-                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
-                                                        undef;
-
-            my  $language_tag                       =   $language_base_class->$language_handle->language_tag # Typically lower-case.
-                                                        || undef; # Or undefined.
-
-            if ($language_handle && $language_tag) {
-
-                my  $phrase                         =   $language_base_class->$language_handle->maketext(@ARG);
-                my  $phrase_is_valid                =   $phrase || $phrase eq '0';
-
-                # Build hash-compatible list
-                push @in_all_languages, (
-                    "$language_tag"             =>  $phrase_is_valid?   $phrase:
-                                                    undef,
-                );
-
-                # Build string - or skip if no valid phrase:
-                if ($phrase_is_valid) {
-                    $in_all_languages_string   .=  sprintf($format, uc($language_tag), $phrase);
-                };
-
-            };
-
-        };
-
-        #Output:
-        return  wantarray?  @in_all_languages: # key value pairs in a list
-                $in_all_languages_string;       # Multi-line string
-    }
-
-
-    1;
-}; # ChangeNameOperation::Languages Package.
 
 =head2 Language Packages:
 
