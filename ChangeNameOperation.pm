@@ -496,6 +496,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return  $our_option_string;
     }
 
+    sub localise {
+        return shift->logger->language->localise(@ARG);
+    }
+    
+    sub logger {
+        return shift->{logger};
+    }
+
     sub utf8_check {
         my  $self                           =   shift;
         my  $continue                       =   1;
@@ -531,14 +539,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 0;
         };
 
-        $self->{logger}->debug(
+        $self->logger->debug(
             $self->{no_input}?                  'commandline.no_arguments':
             $no_input_that_requires_utf8?       'commandline.utf8_not_needed':
             $acceptable_utf8_options?           'commandline.utf8_enabled':
             'commandline.utf8_not_enabled'
         );
         
-        die                                     $self->{logger}->localise->('commandline.end_program')
+        die                                     $self->localise->('commandline.end_program')
                                                 unless $continue;
 
         return $self;
@@ -564,24 +572,24 @@ package ChangeNameOperation::Modulino v1.0.0 {
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
 
         # Output:
-        $self->{logger}->set_language(@language_tag_or_nothing)
+        $self->logger->language(@language_tag_or_nothing)
         ->verbose(
             'Language set to [_1]',
-            $self->{logger}->localise('language.name'),
+            $self->localise('language.name'),
         )
         ->debug('Commandline Options are...')->dumper($self->{options})
-        ->debug('Commandline Arguments are...')->dumper($self->{arguments});
+        ->debug('Commandline Arguments are...')->dumper($self->{arguments})
+        ->debug('Configuration Values are...')->dumper($self->{config});
 
         if ($self->{config_messages}) {
 
             # Display order is Error, Debug, Verbose, by design. 
             # See ChangeNameOperation::Config::load for context.
 
-            say $prefix.                                        # localise doesn't implement a prefix like logging methods, so we put one here.
-                $self->{logger}->localise   ($ARG)              for @{$self->{config_messages}->{error}};
-
-            say $self->{logger}->debug      ($ARG)              for @{$self->{config_messages}->{debug}};
-            say $self->{logger}->verbose    ($ARG)              for @{$self->{config_messages}->{verbose}};
+            say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
+                $self->localise         ($ARG)  for @{$self->{config_messages}->{error}};
+            say $self->logger->debug    ($ARG)  for @{$self->{config_messages}->{debug}};
+            say $self->logger->verbose  ($ARG)  for @{$self->{config_messages}->{verbose}};
 
         }
 
@@ -607,7 +615,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
             },
 
             config  =>  $self->config,
-            logger  =>  $self->{logger},
+            logger  =>  $self->logger,
 
         );
 
@@ -621,7 +629,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub config {
         my  $self   =   shift;
 
-        die             $self->{logger}->localise->('commandline.config_undefined')
+        die             $self->localise->('commandline.config_undefined')
                         unless $self->{config};
 
         return $self->{config};
@@ -1430,7 +1438,7 @@ To do.
     }
     
     sub localise {
-            return shift->{logger}->localise(@ARG);
+            return shift->{logger}->language->localise(@ARG);
     }
     
     # Private subs:
@@ -2150,14 +2158,40 @@ See L</new> method for info on acceptable object parameters.
             dumper_exclude          =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            language                =>  $params->{language}?    ChangeNameOperation::Languages->try_or_die($params->{language}):
-                                        undef;
+            language                =>  $params->{language}?    ChangeNameOperation::Language->new($params->{language}) || undef:
+                                        undef,
     
         );
 
         $self->{dumper_default}     =  $self;
         
         return  $self;
+    }
+
+    sub set_dumper_class_name_only {
+        my  $self                       =   shift;
+        my  $value                      =   shift;
+        my  $valid_value                =   $value
+                                            && (reftype($value) eq 'ARRAY')?  $value:
+                                            undef;
+
+        $self->{dumper_class_name_only} =   $valid_value?   $valid_value:
+                                            $self->{dumper_class_name_only};
+                                            
+        return $self;
+    }
+
+    sub set_dumper_exclude {
+        my  $self                       =   shift;
+        my  $value                      =   shift;
+        my  $valid_value                =   $value
+                                            && (reftype($value) eq 'ARRAY')?  $value:
+                                            undef;
+
+        $self->{dumper_exclude}         =   $valid_value?   $valid_value:
+                                            $self->{dumper_exclude};
+                                            
+        return $self;
     }
 
     sub valid_repository {
@@ -2172,15 +2206,12 @@ See L</new> method for info on acceptable object parameters.
         return  $value_is_valid?    $value:
                 undef;
     }
-    
-    sub localise {
-            my  $self   =   shift;
-            
-            return $self->{language}?   $self->{language}->maketext(@ARG):
-            ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
+
+    sub language {
+        my  $self           =   shift;
+        return $self->{language} unless @ARG;
+        return $self->{language}->set_language(@ARG);
     }
-    
-    
     
     sub set_dumper_default {
         my  $self   =   shift;
@@ -2206,15 +2237,6 @@ See L</new> method for info on acceptable object parameters.
                                     unless $repository; # Should this use _log instead of warn?
 
         $self->{repository}     =   $repository;
-
-        return $self;
-    }
-
-    sub set_language {
-        my  $self           =   shift;
-        
-        $self->{language}   =   @ARG?   ChangeNameOperation::Languages->try_or_die(@ARG):
-                                $self->{language};
 
         return $self;
     }
@@ -2381,6 +2403,58 @@ MakeText project class for loading language classes.
 
 =cut
 
+package ChangeNameOperation::Language v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    # Construct Object:
+    sub new {
+        # Initial Values;
+        my  $class              =   shift;
+        my  @language_tags      =   @ARG;
+        my  @default_attributes = (
+            language            =>  undef,
+        );
+        my  $self               =   {@default_attributes};
+
+        # Object Creation:
+        bless $self             ,   $class;
+        
+        # Set Attributes:
+        $self->set_language(@language_tags);
+                            
+        # Output:
+        return $self;
+    }
+
+    # Instance Methods:
+    sub localise {
+            my  $self   =   shift;
+            
+            return          $self->{language}?   $self->{language}->maketext(@ARG):
+                            ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
+    }
+    
+    sub set_language {
+        my  $self           =   shift;
+        
+        $self->{language}   =   @ARG?   ChangeNameOperation::Languages->get_handle(@ARG) || $self->{language}:
+                                $self->{language};
+                                
+        die                     ChangeNameOperation::Languages->make_text_in_all_languages('language.error.set_language')
+                                unless $self->{language};
+
+        return $self;
+    }
+
+}
+
 package ChangeNameOperation::Languages v1.0.0 {
 
     # Standard:
@@ -2393,28 +2467,6 @@ package ChangeNameOperation::Languages v1.0.0 {
     
     # Specific:
     use     parent qw(Locale::Maketext);
-    
-    sub try_or_die {
-    
-        my  ($self, $language)  =   @ARG;
-    
-        $language               //= 'en-GB';
-    
-        my  $error={
-            language            =>  'Trouble finding a language to use.',
-        };
-    
-        return  $self->get_handle($language)
-                || die  $error->{'language'};
-    }
-
-    sub language_or_undef {
-    
-        my  ($self, $language)  =   @ARG;
-    
-        return  $language?  $self->get_handle($language):
-                undef;
-    }
     
     sub fallback_language_classes {
         # I believe these are to be given as relative to ChangeNameOperation::Languages
@@ -2473,8 +2525,8 @@ package ChangeNameOperation::Languages v1.0.0 {
         };
 
         #Output:
-        return  wantarray?  @in_all_languages:
-                $in_all_languages_string;
+        return  wantarray?  @in_all_languages: # key value pairs in a list
+                $in_all_languages_string;       # Multi-line string
     }
 
 
@@ -2521,6 +2573,8 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'English (United Kingdom)',
+
+'language.error.set_language'   =>  'Trouble finding a language to use.',
 
 'options.language'              =>  'language lang',
 'options.config'                =>  'config configuration',
@@ -2910,6 +2964,8 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'Deutsch (Deutschland)',
+
+'language.error.set_language'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
 
 'options.language'              =>  'sprache spr',
 'options.config'                =>  'konfig konfiguration',
