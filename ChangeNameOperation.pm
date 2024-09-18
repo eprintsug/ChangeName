@@ -1674,7 +1674,7 @@ See L</new> method for info on acceptable object parameters.
         # Set params:
         my  @params     =   @ARG?   @ARG:
                             (\%default);
-    
+        say 'MY PARAMS ARE'.Dumper(@params);
         return $self->_log('dumper',@params);
     }
     
@@ -1691,6 +1691,7 @@ See L</new> method for info on acceptable object parameters.
         my  $language               =   $self->language->get_language;
         my  $blank                  =   q{};
         my  $messages               =   $blank;
+        my  $trace_prefixes         =   $blank;
         my  $loop_count             =   0;
         my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
 
@@ -1741,10 +1742,30 @@ See L</new> method for info on acceptable object parameters.
         return $self unless $self->{trace};
 
         # Stack trace:
-        my  $trace_prefix   =   $self->_get_log_prefix('TRACE');
+        $loop_count                 =   0;
+        foreach my $current_language (@languages) {
 
-        $self->{repository}->log($trace_prefix) if      $valid_repository;
-        say STDERR $trace_prefix                unless  $valid_repository;
+            $self->language->set_language($current_language);
+
+            my  $last_loop          =   ++$loop_count eq $number_of_languages;
+
+            my  $suffix             =   $last_loop? $blank:
+                                        $self->language->localise('separator.new_line');
+
+            my  $trace_prefix       =   $self->_get_log_prefix('trace');
+
+            my  $lang_prefix        =   sprintf($format, uc $current_language);
+
+            $trace_prefixes         .=  $lang_prefix.
+                                        $trace_prefix.
+                                        $suffix;
+
+        }
+
+        $self->language->unset_language unless $language;
+
+        $self->{repository}->log($trace_prefixes)   if      $valid_repository;
+        say STDERR $trace_prefixes                  unless  $valid_repository;
 
         EPrints->trace;
         
