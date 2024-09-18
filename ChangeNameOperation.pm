@@ -1221,12 +1221,14 @@ package ChangeNameOperation::Languages v1.0.0 {
     
     sub ordered_language_handles {
 
+        # Initial Values:
         my  $self                                   =   shift;
-        my  $language_base_class                    =   shift;
 
-        my  @ordered_language_handles               =   ();        
+        my  $language_base_class                    =   __PACKAGE__;
         my  $priority_handle                        =   $self->priority_language_class;
         my  @full_class_names                       =   @{ mro::get_isarev($language_base_class) };
+
+        my  @ordered_language_handles               =   ();
 
         # Regex:
         my  $matches_and_captures_language_handle   =   qr/
@@ -1298,7 +1300,7 @@ package ChangeNameOperation::Languages v1.0.0 {
         my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
 
         # Processing:
-        for my $language_handle ($self->ordered_language_handles($language_base_class)) {
+        for my $language_handle ($self->ordered_language_handles) {
                                                         
             if ($language_handle) {
 
@@ -1393,7 +1395,7 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    ChangeNameOperation::CompileTimeConfigValues->import;
+#    ChangeNameOperation::CompileTimeConfigValues->import;
     use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
