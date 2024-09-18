@@ -771,6 +771,12 @@ my  @phrases = (
     'Find attribute set to ([_1]).'=>'Find attribute set to ([_1]).',
     'Search attribute set to ([_1]).'=>'Search attribute set to ([_1]).',
     'Constructed New Logger Object Instance.'=>'Constructed New Logger Object Instance.',
+    'Starting subroutine.'=>'Starting subroutine.',
+    'Multilingual variations of [_1] are as dumped below...'=>'Multilingual variations of [_1] are as dumped below...',
+    'Initial option translation...'=>'Initial option translation...',
+    'Option translation as a list...'=>'Option translation as a list...',
+    'Option string is: [_1]'=>'Option string is: [_1]',
+    
 );
 
 our %Lexicon = (
@@ -1163,6 +1169,11 @@ my  @phrases = (
     'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
     'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
     'Constructed New Logger Object Instance.'=>'Neue Logger-Objektinstanz erstellt.',
+    'Starting subroutine.'=>'Unterprogramm wird gestartet.',
+    'Multilingual variations of [_1] are as dumped below...'=>'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind ...',
+    'Initial option translation...'=>'Anfängliche Optionsübersetzung...',
+    'Option translation as a list...'=>'Option Übersetzung als Liste...',
+    'Option string is: [_1]'=>'Optionszeichenfolge ist: [_1]',
 );
 
 our %Lexicon = (
@@ -1552,8 +1563,7 @@ See L</new> method for info on acceptable object parameters.
                                     && blessed($value)
                                     && $value->isa('EPrints::Repository');
         #say 'Dumping...'.Dumper($self->language);
-        warn                        scalar $self->language->localise('log.valid_repository.error.invalid')
-                                    unless $value_is_valid; # Should this use _log instead of warn?
+        #$self->debug('log.valid_repository.error.invalid') unless $value_is_valid; # Was a warn. Changed to debug and triggered deep recusion.
 
         return  $value_is_valid?    $value:
                 undef;
@@ -1796,7 +1806,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 debug       =>  1,
                                                 verbose     =>  1,
                                                 no_trace    =>  1,
-                                            );
+                                            )->set_caller_depth(3);
 
         # Default Options:
         my $options                     =   {
@@ -1856,7 +1866,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         };
 
         # Logger after options processed:
-        $self->{logger}                 =   ChangeNameOperation::Log->new(@{ $self->{options} });
+        $self->{logger}                 =   ChangeNameOperation::Log->new(%{ $self->{options} });
 
         
         # Set later via setup method, called in last line of this new method:
@@ -1870,6 +1880,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub multilingual_options {
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
+
         $self->logger->debug('Starting subroutine.');
 
         my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages('options.'.$option);
@@ -1878,7 +1889,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return () unless ($option || ($option eq '0'));
         return () unless %multilingual_options_hash;
 
-        $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper(%multilingual_options_hash);
+        $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper({%multilingual_options_hash});
 
         # Further Initial Values:
         $option_suffix                      //= q{};
@@ -1917,7 +1928,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 
             $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
                                             $translation;
-            say 'Initial translatation...'.Dumper($translation);
+            $self->logger->debug('Initial option translation...')->dumper($translation);
 
             my  @values                 =   map {
                                                 my  $value              =   $ARG;
@@ -1928,14 +1939,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                             }
                                             split $contiguous_white_space, $translation;
 
-            say 'NOW AS LIST...'.Dumper(@values);
+            $self->logger->debug('Option translation as a list...')->dumper(@values);
 
             $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
                                             $our_option_string;
         };
         
         $our_option_string              .=  $option_suffix;
-        say 'Option string is: '.Dumper($our_option_string);
+        $self->logger->debug('Option string is: [_1]', $our_option_string);
         return  $our_option_string;
     }
 
