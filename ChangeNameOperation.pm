@@ -1343,12 +1343,13 @@ package ChangeNameOperation::CompileTimeConfigValues {
         my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
         my  %object_params          =   (
 
-            # Existing params passed along:
-            @ARG,
-
-            # Our own params added:
+            # Our own params:
             config_message_prefix   =>  $prefix,
 
+
+            # Existing params passed along:
+            @ARG,
+            
         );
 
         # Set Attributes:
@@ -1481,10 +1482,10 @@ See L</new> method for info on acceptable object parameters.
             debug                   =>  $params->{debug} // 0,
             verbose                 =>  $params->{verbose} // 0,
             trace                   =>  (
-                                            $params->{no_trace} < 1
+                                            ($params->{no_trace} < 1)
                                             &&
                                             (
-                                                $params->{verbose} > 2
+                                                ($params->{verbose} > 2)
                                                 || ($params->{debug} && $params->{verbose})
                                                 || ($params->{debug} && $params->{trace})
                                             )
@@ -1499,7 +1500,16 @@ See L</new> method for info on acceptable object parameters.
             dumper_exclude          =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            language                =>  ChangeNameOperation::Language->new($params->{language} or @nothing),
+            language                =>  ChangeNameOperation::Language->new(
+                                            (
+                                                (
+                                                    exists $params->{language} 
+                                                    && defined $params->{language} 
+                                                    && $params->{language}
+                                                )
+                                                || @nothing
+                                            )
+                                        ),
     
         );
 
@@ -1671,8 +1681,8 @@ See L</new> method for info on acceptable object parameters.
                                     q{};
     
         my  $message            =   $prefix.(
-                                        $type eq 'dumper'?  $self->localise('separator.new_line').Dumper(@ARG):
-                                        $self->localise(@ARG)
+                                        $type eq 'dumper'?  $self->language->localise('separator.new_line').Dumper(@ARG):
+                                        $self->language->localise(@ARG)
                                     );
 
         # Log:
@@ -1704,12 +1714,19 @@ See L</new> method for info on acceptable object parameters.
         die unless $string;
 
         # Initial Values:
-        my  $replace_with_divider   =   quotemeta(' / ');
+        my  $replace_with_divider   =   ' / ';
+        my  $remove                 =   q{};
+        my  $find_leading_newlines  =   qr/^\n+/;
+        my  $find_trailing_newlines =   qr/\n+$/;
         my  $find_newline           =   qr/\n/;
         
         # Processing:
-        $string                     =~  s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
-        
+        for ($string) {
+            s/$find_leading_newlines/$remove/g;         # g - find and replace globally.
+            s/$find_trailing_newlines/$remove/g;        # g - find and replace globally.
+            s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
+        }
+
         # Output:
         return $string;
         
@@ -1719,7 +1736,7 @@ See L</new> method for info on acceptable object parameters.
         my  $self   =   shift;
         my  $type   =   shift;
         my  $localised_type =   $type?  $self->ensure_single_line(
-                                            $self->localise(
+                                            $self->language->localise(
                                                 'log.type.'.lc($type)
                                             )
                                         ):
@@ -1774,6 +1791,13 @@ package ChangeNameOperation::Modulino v1.0.0 {
         $self->{no_input}               =   !(scalar @ARG);
         $self->{config_messages_prefix} =   $params->{config_messages_prefix} // undef;
 
+        # Logger before options processed:
+        $self->{logger}                 =   ChangeNameOperation::Log->new(
+                                                debug       =>  1,
+                                                verbose     =>  1,
+                                                no_trace    =>  1,
+                                            );
+
         # Default Options:
         my $options                     =   {
             language                    =>  undef,
@@ -1790,7 +1814,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Command Line Options:    
         Getopt::Long::Parser->new->getoptionsfromarray(
             \@ARG,                                              # Array to get options from.
-            $options,                                   # Hash to store options to.
+            $options,                                           # Hash to store options to.
     
             # Actual options:
             $self->multilingual_options('language',     ':s'),  # Optional string.
@@ -1830,8 +1854,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
             replace                     =>  shift,
             part                        =>  shift,
         };
-        
-        $self->{logger}                 =   ChangeNameOperation::Log->new(%{$self->{options}});
+
+        # Logger after options processed:
+        $self->{logger}                 =   ChangeNameOperation::Log->new(@{ $self->{options} });
+
         
         # Set later via setup method, called in last line of this new method:
         $self->{config}                 =   undef;
@@ -1843,14 +1869,17 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub multilingual_options {
         # Initial Values:
-        say STDOUT 'HELLO!';
         my ($self, $option, $option_suffix) =   @ARG;
+        $self->logger->debug('Starting subroutine.');
+
         my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages('options.'.$option);
-        say 'Our hash: '.Dumper(%multilingual_options_hash);
+
         # Premature exits:
         return () unless ($option || ($option eq '0'));
         return () unless %multilingual_options_hash;
-        say STDOUT 'STILL HERE!';        
+
+        $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper(%multilingual_options_hash);
+
         # Further Initial Values:
         $option_suffix                      //= q{};
         my  @skip                           =   ();
@@ -1878,7 +1907,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         
         # Build our option:
         my  $our_option_string              =   $option;
-        say 'Option atm is...'.Dumper($option);
+
         my  $used_already = {
             "$option"                       =>  1
         };
