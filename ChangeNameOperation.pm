@@ -1846,11 +1846,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
         say STDOUT 'HELLO!';
         my ($self, $option, $option_suffix) =   @ARG;
         my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages('options.'.$option);
-        
+        say 'Our hash: '.Dumper(%multilingual_options_hash);
         # Premature exits:
         return () unless ($option || ($option eq '0'));
         return () unless %multilingual_options_hash;
-        
+        say STDOUT 'STILL HERE!';        
         # Further Initial Values:
         $option_suffix                      //= q{};
         my  @skip                           =   ();
@@ -1878,6 +1878,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         
         # Build our option:
         my  $our_option_string              =   $option;
+        say 'Option atm is...'.Dumper($option);
         my  $used_already = {
             "$option"                       =>  1
         };
@@ -1887,18 +1888,18 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 
             $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
                                             $translation;
+            say 'Initial translatation...'.Dumper($translation);
 
             my  @values                 =   map {
                                                 my  $value              =   $ARG;
-                                                
-                                                return                      @skip
-                                                                            if $used_already->{$value};
-
+                                                my  @value_to_use       =   $used_already->{$value}?    @skip:
+                                                                            ($value);
                                                 $used_already->{$value} =   1;
-
-                                                return                      $value;
+                                                @value_to_use;
                                             }
                                             split $contiguous_white_space, $translation;
+
+            say 'NOW AS LIST...'.Dumper(@values);
 
             $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
                                             $our_option_string;
