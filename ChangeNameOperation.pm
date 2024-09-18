@@ -1353,21 +1353,21 @@ package ChangeNameOperation::CompileTimeConfigValues {
     sub new {
         # Initial Values:
         my  $class                  =   shift;
+        my  $filepath               =   shift;
         my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  %object_params          =   (
+        my  @filepath_or_blank      =   $filepath || $filepath eq '0'?  ($filepath):
+                                        ();
+
+        my  @object_params          =   (
 
             # Our own params:
             config_message_prefix   =>  $prefix,
-
-
-            # Existing params passed along:
-            @ARG,
             
         );
 
         # Set Attributes:
         my  $self                   =   {
-            config                  =>  ChangeNameOperation::Config->new(%object_params)->load(%object_params{config})->get_data,
+            config                  =>  ChangeNameOperation::Config->new(@object_params)->load()->get_data, # Load cannot use external currently.
         };
 
         # Make Object:
@@ -1683,31 +1683,59 @@ See L</new> method for info on acceptable object parameters.
         my  $self       =   shift;
     
         # Initial Values:
-        my  $type               =   shift;
-        my  $use_prefix         =   $self->{verbose} > 1 || $self->{debug};
+        my  $type                   =   shift;
+        my  $use_prefix             =   $self->{verbose} > 1 || $self->{debug};
 
-        my  $valid_repository   =   $self->valid_repository($self->{repository});
+        my  $valid_repository       =   $self->valid_repository($self->{repository});
         
-        my  $language           =   $self->language->get_language;
+        my  $language               =   $self->language->get_language;
+        my  $blank                  =   q{};
+        my  $messages               =   $blank;
+        my  $loop_count             =   0;
+        my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
 
         # Content:
         
-        if ($language) {
-            
+        my  @languages              =   $language?  ($language->language_tag):
+                                        ChangeNameOperation::Languages->ordered_language_handles;
+
+        my  $number_of_languages    =   scalar @languages;
+                                          
+        foreach my $current_language (@languages) {
+
+            $self->language->set_language($current_language);
+
+            my  $last_loop          =   ++$loop_count eq $number_of_languages;
+
+            my  $suffix             =   $last_loop? $blank:
+                                        $self->language->localise('separator.new_line');
+
             my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
-                                        q{};
+                                        $blank;
+
+            my  $lang_prefix        =   sprintf($format, uc $current_language);
+
     
-            my  $message            =   $prefix.(
-                                            $type eq 'dumper'?  $self->language->localise('separator.new_line').Dumper(@ARG):
-                                            $self->language->localise(@ARG)
-                                        );
-        else {
-            my  %translations_hash  =   
+            my  $message            =   $type eq 'dumper'?  $blank:
+                                        $self->language->localise(@ARG);
+
+            $messages               .=  $lang_prefix.
+                                        $prefix.
+                                        $message.
+                                        $suffix;
+
         }
 
+        if (@languages && ($type eq 'dumper')) {
+            $messages               .=  $self->language->localise('separator.new_line').
+                                        Dumper(@ARG);
+            chomp($messages);
+        };
+        $self->language->unset_language unless $language;
+
         # Log:
-        $self->{repository}->log($message)  if      $valid_repository;
-        say STDERR $message                 unless  $valid_repository;
+        $self->{repository}->log($messages)  if      $valid_repository;
+        say STDERR $messages                 unless  $valid_repository;
 
         # Premature log-only exit:
         return $self unless $self->{trace};
@@ -1770,22 +1798,19 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Initial Values:
         my  $class                      =   shift;
         my  $self                       =   {};
-        my  $params                     =   {@ARG};
-
 
         # Object construction - blessed hash approach:
         bless $self, $class;
 
         # Object Attributes:
         $self->{no_input}               =   !(scalar @ARG);
-        $self->{config_messages_prefix} =   $params->{config_messages_prefix} // undef;
 
-        # Logger before options processed:
+        # Logger before options processed, so options are hardcoded here:
         $self->{logger}                 =   ChangeNameOperation::Log->new(
                                                 debug       =>  1,
                                                 verbose     =>  1,
                                                 no_trace    =>  1,
-                                                no_dumper   =>  1,
+                                                no_dumper   =>  0,
                                             )->set_caller_depth(3);
 
         # Default Options:
@@ -1993,7 +2018,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Initial Values:
         my  $self                       =   shift;
         my  @nothing                    =   ();        
-        my  $prefix                     =   $self->{config_messages_prefix} // '[ChangeNameOperation::Modulino::setup] - ';
+        my  $prefix                     =   '[ChangeNameOperation::Modulino::setup] - ';
         # Definitions:
         my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
                                             &&      $self->{options}->{config}? ($self->{options}->{config}):
@@ -3471,6 +3496,12 @@ package ChangeNameOperation::Language v1.0.0 {
         die                     scalar ChangeNameOperation::Languages->maketext_in_all_languages('language.error.set_language')
                                 unless $self->{language};
 
+        return $self;
+    }
+
+    sub unset_language {
+        my  $self   =   shift;
+        $self->{language}   =   undef;
         return $self;
     }
     
