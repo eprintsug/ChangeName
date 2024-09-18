@@ -1457,7 +1457,7 @@ See L</new> method for info on acceptable object parameters.
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
-        say Dumper($params);
+        #say Dumper($params);
     
         my  $self       =   {};
         bless $self, $class;
@@ -1469,7 +1469,7 @@ See L</new> method for info on acceptable object parameters.
 
     sub _set_attributes {
         my  ($self, $params)        =   @ARG;
-
+        my  @nothing                =   ();
         %{
             $self
         }                           =   (
@@ -1492,7 +1492,6 @@ See L</new> method for info on acceptable object parameters.
             no_dumper               =>  $params->{no_dumper} // 0,
             no_trace                =>  $params->{no_trace} // 0,
 
-            repository              =>  $self->valid_repository($params->{repository}),
             caller_depth            =>  3,
             
             dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
@@ -1500,11 +1499,11 @@ See L</new> method for info on acceptable object parameters.
             dumper_exclude          =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            language                =>  $params->{language}?    ChangeNameOperation::Language->new($params->{language}) || undef:
-                                        undef,
+            language                =>  ChangeNameOperation::Language->new($params->{language} or @nothing),
     
         );
 
+        $self->{repository}         =  $self->valid_repository($params->{repository}); # Requires language to be set first.
         $self->{dumper_default}     =  $self;
         
         return  $self;
@@ -1542,8 +1541,8 @@ See L</new> method for info on acceptable object parameters.
         my  $value_is_valid     =   defined $value
                                     && blessed($value)
                                     && $value->isa('EPrints::Repository');
-
-        warn                        scalar $self->localise('log.valid_repository.error.invalid')
+        #say 'Dumping...'.Dumper($self->language);
+        warn                        scalar $self->language->localise('log.valid_repository.error.invalid')
                                     unless $value_is_valid; # Should this use _log instead of warn?
 
         return  $value_is_valid?    $value:
@@ -1570,12 +1569,6 @@ See L</new> method for info on acceptable object parameters.
         $self->{caller_depth} = shift // $self->{caller_depth};
 
         return $self;
-    }
-    
-    sub localise {
-        my  $self   =   shift;
-        return $self->{language}? $self->{language}->localise(@ARG):
-        ChangeNameOperation::Language->new->localise(@ARG);
     }
 
     sub set_repository {
@@ -1758,6 +1751,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     # Specific:
     use     Getopt::Long;
+    use     Data::Dumper;
 
     # Modulino:
     ChangeNameOperation::Modulino->run(@ARGV) unless caller;
@@ -1781,7 +1775,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         $self->{config_messages_prefix} =   $params->{config_messages_prefix} // undef;
 
         # Default Options:
-        $self->{options}                =   {
+        my $options                     =   {
             language                    =>  undef,
             live                        =>  0,
             verbose                     =>  0,
@@ -1796,7 +1790,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Command Line Options:    
         Getopt::Long::Parser->new->getoptionsfromarray(
             \@ARG,                                              # Array to get options from.
-            $self->{options},                                   # Hash to store options to.
+            $options,                                   # Hash to store options to.
     
             # Actual options:
             $self->multilingual_options('language',     ':s'),  # Optional string.
@@ -1829,7 +1823,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
             $self->multilingual_options('exact',        '!'),   # if --exact present,   set $exact to 1,
                                                                 # if --noexact present, set $exact to 0.
         );
-
+        $self->{options}                =   $options;
         $self->{arguments}              =   {
             archive_id                  =>  shift,
             search                      =>  shift,
@@ -1849,6 +1843,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
     sub multilingual_options {
         # Initial Values:
+        say STDOUT 'HELLO!';
         my ($self, $option, $option_suffix) =   @ARG;
         my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages('options.'.$option);
         
@@ -1910,10 +1905,12 @@ package ChangeNameOperation::Modulino v1.0.0 {
         };
         
         $our_option_string              .=  $option_suffix;
+        say 'Option string is: '.Dumper($our_option_string);
         return  $our_option_string;
     }
 
     sub localise {
+        #say 'Dumping from Modulino...'.Dumper(caller);
         return shift->logger->language->localise(@ARG);
     }
     
@@ -1924,7 +1921,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub utf8_check {
         my  $self                           =   shift;
         my  $continue                       =   1;
-        my  @nothing                        =   ();        
+        my  @nothing                        =   ();     
+        my  $language                       =   $self->logger->language;   
         my  $input_that_requires_utf8       =   scalar (
                                                     map {
                                                         defined $ARG && $ARG?   $ARG:
@@ -1956,14 +1954,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 0;
         };
 
-        $self->logger->debug(
+        say $language->localise(
             $self->{no_input}?                  'commandline.no_arguments':
             $no_input_that_requires_utf8?       'commandline.utf8_not_needed':
             $acceptable_utf8_options?           'commandline.utf8_enabled':
             'commandline.utf8_not_enabled'
         );
         
-        die                                     $self->localise->('commandline.end_program')
+        die                                     $language->localise('commandline.end_program')
                                                 unless $continue;
 
         return $self;
@@ -1987,12 +1985,13 @@ package ChangeNameOperation::Modulino v1.0.0 {
         )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
 
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
+        my  $language                   =   $self->logger->language->set_language(@language_tag_or_nothing);
 
         # Output:
-        $self->logger->language(@language_tag_or_nothing)
+        $self
         ->verbose(
             'Language set to [_1]',
-            $self->localise('language.name'),
+            $language->localise('language.name'),
         )
         ->debug('Commandline Options are...')->dumper($self->{options})
         ->debug('Commandline Arguments are...')->dumper($self->{arguments})
@@ -2004,7 +2003,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
             # See ChangeNameOperation::Config::load for context.
 
             say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
-                $self->localise         ($ARG)  for @{$self->{config_messages}->{error}};
+                $language->localise     ($ARG)  for @{$self->{config_messages}->{error}};
             say $self->logger->debug    ($ARG)  for @{$self->{config_messages}->{debug}};
             say $self->logger->verbose  ($ARG)  for @{$self->{config_messages}->{verbose}};
 
@@ -3412,6 +3411,7 @@ package ChangeNameOperation::Language v1.0.0 {
                                     # on Perl v5.18 or lower.
                                     
     ChangeNameOperation::Languages->import;
+    use Data::Dumper;
 
     # Construct Object:
     sub new {
@@ -3436,9 +3436,8 @@ package ChangeNameOperation::Language v1.0.0 {
     # Instance Methods:
     sub localise {
             my  $self   =   shift;
-            
+            #say 'Dumping caller...'.Dumper (caller);
             return          $self->{language}?   $self->{language}->maketext(@ARG):
-                            wantarray?  ChangeNameOperation::Languages->maketext_in_all_languages(@ARG):
                             scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
