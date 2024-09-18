@@ -1687,15 +1687,23 @@ See L</new> method for info on acceptable object parameters.
         my  $use_prefix         =   $self->{verbose} > 1 || $self->{debug};
 
         my  $valid_repository   =   $self->valid_repository($self->{repository});
+        
+        my  $language           =   $self->language->get_language;
 
         # Content:
-        my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
-                                    q{};
+        
+        if ($language) {
+            
+            my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
+                                        q{};
     
-        my  $message            =   $prefix.(
-                                        $type eq 'dumper'?  $self->language->localise('separator.new_line').Dumper(@ARG):
-                                        $self->language->localise(@ARG)
-                                    );
+            my  $message            =   $prefix.(
+                                            $type eq 'dumper'?  $self->language->localise('separator.new_line').Dumper(@ARG):
+                                            $self->language->localise(@ARG)
+                                        );
+        else {
+            my  %translations_hash  =   
+        }
 
         # Log:
         $self->{repository}->log($message)  if      $valid_repository;
@@ -1715,44 +1723,13 @@ See L</new> method for info on acceptable object parameters.
         # Final log-and-trace exit:
         return $self;
     }
-
-    sub ensure_single_line {
-
-        # Passed in arguments:
-        my  $self       =   shift;
-        my  $string     =   shift;
-        
-        # Premature death:
-        die unless $string;
-
-        # Initial Values:
-        my  $replace_with_divider   =   ' / ';
-        my  $remove                 =   q{};
-        my  $find_leading_newlines  =   qr/^\n+/;
-        my  $find_trailing_newlines =   qr/\n+$/;
-        my  $find_newline           =   qr/\n/;
-        
-        # Processing:
-        for ($string) {
-            s/$find_leading_newlines/$remove/g;         # g - find and replace globally.
-            s/$find_trailing_newlines/$remove/g;        # g - find and replace globally.
-            s/$find_newline/$replace_with_divider/g;    # g - find and replace globally.
-        }
-
-        # Output:
-        return $string;
-        
-    }
     
     sub _get_log_prefix {
-        my  $self   =   shift;
-        my  $type   =   shift;
-        my  $localised_type =   $type?  $self->ensure_single_line(
-                                            $self->language->localise(
-                                                'log.type.'.lc($type)
-                                            )
-                                        ):
+        my  $self           =   shift;
+        my  $type           =   shift;
+        my  $localised_type =   $type?  $self->language->localise('log.type.' . lc $type):
                                 q{};
+
         return sprintf(
              '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
     
@@ -1808,6 +1785,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 debug       =>  1,
                                                 verbose     =>  1,
                                                 no_trace    =>  1,
+                                                no_dumper   =>  1,
                                             )->set_caller_depth(3);
 
         # Default Options:
@@ -3494,6 +3472,10 @@ package ChangeNameOperation::Language v1.0.0 {
                                 unless $self->{language};
 
         return $self;
+    }
+    
+    sub get_language {
+        return shift->{language};
     }
 
 }
