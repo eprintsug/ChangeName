@@ -1674,7 +1674,7 @@ See L</new> method for info on acceptable object parameters.
         # Set params:
         my  @params     =   @ARG?   @ARG:
                             (\%default);
-        say 'MY PARAMS ARE'.Dumper(@params);
+        #say 'MY PARAMS ARE'.Dumper(@params);
         return $self->_log('dumper',@params);
     }
     
@@ -1892,7 +1892,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         };
 
         # Logger after options processed:
-        $self->{logger}                 =   ChangeNameOperation::Log->new(%{ $self->{options} });
+        $self->{logger}                 =   ChangeNameOperation::Log->new(%{ $self->{options} })->set_caller_depth(3);
 
         
         # Set later via setup method, called in last line of this new method:
@@ -1906,6 +1906,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     sub multilingual_options {
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
+        my  $blank                          =   q{};
 
         $self->logger->debug('Starting subroutine.');
 
@@ -1918,7 +1919,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper({%multilingual_options_hash});
 
         # Further Initial Values:
-        $option_suffix                      //= q{};
+        $option_suffix                      //= $blank;
         my  @skip                           =   ();
         my  $option_separator               =   '|';
 
@@ -1968,7 +1969,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
             $self->logger->debug('Option translation as a list...')->dumper(@values);
 
             $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
-                                            $our_option_string;
+                                            $blank;
         };
         
         $our_option_string              .=  $option_suffix;
