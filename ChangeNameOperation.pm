@@ -1193,14 +1193,89 @@ package ChangeNameOperation::Languages v1.0.0 {
     # Specific:
     use     parent qw(Locale::Maketext);
     use     mro;
+
+    sub priority_language_class {
+        return 'en_gb'; # Will be first in ordered_language_handles and thus also first in any multi-language translations.
+    }
     
     sub fallback_language_classes {
+        my  $self   =   shift;
         # I believe these are to be given as relative to ChangeNameOperation::Languages
         # rather than a full qualified class name like ChangeNameOperation::Languages::en_gb
         my  @list_of_classes    =   (
-            'en_gb',
+            $self->ordered_language_handles,
         );
         return @list_of_classes;
+    }
+    
+    sub ordered_language_handles {
+
+        my  $self                                   =   shift;
+        my  $language_base_class                    =   shift;
+
+        my  @ordered_language_handles               =   ();        
+        my  $priority_handle                        =   $self->priority_language_class;
+        my  @full_class_names                       =   @{ mro::get_isarev($language_base_class) };
+
+        # Regex:
+        my  $matches_and_captures_language_handle   =   qr/
+                                                            (?<captured_language_handle>    # Start named capture group.
+                                                                [^:]+                       # One or more of anything except a colon.
+                                                            )                               # End named capture group.
+                                                            $                               # End of string.
+                                                        /x;                                 # x flag - Ignore white space and allow comments.
+
+
+        # Filters:
+        my  $language_handle_only_filter            =   sub {
+                                                            map {
+                                                                $ARG
+                                                                && ($ARG =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
+                                                                ()
+                                                            } @ARG;
+                                                        };
+
+        my  $priority_only_filter                   =   sub {
+                                                            map {
+                                                                $ARG
+                                                                && $ARG eq $priority_handle?   $ARG:
+                                                                ()
+                                                            } @ARG;
+                                                        };
+
+        my  $non_priority_filter                    =   sub {
+                                                            map {
+                                                                $ARG 
+                                                                && $ARG ne $priority_handle?   $ARG:
+                                                                ()
+                                                            } @ARG;
+                                                        };
+                                                        
+        my  $sort_alphabetically                    =   sub {
+                                                            sort { $a cmp $b } @ARG
+                                                        }; 
+
+        # Processing:
+        my  @language_handles                       =   $language_handle_only_filter->(@full_class_names);
+
+        # Premature exit:
+        return () unless @language_handles;
+
+        # Further Processing:
+        my  @found_priority_handle                  =   $priority_only_filter->(@language_handles);
+
+        my  @non_priority_handles                   =   $non_priority_filter->(@language_handles);
+                                                        
+        # Lead with priority...
+        push @ordered_language_handles              ,   @found_priority_handle
+                                                        if @found_priority_handle;
+
+        # ...followed by others...                      ...sorted:
+        push @ordered_language_handles              ,   $sort_alphabetically->(@non_priority_handles);
+
+        # Output:                                                        
+        return  @ordered_language_handles;
+
     }
 
     sub maketext_in_all_languages {
@@ -1211,41 +1286,32 @@ package ChangeNameOperation::Languages v1.0.0 {
         my  $language_base_class                    =   __PACKAGE__;
         my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
 
-        # Regex:
-        my  $matches_and_captures_language_handle   =   qr/
-                                                            (?<captured_language_handle>    # Start named capture group.
-                                                                [^:]+                       # One or more of anything except a colon.
-                                                            )                               # End named capture group.
-                                                            $                               # End of string.
-                                                        /x;                                 # x flag - Ignore white space and allow comments.
-
         # Processing:
-        for my $language_class (@{ mro::get_isarev($language_base_class) }) {
-
-            my  $language_handle                    =   $language_class
-                                                        && ($language_class =~ $matches_and_captures_language_handle)?  $+{captured_language_handle}:
-                                                        undef;
+        for my $language_handle ($self->ordered_language_handles($language_base_class)) {
                                                         
-            my  $language_instance                  =   ($language_base_class.'::'.$language_handle)->new;
+            if ($language_handle) {
 
-            my  $language_tag                       =   $language_instance->language_tag # Typically lower-case.
+                my  $language_instance              =   ($language_base_class.'::'.$language_handle)->new;
+
+                next unless $language_instance;
+
+                my  $language_tag                   =   $language_instance->language_tag # Typically lower-case.
                                                         || undef; # Or undefined.
+                                                        
+                next unless $language_tag;
 
-            if ($language_handle && $language_tag) {
+                my  $phrase                     =   $language_instance->maketext(@ARG);
+                my  $phrase_is_valid            =   $phrase || $phrase eq '0';
 
-                my  $phrase                         =   $language_instance->maketext(@ARG);
-                my  $phrase_is_valid                =   $phrase || $phrase eq '0';
-
-                # Build hash-compatible list
+                # HASH context:
                 push @in_all_languages, (
                     "$language_tag"             =>  $phrase_is_valid?   $phrase:
                                                     undef,
                 );
 
-                # Build string - or skip if no valid phrase:
-                if ($phrase_is_valid) {
-                    $in_all_languages_string   .=  sprintf($format, uc($language_tag), $phrase);
-                };
+                # SCALAR context...                 
+                $in_all_languages_string        .=  sprintf($format, uc($language_tag), $phrase)
+                                                    if $phrase_is_valid; #...if valid phrase.
 
             };
 
