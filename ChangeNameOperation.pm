@@ -774,9 +774,11 @@ my  @phrases = (
     'Starting subroutine.'=>'Starting subroutine.',
     'Multilingual variations of [_1] are as dumped below...'=>'Multilingual variations of [_1] are as dumped below...',
     'Initial option translation...'=>'Initial option translation...',
-    'Option translation as a list...'=>'Option translation as a list...',
+    'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'=>'Option translation as a list with codebase\'s existing option key "[_1]" omitted...',
     'Option string is: [_1]'=>'Option string is: [_1]',
-    
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
+    =>'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', # [language_name] is a function not to be translated.
+    'Leaving subroutine.'=>'Leaving subroutine.',
 );
 
 our %Lexicon = (
@@ -785,6 +787,10 @@ our %Lexicon = (
     @tokens,
     @phrases,
 );
+
+sub language_name {
+    return $Lexicon{'language.name'};
+}
 
 # ----------------------------------
 
@@ -1172,8 +1178,11 @@ my  @phrases = (
     'Starting subroutine.'=>'Unterprogramm wird gestartet.',
     'Multilingual variations of [_1] are as dumped below...'=>'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind ...',
     'Initial option translation...'=>'Anfängliche Optionsübersetzung...',
-    'Option translation as a list...'=>'Option Übersetzung als Liste...',
+    'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'=>'Optionenübersetzung als Liste, wobei der vorhandene Optionsschlüssel "[_1]" der Codebasis weggelassen wird...',
     'Option string is: [_1]'=>'Optionszeichenfolge ist: [_1]',
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
+    =>'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [language_name].',
+    'Leaving subroutine.'=>'Im Begriff, das Unterprogramm zu verlassen.',
 );
 
 our %Lexicon = (
@@ -1182,6 +1191,10 @@ our %Lexicon = (
     @tokens,
     @phrases,
 );
+
+sub language_name {
+    return $Lexicon{'language.name'};
+}
 
 # ----------------------------------
 
@@ -1966,14 +1979,15 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                             }
                                             split $contiguous_white_space, $translation;
 
-            $self->logger->debug('Option translation as a list...')->dumper(@values);
+            $self->logger->debug('Option translation as a list with codebase\'s existing option key "[_1]" omitted...', $option)->dumper(@values) if @values;
+            $self->logger->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation, ) unless @values;
 
             $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
                                             $blank;
         };
         
         $our_option_string              .=  $option_suffix;
-        $self->logger->debug('Option string is: [_1]', $our_option_string);
+        $self->logger->debug('Option string is: [_1]', $our_option_string)->debug('Leaving subroutine.');
         return  $our_option_string;
     }
 
@@ -2061,9 +2075,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
             'Language set to [_1]',
             $language->localise('language.name'),
         )
-        ->debug('Commandline Options are...')->dumper($self->{options})
-        ->debug('Commandline Arguments are...')->dumper($self->{arguments})
-        ->debug('Configuration Values are...')->dumper($self->{config});
+        ->debug('Commandline Options are...'    )->dumper($self->{options})
+        ->debug('Commandline Arguments are...'  )->dumper($self->{arguments})
+        ->debug('Configuration Values are...'   )->dumper($self->{config});
 
         if ($self->{config_messages}) {
 
