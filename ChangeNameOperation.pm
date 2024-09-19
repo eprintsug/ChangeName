@@ -2084,19 +2084,16 @@ package ChangeNameOperation::Modulino v1.0.0 {
         ->debug('Configuration Values are...'   )->dumper(%{$self->{config}});
 
         if ($self->{config_messages}) {
-
             
             # Display order is Error, Debug, Verbose, by design. 
             # See ChangeNameOperation::Config::load for context.
 
-            say 'bob';
             say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
                 $language->localise(@{$ARG})    for @{$self->{config_messages}->{error}};
-            say 'sally';
+
             $self->logger->debug(@{$ARG})       for @{$self->{config_messages}->{debug}};
-            say 'roger';
+
             $self->logger->verbose(@{$ARG})     for @{$self->{config_messages}->{verbose}};
-            say 'terry';
 
         }
 
