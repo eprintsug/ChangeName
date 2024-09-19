@@ -786,6 +786,12 @@ my  @phrases = (
     'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
     =>'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', # [language_name] is a function not to be translated.
     'Leaving subroutine.'=>'Leaving subroutine.',
+    'Configuration Values are...'=>'Configuration Values are...',
+    'In subroutine.'=>'In subroutine.',
+    'Creating object params for ChangeNameOperation'=>'Creating object params for ChangeNameOperation',
+    'Object params as follows...'=>'Object params as follows...',
+    'About to call start method on ChangeNameOperation class'=>'About to call start method on ChangeNameOperation class',
+
 );
 
 our %Lexicon = (
@@ -1190,6 +1196,12 @@ my  @phrases = (
     'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
     =>'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [language_name].',
     'Leaving subroutine.'=>'Im Begriff, das Unterprogramm zu verlassen.',
+    'Configuration Values are...'=>'Konfigurationswerte sind ...',
+    'In subroutine.'=>'Im Unterprogramm.',
+    'Creating object params for ChangeNameOperation'=>'Erstellen von Objektparametern für ChangeNameOperation',
+    'Object params as follows...'=>'Objektparameter wie folgt...',
+    'About to call start method on ChangeNameOperation class'=>'Im Begriff, die Methode „start“ der Klasse „ChangeNameOperation“ aufzurufen',
+
 );
 
 our %Lexicon = (
@@ -2106,6 +2118,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Initial Values:
         my  $self           =   shift;
 
+        $self->logger
+        ->debug('In subroutine.')
+        ->debug('Creating object params for ChangeNameOperation');
+
         my  @object_params  =   (
 
             # Flatten to one list - arguments overwrite options:
@@ -2123,10 +2139,15 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         );
 
+        $self->logger
+        ->debug('Object params as follows...')
+        ->dumper(@object_params)
+        ->debug('About to call start method on ChangeNameOperation class');
+
         ChangeNameOperation->start(@object_params);
 
         # Output:        
-        return $self;
+        return $self->logger->debug('Leaving method.');
 
     }
     
@@ -2306,7 +2327,7 @@ can be called.
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
-    
+        
         my  $self       =   {};
         bless $self, $class;
     
@@ -2894,7 +2915,7 @@ To do.
     # Private subs:
     
     sub _set_attributes {
-
+        warn 'In set attributes';
         # Initial Values:
         my  ($self, $params)        =   @ARG;
 
@@ -2911,7 +2932,11 @@ To do.
                                             #'repository',
                                         ];
 
+        warn 'About to set Repo. About to add attributes from params...';
+
         $self->_set_repository          ($params->{archive_id});
+
+        warn 'Set Repo. About to add attributes from params...';
 
         %{
             $self
@@ -2935,9 +2960,11 @@ To do.
                                             dumper_class_name_only  =>  $dumper_class_name_only,
                                             dumper_exclude          =>  $dumper_exclude,
                                         ),
-            yaml                    =>  $params->{config} // ChangeNameOperation::Config->new->load->get_data,  # TODO: Test this is a config hash
+            yaml                    =>  ($params->{config} // ChangeNameOperation::Config->new->load->get_data),  # TODO: Test this is a config hash
 
         );
+
+        warn 'About to use the logger...';
 
         $self
         ->log_debug                     ('Set initial instance attributes using params or defaults.')
