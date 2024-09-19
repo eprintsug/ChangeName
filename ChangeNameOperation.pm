@@ -236,6 +236,11 @@ package ChangeNameOperation::Config v1.0.0 {
             # Defaults:
             default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
             data                    =>  undef,
+            messages                =>  {
+                                            error   =>  [],
+                                            debug   =>  [],
+                                            verbose =>   [],
+                                        },
             
         );
 
@@ -366,10 +371,12 @@ Search Field Merge Type: ANY
         push @{ $self->{messages}->{debug} }    ,   ['config.load.debug.default_external_not_found', $default_filepath]
                                                     unless $default;
 
-        push @{ $self->{messages}->{verbose} }  ,   $external?              ['config.load.verbose.loaded_file', $external_filepath]:
-                                                    $fellback_to_default?   ['config.load.verbose.loaded_file', $default_filepath]:
-                                                    $internal?              ['config.load.verbose.internal']:
-                                                    ();
+        push @{ $self->{messages}->{verbose} }  ,   (
+                                                        $external?              ['config.load.verbose.loaded_file', $external_filepath]:
+                                                        $fellback_to_default?   ['config.load.verbose.loaded_file', $default_filepath]:
+                                                        $internal?              ['config.load.verbose.internal']:
+                                                        ()
+                                                    );
 
         # Output:             
         return $self;
@@ -383,8 +390,8 @@ Search Field Merge Type: ANY
     sub get_data_and_messages {
         my  $self   =   shift;
 
-        return  wantarray?   ($self->{data}, $self->{messages}):
-                [$self->{data}, $self->{messages}];
+        return  ($self->{data}, $self->{messages});
+                #[$self->{data}, $self->{messages}];
     }
     
     sub get_messages {
@@ -702,7 +709,7 @@ my  @phrases = (
     'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
     'Commandline Options are...'        =>  'Commandline Options are...',
     'Commandline Arguments are...'      =>  'Commandline Arguments are...',
-    'Language set to [_1].'             =>  'Language set to [_1].',
+    'Language set to [language_name].'  =>  'Language set to [language_name].',
     'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Archive, repository, and log related params were all required for log methods.',
     'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
@@ -1110,7 +1117,7 @@ my  @phrases = (
     'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
     'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
     'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
-    'Language set to [_1].'             =>  'Sprache auf [_1] eingestellt.',
+    'Language set to [language_name].'             =>  'Sprache auf [language_name] eingestellt.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Für die Protokollierung Methoden waren Archiv- und Repository-Attribute sowie mit der Protokollierung verbundene Parameter erforderlich.',
     'Now setting additional instance attributes from params...' => 'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt ...',
@@ -1366,10 +1373,10 @@ package ChangeNameOperation::CompileTimeConfigValues {
     sub new {
         # Initial Values:
         my  $class                  =   shift;
-        my  $filepath               =   shift;
+        #my  $filepath               =   shift;
         my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
-        my  @filepath_or_blank      =   $filepath || $filepath eq '0'?  ($filepath):
-                                        ();
+        #my  @filepath_or_blank      =   $filepath || $filepath eq '0'?  ($filepath):
+        #                                ();
 
         my  @object_params          =   (
 
@@ -1841,9 +1848,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         # Logger before options processed, so options are hardcoded here:
         $self->{logger}                 =   ChangeNameOperation::Log->new(
-                                                debug       =>  1,
-                                                verbose     =>  1,
-                                                no_trace    =>  1,
+                                                debug       =>  0,
+                                                verbose     =>  0,
+                                                no_trace    =>  0,
                                                 no_dumper   =>  0,
                                             )->set_caller_depth(3);
 
@@ -2064,30 +2071,31 @@ package ChangeNameOperation::Modulino v1.0.0 {
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages; # If nothing, will load default from YAML at bottom of this file.
+        )                               =   (ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML at bottom of this file.
 
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
         my  $language                   =   $self->logger->language->set_language(@language_tag_or_nothing);
 
         # Output:
-        $self
-        ->verbose(
-            'Language set to [_1]',
-            $language->localise('language.name'),
-        )
-        ->debug('Commandline Options are...'    )->dumper($self->{options})
-        ->debug('Commandline Arguments are...'  )->dumper($self->{arguments})
-        ->debug('Configuration Values are...'   )->dumper($self->{config});
+        $self->logger
+        ->verbose('Language set to [language_name].')
+        ->debug('Commandline Options are...'    )->dumper(%{$self->{options}})
+        ->debug('Commandline Arguments are...'  )->dumper(%{$self->{arguments}})
+        ->debug('Configuration Values are...'   )->dumper(%{$self->{config}});
 
         if ($self->{config_messages}) {
 
             # Display order is Error, Debug, Verbose, by design. 
             # See ChangeNameOperation::Config::load for context.
-
-            say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
-                $language->localise     ($ARG)  for @{$self->{config_messages}->{error}};
-            say $self->logger->debug    ($ARG)  for @{$self->{config_messages}->{debug}};
-            say $self->logger->verbose  ($ARG)  for @{$self->{config_messages}->{verbose}};
+            say 'bob';
+            say Dumper($self->{config_messages}->{error});
+            say ($prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
+                $language->localise     (%{@{$ARG}}))  for @{$self->{config_messages}->{error}};
+            say 'sally';
+            say Dumper($self->{config_messages}->{debug});
+            (say $self->logger->debug($ARG))  foreach (@{@{$self->{config_messages}->{debug}}});
+            say 'roger';
+            say $self->logger->verbose  (@{$ARG})  for @{$self->{config_messages}->{verbose}};
 
         }
 
@@ -2104,11 +2112,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
             # Flatten to one list - arguments overwrite options:
 
-            @{
+            %{
                 $self->{options}
             },
 
-            @{
+            %{
                 $self->{arguments}
             },
 
