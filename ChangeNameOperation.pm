@@ -2909,7 +2909,11 @@ To do.
     }
     
     sub localise {
-            return shift->{logger}->language->localise(@ARG);
+            # This smacks of duplication of code already in ChangeNameOperation::Language->localise.
+            my  $self   =   shift;
+            
+            return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
+                            ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
     # Private subs:
