@@ -2913,7 +2913,7 @@ To do.
             my  $self   =   shift;
             
             return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
-                            ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
+                            scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
     # Private subs:
