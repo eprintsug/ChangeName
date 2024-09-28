@@ -1894,6 +1894,24 @@ package ChangeNameOperation::Modulino v1.0.0 {
             config                      =>  undef,
             exact                       =>  0,
         };
+
+        my  $default_options = {
+            optional_strings =>  {
+                language                =>  undef,
+                config                  =>  undef,
+            },
+            negatable_options => {
+                live                    =>  0,
+                debug                   =>  0,
+                trace                   =>  0,
+                exact                   =>  0,
+            },
+            incremental_options => {
+                verbose                 =>  0,
+                no_dumper               =>  0,
+                no_trace                =>  0,
+            },
+        };
     
         # Command Line Options:    
         Getopt::Long::Parser->new->getoptionsfromarray(
@@ -1943,9 +1961,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
 
         # Update language and logger with options processed:
-        $self->{language}->set_language(
-            $self->{options}->{language} // ()
-        );
+        $self->{language}->set_language($self->{options}->{language}); # set_language contains validation of language.
 
         my  %logger_params              =   (
                                                 # Existing options
@@ -2039,21 +2055,19 @@ package ChangeNameOperation::Modulino v1.0.0 {
         $self->logger->debug('Option string is: [_1]', $our_option_string)->debug('Leaving subroutine.');
         return  $our_option_string;
     }
-
-    sub localise {
-        #say 'Dumping from Modulino...'.Dumper(caller);
-        return shift->logger->language->localise(@ARG);
-    }
     
     sub logger {
         return shift->{logger};
+    }
+
+    sub language {
+        return shift->{language};
     }
 
     sub utf8_check {
         my  $self                           =   shift;
         my  $continue                       =   1;
         my  @nothing                        =   ();     
-        my  $language                       =   $self->logger->language;   
         my  $input_that_requires_utf8       =   scalar (
                                                     map {
                                                         defined $ARG && $ARG?   $ARG:
@@ -2085,14 +2099,14 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 0;
         };
 
-        say $language->localise(
+        say $self->language->localise(
             $self->{no_input}?                  'commandline.no_arguments':
             $no_input_that_requires_utf8?       'commandline.utf8_not_needed':
             $acceptable_utf8_options?           'commandline.utf8_enabled':
             'commandline.utf8_not_enabled'
         );
         
-        die                                     $language->localise('commandline.end_program')
+        die                                     $self->language->localise('commandline.end_program')
                                                 unless $continue;
 
         return $self;
@@ -2113,10 +2127,12 @@ package ChangeNameOperation::Modulino v1.0.0 {
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   (ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML at bottom of this file.
+        )                               =   (ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML in ChangeNameOperation::Config::YAML.
 
+        # Update language, considering config values:
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
-        my  $language                   =   $self->logger->language->set_language(@language_tag_or_nothing);
+        $self->language->set_language(@language_tag_or_nothing);
+        $self->logger->language($self->language);
 
         # Output:
         $self->logger
@@ -2131,11 +2147,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
             # See ChangeNameOperation::Config::load for context.
 
             say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
-                $language->localise(@{$ARG})    for @{$self->{config_messages}->{error}};
+                $self->language->localise(@{$ARG})  for @{$self->{config_messages}->{error}};
 
-            $self->logger->debug(@{$ARG})       for @{$self->{config_messages}->{debug}};
+            $self->logger->debug(@{$ARG})           for @{$self->{config_messages}->{debug}};
 
-            $self->logger->verbose(@{$ARG})     for @{$self->{config_messages}->{verbose}};
+            $self->logger->verbose(@{$ARG})         for @{$self->{config_messages}->{verbose}};
 
         }
 
@@ -2164,8 +2180,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
-            config  =>  $self->config,
-            logger  =>  $self->logger,
+            config          =>  $self->config,
+            language        =>  $self->language,
+            logger          =>  $self->logger,
 
         );
 
@@ -3592,16 +3609,18 @@ package ChangeNameOperation::Language v1.0.0 {
     
     sub set_language {
         my  $self           =   shift;
+
+        return $self unless @ARG;
+
         my  @nothing        =   ();
 
-        my  @defined_values =   @ARG?   (
-                                            map {
-                                                defined $ARG?   $ARG:
-                                                $nothing
-                                            }
-                                            @ARG
-                                        ):
-                                $nothing;
+        my  @defined_values =   (
+                                    map {
+                                        defined $ARG?   $ARG:
+                                        $nothing
+                                    }
+                                    @ARG
+                                );
 
         $self->{language}   =   @defined_values?   (ChangeNameOperation::Languages->get_handle(@defined_values) || $self->{language}):
                                 $self->{language};
