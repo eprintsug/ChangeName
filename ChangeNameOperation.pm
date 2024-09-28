@@ -1871,6 +1871,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         # Object Attributes:
         $self->{no_input}               =   !(scalar @ARG);
+        $self->{language}               =   ChangeNameOperation::Language->new;
 
         # Logger before options processed, so options are hardcoded here:
         $self->{logger}                 =   ChangeNameOperation::Log->new(
@@ -1878,6 +1879,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 verbose     =>  0,
                                                 no_trace    =>  0,
                                                 no_dumper   =>  0,
+                                                language    =>  $self->{language},
                                             )->set_caller_depth(3);
 
         # Default Options:
@@ -1937,8 +1939,22 @@ package ChangeNameOperation::Modulino v1.0.0 {
             part                        =>  shift,
         };
 
-        # Logger after options processed:
-        $self->{logger}                 =   ChangeNameOperation::Log->new(%{ $self->{options} })->set_caller_depth(3);
+        # Use options to set language attribute:
+
+
+        # Update language and logger with options processed:
+        $self->{language}->set_language(
+            $self->{options}->{language} // ()
+        );
+
+        my  %logger_params              =   (
+                                                # Existing options
+                                                %{ $self->{options} },
+
+                                                # Our overriding options:
+                                                language    =>  $self->{language},
+                                            );
+        $self->{logger}                 =   ChangeNameOperation::Log->new(%logger_params)->set_caller_depth(3);
 
         
         # Set later via setup method, called in last line of this new method:
@@ -3576,8 +3592,18 @@ package ChangeNameOperation::Language v1.0.0 {
     
     sub set_language {
         my  $self           =   shift;
-        
-        $self->{language}   =   @ARG?   (ChangeNameOperation::Languages->get_handle(@ARG) || $self->{language}):
+        my  @nothing        =   ();
+
+        my  @defined_values =   @ARG?   (
+                                            map {
+                                                defined $ARG?   $ARG:
+                                                $nothing
+                                            }
+                                            @ARG
+                                        ):
+                                $nothing;
+
+        $self->{language}   =   @defined_values?   (ChangeNameOperation::Languages->get_handle(@defined_values) || $self->{language}):
                                 $self->{language};
                                 
         die                     scalar ChangeNameOperation::Languages->maketext_in_all_languages('language.error.set_language')
