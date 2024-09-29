@@ -189,7 +189,7 @@ Performs the change name operation.
 
 =cut
 
-package ChangeNameOperation::CommonUtilities v1.0.0 {
+package ChangeNameOperation::Utilities v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -216,10 +216,10 @@ package ChangeNameOperation::CommonUtilities v1.0.0 {
                                                     && $value->isa($acceptable_class);
 
         # Validation Handling:
-        die                                         $self->{language}->localise('log.replace_language_object.error.invalid_object', $value )
+        die                                         $self->{language}->localise('utilities.validate_class.invalid_object')
                                                     unless $valid_object;
 
-        die                                         $self->{language}->localise('log.replace_language_object.error.invalid_class', $value, $acceptable_class)
+        die                                         $self->{language}->localise('utilities.validate_class.invalid_class', blessed($value), $acceptable_class)
                                                     unless $valid_language_object;
 
         # Output:
@@ -486,7 +486,6 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'English (United Kingdom)',
-
 'language.error.set_language'   =>  'Trouble finding a language to use.',
 
 'options.language'              =>  'language lang',
@@ -505,15 +504,18 @@ my  @tokens = (
 'input.none'                    =>  'NONE',
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
+
 'separator.name_parts'          =>  ' ', #space
 'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
 'separator.search_fields'       =>  ', ', #comma space
 'separator.stringify_arrayref'  =>  ', ', #comma space
+
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
 'name.honourific'               =>  'Honourific Name',
 'name.lineage'                  =>  'Lineage Name',
+
 'display_line'                  =>  'Record [_1]: [_2].',
 
 'log.type.verbose'              =>  'verbose',
@@ -522,8 +524,14 @@ my  @tokens = (
 'log.type.dumper'               =>  'dumper',
 'log.type.trace'                =>  'trace',
 
-'log.replace_language_object.error.invalid_object' =>
-'Error replacing the language object that the logger uses, with the supplied objectlogger only accepts objects of the [_1] class.',
+'utilities.validate_class.invalid_object' =>
+'Error - Not a valid object.',
+
+'utilities.validate_class.invalid_class' =>
+'Error - Your [_1] object is considered an invalid object
+for this purpose, due to its class.
+The only acceptable object class for this purpose is [_2]
+- so please use an object of this class instead.',
 
 'config.load.error.custom_external_not_found'=>
 'Config file [_1] not found.',
@@ -898,7 +906,6 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'Deutsch (Deutschland)',
-
 'language.error.set_language'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
 
 'options.language'              =>  'sprache spr',
@@ -917,11 +924,13 @@ my  @tokens = (
 'input.none'                    =>  'KEINER',
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
+
 'separator.name_parts'          =>  ' ', #space
 'separator.name_values'         =>  ', ', #comma space
 'separator.new_line'            =>  $new_line,
 'separator.search_fields'       =>  ', ', #comma space
 'separator.stringify_arrayref'  =>  ', ', #comma space
+
 'name.given'                    =>  'Vorname',
 'name.family'                   =>  'Familienname',
 'name.honourific'               =>  'Ehrenname',
@@ -938,6 +947,15 @@ my  @tokens = (
 'log.type.debug'                =>  'debug',
 'log.type.dumper'               =>  'dumper',
 'log.type.trace'                =>  'stacktrace',
+
+'utilities.validate_class.invalid_object' =>
+'Fehler – Kein gültiges Objekt.',
+
+'utilities.validate_class.invalid_class' =>
+'Fehler - Ihr [_1] Objekt wird aufgrund seiner Klasse
+für diesen Zweck als ungültiges Objekt betrachtet.
+Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
+- verwenden Sie stattdessen ein Objekt dieser Klasse.',
 
 'config.load.error.custom_external_not_found'=>
 'Konfigurationsdatei [_1] nicht gefunden.',
