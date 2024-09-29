@@ -1512,7 +1512,7 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-#    ChangeNameOperation::CompileTimeConfigValues->import;
+    ChangeNameOperation::Utilities->import;
     use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
@@ -1694,30 +1694,34 @@ See L</new> method for info on acceptable object parameters.
 
     sub replace_language_object {
         my  $self                   =   shift;
+
+        $self->debug('Entering method.')->debug('Current language object is as follows...')->dumper($self->{language});
+
+         # Initial values:
         my  $new_language_object    =   shift;
 
         # Premature exit:
-        return                          $self
+        return                          $self->debug('Leaving method prematurely due to no replacement provided.')
                                         unless $new_language_object;
-                                
+
+        $self->debug('Proposed replacement language object is as follows...')->dumper($new_language_object);
+
         # Initial values:
-        my  $valid_language_object  =   defined $new_language_object
-                                        && blessed($new_language_object)
-                                        && $new_language_object->isa($self->{acceptable_language_class); # This can be a util to reduce code repetition.
-        
-        # Validation Error handling:
-        die                             $self->{language}->localise('log.replace_language_object.error.invalid_object')
-                                        unless $valid_language_object;
+        my  $valid_language_object  =   $self->validate_class($new_language_object => $self->{acceptable_language_class});
 
         # Processing:
-        $self->{language}           =   $new_language_object;
+        if ($valid_language_object) {
+            $self->debug->('Proposed replacement was found to be a valid language object.');
+            $self->{language}       =   $valid_language_object;
+            $self->debug->('Replacement operation performed.');
+        }
 
         # Output:
-        return $self;
+        return $self->debug('Leaving method.');
     }
     
-    sub get_language {
-        return $self->{language} unless @ARG;
+    sub language {
+        return $self->{language};
     }
     
     sub set_dumper_default {
