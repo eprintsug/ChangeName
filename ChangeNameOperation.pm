@@ -208,27 +208,26 @@ package ChangeNameOperation::Utilities v1.0.0 {
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
         
-        # Definitions:
+        # Object Validation & Ouput:
+
         my  $valid_object                       =   (defined $value) && blessed($value)?  $value:
                                                     undef;
 
-        my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
-                                                    undef;
-
-        # Validation Handling:
         $self->logger                               ->debug('utilities.validate_class.invalid_object')
                                                     unless $valid_object;
 
-        # Premature exit:
         return                                      undef
                                                     unless $valid_object;
 
-        # Further Validation Handling:
+
+        # Object Class Validation & Output:
+        my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
+                                                    undef;
+
         $self->logger                               ->debug('utilities.validate_class.invalid_class', blessed($valid_object), $acceptable_class)
                                                     unless $valid_object_of_acceptable_class;
 
-        # Output:
-        return  $valid_object_of_acceptable_class;
+        return                                      $valid_object_of_acceptable_class;
     }
 
 }
