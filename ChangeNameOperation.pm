@@ -207,6 +207,7 @@ package ChangeNameOperation::Utilities v1.0.0 {
 
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
+
         
         # Object Validation & Ouput:
 
@@ -221,6 +222,7 @@ package ChangeNameOperation::Utilities v1.0.0 {
 
 
         # Object Class Validation & Output:
+
         my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
                                                     undef;
 
