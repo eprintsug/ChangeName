@@ -497,7 +497,7 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'English (United Kingdom)',
-'language.error.set_language'   =>  'Trouble finding a language to use.',
+'language.error.set_language_handle'   =>  'Trouble finding a language to use.',
 
 'options.language'              =>  'language lang',
 'options.config'                =>  'config configuration',
@@ -923,7 +923,7 @@ my  @configurations = (
 my  @tokens = (
 
 'language.name'                 =>  'Deutsch (Deutschland)',
-'language.error.set_language'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
+'language.error.set_language_handle'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
 
 'options.language'              =>  'sprache spr',
 'options.config'                =>  'konfig konfiguration',
@@ -1658,7 +1658,7 @@ See L</new> method for info on acceptable object parameters.
     
         );
 
-        $self->{repository}             =  $self->valid_repository($params->{repository}); # Requires language to be set first.
+        $self->{repository}             =  $self->validate_class($params->{repository} => 'EPrints::Repository'); # Requires language to be set first.
         $self->{dumper_default}         =  $self;
         
         return  $self;
@@ -1752,13 +1752,13 @@ See L</new> method for info on acceptable object parameters.
     }
 
     sub set_repository {
-        my  $self       =   shift;
-        my  $repository =   $self->valid_repository(shift); # Valid or undef.
+        my  $self                   =   shift;
+        my  $new_repository         =   $self->validate_class(shift => 'EPrints::Repository'); # Valid or undef.
         
-        warn                        $self->localise('log.set_repository.error.bad_value')
-                                    unless $repository; # Should this use _log instead of warn?
+        $self->log_debug('log.set_repository.error.bad_value') unless $repository;
 
-        $self->{repository}     =   $repository;
+        $self->{repository}     =   $repository?    $repository:
+                                    $self->{repository};
 
         return $self;
     }
@@ -3082,23 +3082,6 @@ To do.
         # Initial Values:
         my  ($self, $params)        =   @ARG;
 
-
-
-        my  $valid_language_object  =   defined $params->{language})
-                                        && blessed($params->{language})
-                                        && $params->{language}->isa('ChangeName::Language');
-        my  $valid_logger_object    =   defined $params->{logger})
-                                        && blessed($params->{logger})
-                                        && $params->{language}->isa('ChangeName::Log');
-
-        $self->{language}           =   $valid_language_object? $params->{language}:
-                                        # If not, assume a language tag string from which we can create an object...
-                                        ChangeName::Language->new->set_language_handle($params->{language}); # set_language_handle method can handle if $params->{language} is undef.
-                                        
-        $self->{logger}             =   $valid_logger_object?   $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):
-                                        
-        $self->{logger}->replace_language_object($self->{language});
-        $self->language->debug('In method.');
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
@@ -3112,11 +3095,43 @@ To do.
                                             #'repository',
                                         ];
 
-        warn 'About to set Repo. About to add attributes from params...';
+        my  $valid_language_object  =   $self->validate_class(
+                                            $params->{language}     =>  'ChangeName::Language',
+                                        );
 
-        $self->_set_repository          ($params->{archive_id});
+        my  $valid_logger_object    =   $self->validate_class(
+                                            $params->{logger}       =>  'ChangeName::Log',
+                                        );
 
-        warn 'Set Repo. About to add attributes from params...';
+        $self->{language}           =   $valid_language_object? $valid_language_object:
+                                        # If not, assume a language tag string from which we can create an object...
+                                        ChangeName::Language->new($params->{language});
+
+        $self->{logger}             =   $valid_logger_object?   $valid_logger_object
+                                                                ->set_dumper_class_name_only    ($dumper_class_name_only    )
+                                                                ->set_dumper_exclude            ($dumper_exclude            )
+                                                                ->replace_language_object       ($self->language            ):
+                                        ChangeName::Log->new(
+                                            debug                   =>  $params->{debug},
+                                            verbose                 =>  $params->{verbose},
+                                            trace                   =>  $params->{trace},
+                                            no_dumper               =>  $params->{no_dumper},
+                                            no_trace                =>  $params->{no_trace},
+
+                                            language                =>  $self->language,
+                                            dumper_class_name_only  =>  $dumper_class_name_only,
+                                            dumper_exclude          =>  $dumper_exclude,
+                                        );
+
+        $self->log_debug    ('In method.'                                                   )
+        ->log_debug         ('About to set Repo. About to add attributes from params...'    )
+        ->_set_repository   ($params->{archive_id}                                          );
+
+        $self->{logger}->set_repository($self->{repository});
+
+        $self->log_debug    ('Set Repo. About to add attributes from params...'             );
+
+        $self
 
         %{
             $self
@@ -3246,6 +3261,10 @@ To do.
     
     }
     
+    sub language {
+        shift->{language};
+    }
+
     sub _tally_frequencies {
     
         my  ($self)  =   @ARG;
@@ -3706,7 +3725,7 @@ package ChangeName::Language v1.0.0 {
                                     # on Perl v5.18 or lower.
                                     
     ChangeName::Languages->import;
-    use Data::Dumper;
+    #use Data::Dumper;
 
     # Construct Object:
     sub new {
@@ -3755,7 +3774,7 @@ package ChangeName::Language v1.0.0 {
         $self->{language_handle}    =   @defined_values?   (ChangeName::Languages->get_handle(@defined_values) || $self->{language_handle}):
                                         $self->{language_handle};
                                 
-        die                     scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language')
+        die                     scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language_handle')
                                 unless $self->{language_handle};
 
         return $self;
