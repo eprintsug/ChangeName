@@ -207,13 +207,23 @@ package ChangeNameOperation::CommonUtilities v1.0.0 {
 
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
-        my  $valid_language_object              =   defined $new_language_object
-                                                    && blessed($new_language_object)
-                                                    && $new_language_object->isa($acceptable_class);
         
-        # Validation Error handling:
-        die                             $self->{language}->localise('log.replace_language_object.error.invalid_object')
-                                        unless $valid_language_object;        
+        # Definitions:
+        my  $valid_object                       =   defined $value
+                                                    && blessed($value);
+
+        my  $valid_language_object              =   $valid_object
+                                                    && $value->isa($acceptable_class);
+
+        # Validation Handling:
+        die                                         $self->{language}->localise('log.replace_language_object.error.invalid_object', $value )
+                                                    unless $valid_object;
+
+        die                                         $self->{language}->localise('log.replace_language_object.error.invalid_class', $value, $acceptable_class)
+                                                    unless $valid_language_object;
+
+        # Output:
+        return $value;
     }
 
 }
