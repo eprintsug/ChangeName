@@ -866,6 +866,12 @@ my  @phrases = (
     'Creating object params for ChangeNameOperation'=>'Creating object params for ChangeNameOperation',
     'Object params as follows...'=>'Object params as follows...',
     'About to call start method on ChangeNameOperation class'=>'About to call start method on ChangeNameOperation class',
+    'Current language object is as follows...'=>'Current language object is as follows...',
+    'Leaving method prematurely due to no replacement provided.'=>'Leaving method prematurely due to no replacement provided.',
+    'Proposed replacement language object is as follows...'=>'Proposed replacement language object is as follows...',
+    'Proposed replacement was found to be a valid language object.'=>'Proposed replacement was found to be a valid language object.',
+    'Replacement operation performed.'=>'Replacement operation performed.',
+    'In method.'=>'In method.',
 
 );
 
@@ -1286,7 +1292,12 @@ my  @phrases = (
     'Creating object params for ChangeNameOperation'=>'Erstellen von Objektparametern für ChangeNameOperation',
     'Object params as follows...'=>'Objektparameter wie folgt...',
     'About to call start method on ChangeNameOperation class'=>'Im Begriff, die Methode „start“ der Klasse „ChangeNameOperation“ aufzurufen',
-
+    'Current language object is as follows...'=>'Das aktuelle Sprachobjekt ist wie folgt...',
+    'Leaving method prematurely due to no replacement provided.'=>'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
+    'Proposed replacement language object is as follows...'=>'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
+    'Proposed replacement was found to be a valid language object.'=>'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
+    'Replacement operation performed.'=>'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
+    'In method.'=>'In der Methode.',
 );
 
 our %Lexicon = (
@@ -1835,7 +1846,7 @@ See L</new> method for info on acceptable object parameters.
 
         my  $valid_repository       =   $self->valid_repository($self->{repository});
         
-        my  $language               =   $self->language->get_language;
+        my  $language_handle        =   $self->language->get_language_handle;
         my  $blank                  =   q{};
         my  $messages               =   $blank;
         my  $trace_prefixes         =   $blank;
@@ -1844,14 +1855,14 @@ See L</new> method for info on acceptable object parameters.
 
         # Content:
         
-        my  @languages              =   $language?  ($language->language_tag):
+        my  @languages              =   $language_handle?  ($language_handle->language_tag):
                                         ChangeNameOperation::Languages->ordered_language_handles;
 
         my  $number_of_languages    =   scalar @languages;
                                           
         foreach my $current_language (@languages) {
 
-            $self->language->set_language($current_language);
+            $self->language->set_language_handle($current_language);
 
             my  $last_loop          =   ++$loop_count eq $number_of_languages;
 
@@ -1879,7 +1890,7 @@ See L</new> method for info on acceptable object parameters.
                                         Dumper(@ARG);
             chomp($messages);
         };
-        $self->language->unset_language unless $language;
+        $self->language->unset_language_handle unless $language_handle;
 
         # Log:
         $self->{repository}->log($messages)  if      $valid_repository;
@@ -1892,7 +1903,7 @@ See L</new> method for info on acceptable object parameters.
         $loop_count                 =   0;
         foreach my $current_language (@languages) {
 
-            $self->language->set_language($current_language);
+            $self->language->set_language_handle($current_language);
 
             my  $last_loop          =   ++$loop_count eq $number_of_languages;
 
@@ -1909,7 +1920,7 @@ See L</new> method for info on acceptable object parameters.
 
         }
 
-        $self->language->unset_language unless $language;
+        $self->language->unset_language_handle unless $language_handle;
 
         $self->{repository}->log($trace_prefixes)   if      $valid_repository;
         say STDERR $trace_prefixes                  unless  $valid_repository;
@@ -2062,7 +2073,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
 
         # Update language and logger with options processed:
-        $self->{language}->set_language($self->{options}->{language}); # set_language contains validation of language.
+        $self->{language}->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
 
         my  %logger_params              =   (
                                                 # Existing options
@@ -2232,8 +2243,8 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         # Update language, considering config values:
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
-        $self->language->set_language(@language_tag_or_nothing);
-        $self->logger->set_language($self->language);
+        $self->language->set_language_handle(@language_tag_or_nothing);
+        $self->logger->replace_language_object($self->language);
 
         # Output:
         $self->logger
@@ -3060,16 +3071,19 @@ To do.
             # This smacks of duplication of code already in ChangeNameOperation::Language->localise.
             my  $self   =   shift;
             
-            return          $self->{logger}?    $self->{logger}->get_language->localise(@ARG):
+            return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
                             scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
     # Private subs:
     
     sub _set_attributes {
-        $self->language 'In set attributes';
+
         # Initial Values:
         my  ($self, $params)        =   @ARG;
+
+
+
         my  $valid_language_object  =   defined $params->{language})
                                         && blessed($params->{language})
                                         && $params->{language}->isa('ChangeNameOperation::Language');
@@ -3079,12 +3093,12 @@ To do.
 
         $self->{language}           =   $valid_language_object? $params->{language}:
                                         # If not, assume a language tag string from which we can create an object...
-                                        ChangeNameOperation::Language->new->set_language($params->{language}); # set_language method can handle if $params->{language} is undef.
+                                        ChangeNameOperation::Language->new->set_language_handle($params->{language}); # set_language_handle method can handle if $params->{language} is undef.
                                         
         $self->{logger}             =   $valid_logger_object?   $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):
                                         
-        $self->{logger}->set_language($self->{language});
-                                        
+        $self->{logger}->replace_language_object($self->{language});
+        $self->language->debug('In method.');
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
@@ -3700,7 +3714,7 @@ package ChangeNameOperation::Language v1.0.0 {
         my  $class              =   shift;
         my  @language_tags      =   @ARG;
         my  @default_attributes = (
-            language            =>  undef,
+            language_handle     =>  undef,
         );
         my  $self               =   {@default_attributes};
 
@@ -3708,7 +3722,7 @@ package ChangeNameOperation::Language v1.0.0 {
         bless $self             ,   $class;
         
         # Set Attributes:
-        $self->set_language(@language_tags) if @language_tags;
+        $self->set_language_handle(@language_tags) if @language_tags;
                             
         # Output:
         return $self;
@@ -3718,42 +3732,43 @@ package ChangeNameOperation::Language v1.0.0 {
     sub localise {
             my  $self   =   shift;
             #say 'Dumping caller...'.Dumper (caller);
-            return          $self->{language}?   $self->{language}->maketext(@ARG):
+            return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
                             scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
-    sub set_language {
-        my  $self           =   shift;
+    sub set_language_handle {
+        my  $self                   =   shift;
 
-        return $self unless @ARG;
+        return                          $self
+                                        unless @ARG;
 
-        my  @nothing        =   ();
+        my  @nothing                =   ();
 
-        my  @defined_values =   (
-                                    map {
-                                        defined $ARG?   $ARG:
-                                        $nothing
-                                    }
-                                    @ARG
-                                );
+        my  @defined_values         =   (
+                                            map {
+                                                defined $ARG?   $ARG:
+                                                $nothing
+                                            }
+                                            @ARG
+                                        );
 
-        $self->{language}   =   @defined_values?   (ChangeNameOperation::Languages->get_handle(@defined_values) || $self->{language}):
-                                $self->{language};
+        $self->{language_handle}    =   @defined_values?   (ChangeNameOperation::Languages->get_handle(@defined_values) || $self->{language_handle}):
+                                        $self->{language_handle};
                                 
         die                     scalar ChangeNameOperation::Languages->maketext_in_all_languages('language.error.set_language')
-                                unless $self->{language};
+                                unless $self->{language_handle};
 
         return $self;
     }
 
-    sub unset_language {
+    sub unset_language_handle {
         my  $self   =   shift;
-        $self->{language}   =   undef;
+        $self->{language_handle}   =   undef;
         return $self;
     }
     
-    sub get_language {
-        return shift->{language};
+    sub get_language_handle {
+        return shift->{language_handle};
     }
 
 }
