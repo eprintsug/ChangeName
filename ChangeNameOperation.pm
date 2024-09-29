@@ -208,21 +208,12 @@ package ChangeNameOperation::Utilities v1.0.0 {
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
 
-        
-        # OBJECT Validation & Ouput:
-
-        my  $valid_object                       =   (defined $value) && blessed($value)?  $value:
-                                                    undef;
-
-        $self->logger                               ->debug('utilities.validate_class.invalid_object')
-                                                    unless $valid_object;
-
+        # OBJECT Validation:
+        my  $valid_object                       =   $self->valid_object($value);
         return                                      undef
                                                     unless $valid_object;
 
-
-        # OBJECT CLASS Validation & Output:
-
+        # CLASS Validation:
         my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
                                                     undef;
 
@@ -230,6 +221,20 @@ package ChangeNameOperation::Utilities v1.0.0 {
                                                     unless $valid_object_of_acceptable_class;
 
         return                                      $valid_object_of_acceptable_class;
+    }
+    
+    sub valid_object {
+
+        my  ($self, $value) =   @ARG;
+
+        my  $valid_object   =   (defined $value) && blessed($value)?  $value:
+                                                    undef;
+
+        $self->logger           ->debug('utilities.valid_object.invalid_object')
+                                unless $valid_object;
+
+        return                  $valid_object;
+
     }
 
 }
@@ -530,7 +535,7 @@ my  @tokens = (
 'log.type.dumper'               =>  'dumper',
 'log.type.trace'                =>  'trace',
 
-'utilities.validate_class.invalid_object' =>
+'utilities.valid_object.invalid_object' =>
 'Error - Not a valid object.',
 
 'utilities.validate_class.invalid_class' =>
@@ -954,7 +959,7 @@ my  @tokens = (
 'log.type.dumper'               =>  'dumper',
 'log.type.trace'                =>  'stacktrace',
 
-'utilities.validate_class.invalid_object' =>
+'utilities.valid_object.invalid_object' =>
 'Fehler – Kein gültiges Objekt.',
 
 'utilities.validate_class.invalid_class' =>
