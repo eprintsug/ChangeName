@@ -16,7 +16,7 @@ English would go here...
 
 =head1 FILENAME
 
-ChangeNameOperation.pm
+ChangeName.pm
 
 =cut
 
@@ -25,10 +25,10 @@ ChangeNameOperation.pm
 =head1 SYNOPSIS
 
     # Run file at the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeName.pm
 
     # Run at the command line with arguments and flags:
-    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
+    perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exact --verbose --live
 
 =head1 FILE DESCRIPTION
 
@@ -50,7 +50,7 @@ them.
 
 After such language class loading,
 the next package executed is then the first in the file
-- the L</ChangeNameOperation> package.
+- the L</ChangeName> package.
 
 =head1 ARGUMENTS
 
@@ -183,13 +183,13 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 
 =cut
 
-=head2 ChangeNameOperation
+=head2 ChangeName
 
 Performs the change name operation.
 
 =cut
 
-package ChangeNameOperation::Utilities v1.0.0 {
+package ChangeName::Utilities v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -240,7 +240,7 @@ package ChangeNameOperation::Utilities v1.0.0 {
 }
 
 # Load Configuration - positioned last and without a package block, so __DATA__ can be used:
-package ChangeNameOperation::Config::YAML v1.0.0 {
+package ChangeName::Config::YAML v1.0.0 {
 
 sub data {
 
@@ -312,7 +312,7 @@ Search Field Merge Type: ANY
 
 }
 
-package ChangeNameOperation::Config v1.0.0 {
+package ChangeName::Config v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -357,7 +357,7 @@ package ChangeNameOperation::Config v1.0.0 {
             %{$self},
 
             # Defaults:
-            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameOperationConfig.yml',
+            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameConfig.yml',
             data                    =>  undef,
             messages                =>  {
                                             error   =>  [],
@@ -419,12 +419,12 @@ package ChangeNameOperation::Config v1.0.0 {
                                         $default?   LoadFile($default_filepath):            # Will die on any load error.
                         
                                         # Internal YAML __DATA__:
-                                        Load(ChangeNameOperation::Config::YAML::data);      # Will die on any load error.
+                                        Load(ChangeName::Config::YAML::data);      # Will die on any load error.
     
 
                                             #do {                                            # 'do' returns last value of block.
                                             #    local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
-                                            #    <ChangeNameOperation::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                            #    <ChangeName::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
                                             #}
                                         #);
 
@@ -463,22 +463,22 @@ package ChangeNameOperation::Config v1.0.0 {
     }
     
 
-}; # ChangeNameOperation::Config Package.
+}; # ChangeName::Config Package.
 
 LOAD_LANGUAGE_CLASSES_FIRST: BEGIN {
 
-=item ChangeNameOperation::Languages::en_gb
+=item ChangeName::Languages::en_gb
 
 British English.
 
 =cut
 
-package ChangeNameOperation::Languages::en_gb { 
+package ChangeName::Languages::en_gb { 
 
 # Use --lang=en-GB at the commandline to use it.
 
-ChangeNameOperation::Languages->import;
-our @ISA                        =   ('ChangeNameOperation::Languages');
+ChangeName::Languages->import;
+our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
@@ -604,7 +604,7 @@ and no such params were provided.',
 To enable UTF-8 arguments,
 please run the script again with, for example, -CAS after perl as such...
 
-    perl -CAS ChangeNameOperation.pm
+    perl -CAS ChangeName.pm
     
 To learn more,
 you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
@@ -863,9 +863,9 @@ my  @phrases = (
     'Leaving subroutine.'=>'Leaving subroutine.',
     'Configuration Values are...'=>'Configuration Values are...',
     'In subroutine.'=>'In subroutine.',
-    'Creating object params for ChangeNameOperation'=>'Creating object params for ChangeNameOperation',
+    'Creating object params for ChangeName::Operation'=>'Creating object params for ChangeName::Operation',
     'Object params as follows...'=>'Object params as follows...',
-    'About to call start method on ChangeNameOperation class'=>'About to call start method on ChangeNameOperation class',
+    'About to call start method on ChangeName::Operation class'=>'About to call start method on ChangeName::Operation class',
     'Current language object is as follows...'=>'Current language object is as follows...',
     'Leaving method prematurely due to no replacement provided.'=>'Leaving method prematurely due to no replacement provided.',
     'Proposed replacement language object is as follows...'=>'Proposed replacement language object is as follows...',
@@ -892,19 +892,19 @@ sub language_name {
 
 }
 
-=item ChangeNameOperation::Languages::de_de
+=item ChangeName::Languages::de_de
 
 German.
 
 =cut
 
-package ChangeNameOperation::Languages::de_de {
+package ChangeName::Languages::de_de {
 
 # Use --lang=de-DE at the commandline to use it.
 
 # Specific:
-ChangeNameOperation::Languages->import;
-our @ISA                        =   ('ChangeNameOperation::Languages');
+ChangeName::Languages->import;
+our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
@@ -1030,7 +1030,7 @@ Um UTF-8-Argumente zu aktivieren,
 führen Sie das Skript bitte erneut aus,
 beispielsweise mit -CAS nach Perl als solchem ...
 
-     perl -CAS ChangeNameOperation.pm
+     perl -CAS ChangeName.pm
     
 Um mehr zu erfahren, 
 können Sie 
@@ -1289,9 +1289,9 @@ my  @phrases = (
     'Leaving subroutine.'=>'Im Begriff, das Unterprogramm zu verlassen.',
     'Configuration Values are...'=>'Konfigurationswerte sind ...',
     'In subroutine.'=>'Im Unterprogramm.',
-    'Creating object params for ChangeNameOperation'=>'Erstellen von Objektparametern für ChangeNameOperation',
+    'Creating object params for ChangeName::Operation'=>'Erstellen von Objektparametern für ChangeName::Operation',
     'Object params as follows...'=>'Objektparameter wie folgt...',
-    'About to call start method on ChangeNameOperation class'=>'Im Begriff, die Methode „start“ der Klasse „ChangeNameOperation“ aufzurufen',
+    'About to call start method on ChangeName::Operation class'=>'Im Begriff, die Methode „start“ der Klasse „ChangeName::Operation“ aufzurufen',
     'Current language object is as follows...'=>'Das aktuelle Sprachobjekt ist wie folgt...',
     'Leaving method prematurely due to no replacement provided.'=>'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
     'Proposed replacement language object is as follows...'=>'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
@@ -1319,7 +1319,7 @@ sub language_name {
 
 };
 
-package ChangeNameOperation::Languages v1.0.0 {
+package ChangeName::Languages v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -1339,8 +1339,8 @@ package ChangeNameOperation::Languages v1.0.0 {
     
     sub fallback_language_classes {
         my  $self   =   shift;
-        # I believe these are to be given as relative to ChangeNameOperation::Languages
-        # rather than a full qualified class name like ChangeNameOperation::Languages::en_gb
+        # I believe these are to be given as relative to ChangeName::Languages
+        # rather than a full qualified class name like ChangeName::Languages::en_gb
         my  @list_of_classes    =   (
             $self->ordered_language_handles,
         );
@@ -1465,9 +1465,9 @@ package ChangeNameOperation::Languages v1.0.0 {
 
 
     1;
-}; # ChangeNameOperation::Languages Package.
+}; # ChangeName::Languages Package.
 
-package ChangeNameOperation::CompileTimeConfigValues {
+package ChangeName::CompileTimeConfigValues {
 
     # Standard:
     use     English qw(
@@ -1482,7 +1482,7 @@ package ChangeNameOperation::CompileTimeConfigValues {
         # Initial Values:
         my  $class                  =   shift;
         #my  $filepath               =   shift;
-        my  $prefix                 =   '[ChangeNameOperation::CompileTimeConfigValues::new] - ';
+        my  $prefix                 =   '[ChangeName::CompileTimeConfigValues::new] - ';
         #my  @filepath_or_blank      =   $filepath || $filepath eq '0'?  ($filepath):
         #                                ();
 
@@ -1495,7 +1495,7 @@ package ChangeNameOperation::CompileTimeConfigValues {
 
         # Set Attributes:
         my  $self                   =   {
-            config                  =>  ChangeNameOperation::Config->new(@object_params)->load()->get_data, # Load cannot use external currently.
+            config                  =>  ChangeName::Config->new(@object_params)->load()->get_data, # Load cannot use external currently.
         };
 
         # Make Object:
@@ -1510,9 +1510,9 @@ package ChangeNameOperation::CompileTimeConfigValues {
         return shift->{config}->{'EPrints Perl Library Path'};
     }
 
-} # ChangeNameOperation::CompileTimeValues Package.
+} # ChangeName::CompileTimeValues Package.
 
-package ChangeNameOperation::Log v1.0.0 {
+package ChangeName::Log v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -1523,8 +1523,8 @@ package ChangeNameOperation::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    ChangeNameOperation::Utilities->import;
-    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
+    ChangeName::Utilities->import;
+    use     lib ChangeName::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
@@ -1551,7 +1551,7 @@ package ChangeNameOperation::Log v1.0.0 {
 
 =item MODULE NAME
 
-ChangeNameOperation
+ChangeName
 
 =item VERSION
 
@@ -1564,12 +1564,12 @@ v1.0.0
 =item SYNOPSIS
 
     # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeName.pm
     
     # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
+    use ChangeName;
     
-    my $object = ChangeNameOperation->new(@object_params);
+    my $object = ChangeName::Operation->new(@object_params);
 
 
 =item DESCRIPTION
@@ -1578,14 +1578,14 @@ Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeName.pm
 
 Loads the class when used in another script.
 
     # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
+    use ChangeName;
     
-    my $object = ChangeNameOperation->new(@object_params);
+    my $object = ChangeName::Operation->new(@object_params);
 
 See L</new> method for info on acceptable object parameters.
 
@@ -1612,7 +1612,7 @@ See L</new> method for info on acceptable object parameters.
     sub _set_attributes {
         my  ($self, $params)            =   @ARG;
         my  @nothing                    =   ();
-        my  $acceptable_language_class  =   'ChangeNameOperation::Language';
+        my  $acceptable_language_class  =   'ChangeName::Language';
         
         %{
             $self
@@ -1856,7 +1856,7 @@ See L</new> method for info on acceptable object parameters.
         # Content:
         
         my  @languages              =   $language_handle?  ($language_handle->language_tag):
-                                        ChangeNameOperation::Languages->ordered_language_handles;
+                                        ChangeName::Languages->ordered_language_handles;
 
         my  $number_of_languages    =   scalar @languages;
                                           
@@ -1950,9 +1950,9 @@ See L</new> method for info on acceptable object parameters.
          );
     }
 
-}; # ChangeNameOperation::Log Package.
+}; # ChangeName::Log Package.
 
-package ChangeNameOperation::Modulino v1.0.0 {
+package ChangeName::Modulino v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -1967,7 +1967,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
     use     Data::Dumper;
 
     # Modulino:
-    ChangeNameOperation::Modulino->run(@ARGV) unless caller;
+    ChangeName::Modulino->run(@ARGV) unless caller;
 
     sub run {
         shift->new(@ARG)->start_change_name_operation;
@@ -1983,10 +1983,10 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         # Object Attributes:
         $self->{no_input}               =   !(scalar @ARG);
-        $self->{language}               =   ChangeNameOperation::Language->new;
+        $self->{language}               =   ChangeName::Language->new;
 
         # Logger before options processed, so options are hardcoded here:
-        $self->{logger}                 =   ChangeNameOperation::Log->new(
+        $self->{logger}                 =   ChangeName::Log->new(
                                                 debug       =>  0,
                                                 verbose     =>  0,
                                                 no_trace    =>  0,
@@ -2082,7 +2082,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
                                                 # Our overriding options:
                                                 language    =>  $self->{language},
                                             );
-        $self->{logger}                 =   ChangeNameOperation::Log->new(%logger_params)->set_caller_depth(3);
+        $self->{logger}                 =   ChangeName::Log->new(%logger_params)->set_caller_depth(3);
 
         
         # Set later via setup method, called in last line of this new method:
@@ -2100,7 +2100,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         $self->logger->debug('Starting subroutine.');
 
-        my  %multilingual_options_hash      =   ChangeNameOperation::Languages->maketext_in_all_languages('options.'.$option);
+        my  %multilingual_options_hash      =   ChangeName::Languages->maketext_in_all_languages('options.'.$option);
 
         # Premature exits:
         return () unless ($option || ($option eq '0'));
@@ -2229,7 +2229,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Initial Values:
         my  $self                       =   shift;
         my  @nothing                    =   ();        
-        my  $prefix                     =   '[ChangeNameOperation::Modulino::setup] - ';
+        my  $prefix                     =   '[ChangeName::Modulino::setup] - ';
         # Definitions:
         my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
                                             &&      $self->{options}->{config}? ($self->{options}->{config}):
@@ -2239,7 +2239,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   (ChangeNameOperation::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML in ChangeNameOperation::Config::YAML.
+        )                               =   (ChangeName::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
 
         # Update language, considering config values:
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
@@ -2256,7 +2256,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         if ($self->{config_messages}) {
             
             # Display order is Error, Debug, Verbose, by design. 
-            # See ChangeNameOperation::Config::load for context.
+            # See ChangeName::Config::load for context.
 
             say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
                 $self->language->localise(@{$ARG})  for @{$self->{config_messages}->{error}};
@@ -2278,7 +2278,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
 
         $self->logger
         ->debug('In subroutine.')
-        ->debug('Creating object params for ChangeNameOperation');
+        ->debug('Creating object params for ChangeName::Operation');
 
         my  @object_params  =   (
 
@@ -2301,9 +2301,9 @@ package ChangeNameOperation::Modulino v1.0.0 {
         $self->logger
         ->debug('Object params as follows...')
         ->dumper(@object_params)
-        ->debug('About to call start method on ChangeNameOperation class');
+        ->debug('About to call start method on ChangeName::Operation class');
 
-        ChangeNameOperation->start(@object_params);
+        ChangeName::Operation->start(@object_params);
 
         # Output:        
         return $self->logger->debug('Leaving method.');
@@ -2319,11 +2319,11 @@ package ChangeNameOperation::Modulino v1.0.0 {
         return $self->{config};
     }
 
-} # ChangeNameOperation::Modulino Package.
+} # ChangeName::Modulino Package.
 
 
 
-package ChangeNameOperation v1.0.0 {
+package ChangeName::Operation v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -2334,7 +2334,7 @@ package ChangeNameOperation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     lib ChangeNameOperation::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
+    use     lib ChangeName::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
@@ -2354,7 +2354,7 @@ package ChangeNameOperation v1.0.0 {
 
 =head3 MODULE NAME
 
-ChangeNameOperation
+ChangeName::Operation
 
 =head3 VERSION
 
@@ -2367,12 +2367,12 @@ v1.0.0
 =head3 SYNOPSIS
 
     # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeName.pm
     
     # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
+    use ChangeName;
     
-    my $object = ChangeNameOperation->new(@object_params);
+    my $object = ChangeName::Operation->new(@object_params);
 
 
 =head3 DESCRIPTION
@@ -2381,7 +2381,7 @@ Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
 
     # Run from the command line:
-    perl -CAS ./ChangeNameOperation.pm MyArchive bob Bobbi given --exact --verbose --live
+    perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exact --verbose --live
 
 Considers the first four arguments provided at the commandline to be 
 an EPrints archive ID (C<MyArchive> in the example above),
@@ -2396,9 +2396,9 @@ The flags and their usage are described under L</OPTIONS>.
 Loads the class when used in another script.
 
     # Use in a unit test or other Perl Script:
-    use ChangeNameOperation;
+    use ChangeName;
     
-    my $object = ChangeNameOperation->new(@object_params);
+    my $object = ChangeName::Operation->new(@object_params);
 
 See L</new> method for info on acceptable object parameters.
 
@@ -2410,19 +2410,19 @@ See L</new> method for info on acceptable object parameters.
 =head4 $class->start_from_commandline(@ARGV);
 
     # Run at the command line:
-    perl -CAS ./ChangeNameOperation.pm
+    perl -CAS ./ChangeName.pm
 
 Class method auto-ran when
-L<ChangeNameOperation.pm> is ran from the commandline.
+L<ChangeName.pm> is ran from the commandline.
 
 Considers arguments passed in to have come from the commandline,
 processes them to obtain object construction parameters,
 checks those parameters,
-then uses them to construct a new ChangeNameOperation object,
+then uses them to construct a new ChangeName::Operation object,
 upon which the program flow is called...
 
     # Construct new object, and begin program flow...
-    ChangeNameOperation->new(@object_params)->search->part_specific->display->confirm->change->finish;
+    ChangeName::Operation->new(@object_params)->search->part_specific->display->confirm->change->finish;
 
 =over
 
@@ -2470,13 +2470,13 @@ and proceding to finish (L</finish>).
 
 =cut
 
-=head4 ChangeNameOperation->new(@object_params);
+=head4 ChangeName::Operation->new(@object_params);
 
     # Construct new object, and begin program flow...
-    my  $object =   ChangeNameOperation->new(@object_params);
+    my  $object =   ChangeName::Operation->new(@object_params);
 
-Accepts parameters required for a new ChangeNameOperation,
-and returns a new ChangeNameOperation object,
+Accepts parameters required for a new ChangeName::Operation,
+and returns a new ChangeName::Operation object,
 upon which program flow methods
 or setters and getters,
 can be called.
@@ -2500,12 +2500,12 @@ can be called.
 =head4 $self->search;
 
     # Construct an object, and populate its 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search;
 
 Performs an EPrints search,
-according to values set during ChangeNameOperation object construction.
+according to values set during ChangeName::Operation object construction.
 
-Returns the initial ChangeNameOperation object, now with list_of_results and records_found object attributes set.
+Returns the initial ChangeName::Operation object, now with list_of_results and records_found object attributes set.
 
 =cut
     
@@ -2544,7 +2544,7 @@ Returns the initial ChangeNameOperation object, now with list_of_results and rec
 =head4 $self->part_specific;
 
     # Narrow search down to specific part... 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
 
 Should search results have been retrieved (will return prematurely if not),
 it will process the search results in order to generate useful lists,
@@ -2584,7 +2584,7 @@ it will prompt the user for them too.
 =head4 $self->part_specific;
 
     # Narrow search down to specific part... 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
 
 Should search results have been retrieved (will return prematurely if not),
 it will process the search results in order to generate useful lists,
@@ -2639,7 +2639,7 @@ it will prompt the user for them too.
 =head4 $self->confirm;
 
     # Narrow search down to specific part... 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm;
 
 To do.
 
@@ -2688,7 +2688,7 @@ To do.
 =head4 $self->change;
 
     # Narrow search down to specific part... 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm->change;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change;
 
 To do.
 
@@ -2766,7 +2766,7 @@ To do.
 =head4 $self->finish;
 
     # Narrow search down to specific part... 
-    my  $object  =   ChangeNameOperation->new(@object_params)->search->part_specific->confirm->change->finish;
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change->finish;
 
 To do.
 
@@ -3068,11 +3068,11 @@ To do.
     }
     
     sub localise {
-            # This smacks of duplication of code already in ChangeNameOperation::Language->localise.
+            # This smacks of duplication of code already in ChangeName::Language->localise.
             my  $self   =   shift;
             
             return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
-                            scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
+                            scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
     
     # Private subs:
@@ -3086,14 +3086,14 @@ To do.
 
         my  $valid_language_object  =   defined $params->{language})
                                         && blessed($params->{language})
-                                        && $params->{language}->isa('ChangeNameOperation::Language');
+                                        && $params->{language}->isa('ChangeName::Language');
         my  $valid_logger_object    =   defined $params->{logger})
                                         && blessed($params->{logger})
-                                        && $params->{language}->isa('ChangeNameOperation::Log');
+                                        && $params->{language}->isa('ChangeName::Log');
 
         $self->{language}           =   $valid_language_object? $params->{language}:
                                         # If not, assume a language tag string from which we can create an object...
-                                        ChangeNameOperation::Language->new->set_language_handle($params->{language}); # set_language_handle method can handle if $params->{language} is undef.
+                                        ChangeName::Language->new->set_language_handle($params->{language}); # set_language_handle method can handle if $params->{language} is undef.
                                         
         $self->{logger}             =   $valid_logger_object?   $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):
                                         
@@ -3129,7 +3129,7 @@ To do.
             live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
             logger                  =>  $params->{logger}?  $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):    # TODO: Code setters.
-                                        ChangeNameOperation::Log->new(
+                                        ChangeName::Log->new(
                                             debug                   =>  $params->{debug},
                                             verbose                 =>  $params->{verbose},
                                             trace                   =>  $params->{trace},
@@ -3140,7 +3140,7 @@ To do.
                                             dumper_class_name_only  =>  $dumper_class_name_only,
                                             dumper_exclude          =>  $dumper_exclude,
                                         ),
-            yaml                    =>  ($params->{config} // ChangeNameOperation::Config->new->load->get_data),  # TODO: Test this is a config hash
+            yaml                    =>  ($params->{config} // ChangeName::Config->new->load->get_data),  # TODO: Test this is a config hash
 
         );
 
@@ -3676,9 +3676,9 @@ Andrew Mehta
 
 =cut
 
-}; # ChangeNameOperation Package.
+}; # ChangeName::Operation Package.
 
-=head2 ChangeNameOperation::Log
+=head2 ChangeName::Log
 
 Allows for creating a logger object
 that has methods related to logging
@@ -3689,13 +3689,13 @@ to the EPrints log.
 
 
 
-=head2 ChangeNameOperation::Languages
+=head2 ChangeName::Languages
 
 MakeText project class for loading language classes.
 
 =cut
 
-package ChangeNameOperation::Language v1.0.0 {
+package ChangeName::Language v1.0.0 {
 
     # Standard:
     use     English qw(
@@ -3705,7 +3705,7 @@ package ChangeNameOperation::Language v1.0.0 {
                                     # due to a performance if they are invoked,
                                     # on Perl v5.18 or lower.
                                     
-    ChangeNameOperation::Languages->import;
+    ChangeName::Languages->import;
     use Data::Dumper;
 
     # Construct Object:
@@ -3733,7 +3733,7 @@ package ChangeNameOperation::Language v1.0.0 {
             my  $self   =   shift;
             #say 'Dumping caller...'.Dumper (caller);
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
-                            scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
+                            scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
     
     sub set_language_handle {
@@ -3752,10 +3752,10 @@ package ChangeNameOperation::Language v1.0.0 {
                                             @ARG
                                         );
 
-        $self->{language_handle}    =   @defined_values?   (ChangeNameOperation::Languages->get_handle(@defined_values) || $self->{language_handle}):
+        $self->{language_handle}    =   @defined_values?   (ChangeName::Languages->get_handle(@defined_values) || $self->{language_handle}):
                                         $self->{language_handle};
                                 
-        die                     scalar ChangeNameOperation::Languages->maketext_in_all_languages('language.error.set_language')
+        die                     scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language')
                                 unless $self->{language_handle};
 
         return $self;
@@ -3790,14 +3790,14 @@ These lexicons contain language specific configurations, tokens, and phrases.
 =cut
 
 
-=head2 ChangeNameOperation::Config
+=head2 ChangeName::Config
 
 Package that loads configuration.
 
 =cut
 
 
-=head2 ChangeNameOperation::Config::YAML
+=head2 ChangeName::Config::YAML
 
 Package storing YAML formatted default configuration settings.
 Used if no external .yml file is provided.
