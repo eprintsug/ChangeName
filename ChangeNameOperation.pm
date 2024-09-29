@@ -220,7 +220,8 @@ package ChangeNameOperation::Utilities v1.0.0 {
                                                     unless $valid_object;
 
         # Premature exit:
-        return  $valid_object;
+        return                                      undef
+                                                    unless $valid_object;
 
         # Further Validation Handling:
         $self->logger                               ->debug('utilities.validate_class.invalid_class', blessed($valid_object), $acceptable_class)
