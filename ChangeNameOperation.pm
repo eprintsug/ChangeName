@@ -209,7 +209,7 @@ package ChangeNameOperation::Utilities v1.0.0 {
         my  ($self, $value, $acceptable_class)  =   @ARG;
 
         
-        # Object Validation & Ouput:
+        # OBJECT Validation & Ouput:
 
         my  $valid_object                       =   (defined $value) && blessed($value)?  $value:
                                                     undef;
@@ -221,7 +221,7 @@ package ChangeNameOperation::Utilities v1.0.0 {
                                                     unless $valid_object;
 
 
-        # Object Class Validation & Output:
+        # OBJECT CLASS Validation & Output:
 
         my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
                                                     undef;
