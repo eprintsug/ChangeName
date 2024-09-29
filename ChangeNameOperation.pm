@@ -189,6 +189,35 @@ Performs the change name operation.
 
 =cut
 
+package ChangeNameOperation::CommonUtilities v1.0.0 {
+
+    # Standard:
+    use     English qw(
+                -no_match_vars
+            );                      # Use full english names for special perl variables,
+                                    # except the regex match variables
+                                    # due to a performance if they are invoked,
+                                    # on Perl v5.18 or lower.
+
+    # Specific:
+    use     Scalar::Util qw(
+                blessed
+                reftype
+            );
+
+    sub validate_class {
+        my  ($self, $value, $acceptable_class)  =   @ARG;
+        my  $valid_language_object              =   defined $new_language_object
+                                                    && blessed($new_language_object)
+                                                    && $new_language_object->isa($acceptable_class);
+        
+        # Validation Error handling:
+        die                             $self->{language}->localise('log.replace_language_object.error.invalid_object')
+                                        unless $valid_language_object;        
+    }
+
+}
+
 # Load Configuration - positioned last and without a package block, so __DATA__ can be used:
 package ChangeNameOperation::Config::YAML v1.0.0 {
 
@@ -482,6 +511,9 @@ my  @tokens = (
 'log.type.debug'                =>  'debug',
 'log.type.dumper'               =>  'dumper',
 'log.type.trace'                =>  'trace',
+
+'log.replace_language_object.error.invalid_object' =>
+'Error replacing the language object that the logger uses, with the supplied objectlogger only accepts objects of the [_1] class.',
 
 'config.load.error.custom_external_not_found'=>
 'Config file [_1] not found.',
@@ -1446,9 +1478,9 @@ package ChangeNameOperation::Log v1.0.0 {
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
-            blessed
-            reftype
-        );
+                blessed
+                reftype
+            );
     use     Data::Dumper;
 
     # Data Dumper Settings:
@@ -1528,52 +1560,56 @@ See L</new> method for info on acceptable object parameters.
     }
 
     sub _set_attributes {
-        my  ($self, $params)        =   @ARG;
-        my  @nothing                =   ();
+        my  ($self, $params)            =   @ARG;
+        my  @nothing                    =   ();
+        my  $acceptable_language_class  =   'ChangeNameOperation::Language';
+        
         %{
             $self
-        }                           =   (
+        }                               =   (
     
             # Existing values in $self:
             %{$self},
     
             # From params:
-            debug                   =>  $params->{debug} // 0,
-            verbose                 =>  $params->{verbose} // 0,
-            trace                   =>  (
-                                            ($params->{no_trace} < 1)
-                                            &&
-                                            (
-                                                ($params->{verbose} > 2)
-                                                || ($params->{debug} && $params->{verbose})
-                                                || ($params->{debug} && $params->{trace})
-                                            )
-                                        ),
-            no_dumper               =>  $params->{no_dumper} // 0,
-            no_trace                =>  $params->{no_trace} // 0,
+            debug                       =>  $params->{debug} // 0,
+            verbose                     =>  $params->{verbose} // 0,
+            trace                       =>  (
+                                                ($params->{no_trace} < 1)
+                                                &&
+                                                (
+                                                    ($params->{verbose} > 2)
+                                                    || ($params->{debug} && $params->{verbose})
+                                                    || ($params->{debug} && $params->{trace})
+                                                )
+                                            ),
+            no_dumper                   =>  $params->{no_dumper} // 0,
+            no_trace                    =>  $params->{no_trace} // 0,
 
-            caller_depth            =>  3,
+            caller_depth                =>  3,
             
-            dumper_class_name_only  =>  $params->{dumper_class_name_only} // [],
+            dumper_class_name_only      =>  $params->{dumper_class_name_only} // [],
 
-            dumper_exclude          =>  $params->{dumper_exclude} // [],
+            dumper_exclude              =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            language                =>  ChangeNameOperation::Language->new(
-                                            (
+            acceptable_language_class   =>  $acceptable_language_class
+            # Why isn't logger accepting a language object on construction?
+            language                    =>  $acceptable_language_class->new(
                                                 (
-                                                    exists $params->{language} 
-                                                    && defined $params->{language} 
-                                                    && $params->{language}
+                                                    (
+                                                        exists $params->{language} 
+                                                        && defined $params->{language} 
+                                                        && $params->{language}
+                                                    )
+                                                    || @nothing
                                                 )
-                                                || @nothing
-                                            )
-                                        ),
+                                            ),
     
         );
 
-        $self->{repository}         =  $self->valid_repository($params->{repository}); # Requires language to be set first.
-        $self->{dumper_default}     =  $self;
+        $self->{repository}             =  $self->valid_repository($params->{repository}); # Requires language to be set first.
+        $self->{dumper_default}         =  $self;
         
         return  $self;
     }
@@ -1617,10 +1653,32 @@ See L</new> method for info on acceptable object parameters.
                 undef;
     }
 
-    sub language {
-        my  $self           =   shift;
+    sub replace_language_object {
+        my  $self                   =   shift;
+        my  $new_language_object    =   shift;
+
+        # Premature exit:
+        return                          $self
+                                        unless $new_language_object;
+                                
+        # Initial values:
+        my  $valid_language_object  =   defined $new_language_object
+                                        && blessed($new_language_object)
+                                        && $new_language_object->isa($self->{acceptable_language_class); # This can be a util to reduce code repetition.
+        
+        # Validation Error handling:
+        die                             $self->{language}->localise('log.replace_language_object.error.invalid_object')
+                                        unless $valid_language_object;
+
+        # Processing:
+        $self->{language}           =   $new_language_object;
+
+        # Output:
+        return $self;
+    }
+    
+    sub get_language {
         return $self->{language} unless @ARG;
-        return $self->{language}->set_language(@ARG);
     }
     
     sub set_dumper_default {
@@ -2132,7 +2190,7 @@ package ChangeNameOperation::Modulino v1.0.0 {
         # Update language, considering config values:
         my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
         $self->language->set_language(@language_tag_or_nothing);
-        $self->logger->language($self->language);
+        $self->logger->set_language($self->language);
 
         # Output:
         $self->logger
@@ -2959,17 +3017,31 @@ To do.
             # This smacks of duplication of code already in ChangeNameOperation::Language->localise.
             my  $self   =   shift;
             
-            return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
+            return          $self->{logger}?    $self->{logger}->get_language->localise(@ARG):
                             scalar ChangeNameOperation::Languages->maketext_in_all_languages(@ARG);
     }
     
     # Private subs:
     
     sub _set_attributes {
-        warn 'In set attributes';
+        $self->language 'In set attributes';
         # Initial Values:
         my  ($self, $params)        =   @ARG;
+        my  $valid_language_object  =   defined $params->{language})
+                                        && blessed($params->{language})
+                                        && $params->{language}->isa('ChangeNameOperation::Language');
+        my  $valid_logger_object    =   defined $params->{logger})
+                                        && blessed($params->{logger})
+                                        && $params->{language}->isa('ChangeNameOperation::Log');
 
+        $self->{language}           =   $valid_language_object? $params->{language}:
+                                        # If not, assume a language tag string from which we can create an object...
+                                        ChangeNameOperation::Language->new->set_language($params->{language}); # set_language method can handle if $params->{language} is undef.
+                                        
+        $self->{logger}             =   $valid_logger_object?   $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):
+                                        
+        $self->{logger}->set_language($self->{language});
+                                        
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
