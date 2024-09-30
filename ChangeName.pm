@@ -1751,9 +1751,9 @@ See L</new> method for info on acceptable object parameters.
 
         # Processing:
         if ($valid_language_object) {
-            $self->debug->('Proposed replacement was found to be a valid language object.');
+            $self->debug('Proposed replacement was found to be a valid language object.');
             $self->{language}       =   $valid_language_object;
-            $self->debug->('Replacement operation performed.');
+            $self->debug('Replacement operation performed.');
         }
 
         # Output:
@@ -1901,7 +1901,7 @@ See L</new> method for info on acceptable object parameters.
 
             my  $lang_prefix        =   sprintf($format, uc $current_language);
 
-    
+    warn 'our caller innit'.Dumper(caller 1);
             my  $message            =   $type eq 'dumper'?  $blank:
                                         $self->language->localise(@ARG);
 
@@ -2365,6 +2365,7 @@ package ChangeName::Operation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
+
     use     lib ChangeName::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
     use     EPrints;
     use     EPrints::Repository;
@@ -2376,7 +2377,6 @@ package ChangeName::Operation v1.0.0 {
                 blessed
                 reftype
             );
-
     
 =pod Name, Version
 
@@ -2515,12 +2515,14 @@ can be called.
 =cut
 
     sub new {
+        ChangeName::Utilities->import; # Unsure why this won't work at start of package, as it does in Log class.
+        
         my  $class      =   shift;
         my  $params     =   {@ARG};
         
         my  $self       =   {};
         bless $self, $class;
-    
+
         $self->_set_attributes($params)->log_debug('Constructed New Object Instance.')->dumper;
     
         return $self;
@@ -3102,7 +3104,7 @@ To do.
             # This smacks of duplication of code already in ChangeName::Language->localise.
             my  $self   =   shift;
             
-            return          $self->{logger}?    $self->{logger}->language->localise(@ARG):
+            return          $self->language?    $self->language->localise(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
     
@@ -3125,7 +3127,18 @@ To do.
         my  $dumper_exclude         =   [
                                             #'repository',
                                         ];
+        %{
+            $self
+        }                           =   (
 
+            # Existing values in $self:
+            %{$self},
+
+            # From params:
+            live                    =>  $params->{live} // 0,
+        );
+
+        #say Dumper($self);
         my  $valid_language_object  =   $self->validate_class(
                                             $params->{language}     =>  'ChangeName::Language',
                                         );
@@ -3170,7 +3183,6 @@ To do.
             %{$self},
 
             # From params:
-            live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
             yaml                    =>  ($params->{config} // ChangeName::Config->new->load->get_data),  # TODO: Test this is a config hash
 
@@ -3753,7 +3765,7 @@ package ChangeName::Language v1.0.0 {
             language_handle     =>  undef,
         );
         my  $self               =   {@default_attributes};
-warn 'lang new caller'."\n".Dumper(caller);
+#warn 'lang new caller'."\n".Dumper(caller);
         # Object Creation:
         bless $self             ,   $class;
         
@@ -3775,7 +3787,7 @@ warn 'lang new caller'."\n".Dumper(caller);
     sub set_language_handle {
         my  $self                       =   shift;
 
-        warn 'set_language_handle caller'."\n".Dumper(caller);
+  #      warn 'set_language_handle caller'."\n".Dumper(caller);
 
         return                              $self
                                             unless @ARG;
@@ -3790,7 +3802,7 @@ warn 'lang new caller'."\n".Dumper(caller);
                                                 @ARG
                                             );
 
-        warn "Def values:\n".Dumper(@defined_values);
+   #     warn "Def values:\n".Dumper(@defined_values);
 
         if (@defined_values) {
             $self->{language_handle}    =   ChangeName::Languages->get_handle(@defined_values) 
