@@ -236,13 +236,12 @@ package ChangeName::Utilities v1.0.0 {
 
         my  $valid_object   =   (defined $value) && blessed($value)?    $value:
                                 undef;
-        my  $caller_depth           =   2;
-        my  $calling_subroutine     =   (caller $caller_depth)[3];
-        my  $calling_line_number    =   (caller $caller_depth-1)[2];
-
-        $self->logger           ->debug('utilities.valid_object.invalid_object', $calling_subroutine, $calling_line_number) #->dumper($value)->dumper(caller 2[3])
+#warn 'self logger is...'.Dumper($self->logger);
+        $self->logger           ->set_caller_depth(5)
+                                ->debug('utilities.valid_object.invalid_object')
+                                ->set_caller_depth(4) #->dumper($value)->dumper(caller 2[3])
                                 unless $valid_object;
-
+#(die "enough".Dumper(caller(2))) unless $valid_object;
         return                  $valid_object;
 
     }
@@ -550,7 +549,7 @@ my  @tokens = (
 'log.type.trace'                =>  'trace',
 
 'utilities.valid_object.invalid_object' =>
-'Error - Not a valid object, at [_1] line [_2].',
+'Error - Not a valid object.',
 
 'utilities.validate_class.invalid_class' =>
 'Error - Your [_1] object is considered an invalid object
@@ -1626,8 +1625,6 @@ See L</new> method for info on acceptable object parameters.
     sub _set_attributes {
         my  ($self, $params)            =   @ARG;
         my  @nothing                    =   ();
-        my  $acceptable_language_class  =   'ChangeName::Language';
-        my  $valid_language_object      =   $self->validate_class($params->{language} => $acceptable_language_class);
 
         %{
             $self
@@ -1656,6 +1653,18 @@ See L</new> method for info on acceptable object parameters.
             dumper_class_name_only      =>  $params->{dumper_class_name_only} // [],
 
             dumper_exclude              =>  $params->{dumper_exclude} // [],
+        );
+
+        my  $acceptable_language_class  =   'ChangeName::Language';
+        my  $valid_language_object      =   $self->validate_class($params->{language} => $acceptable_language_class);
+
+
+        %{
+            $self
+        }                               =   (
+    
+            # Existing values in $self:
+            %{$self},
     
             # Internationalisation:
             acceptable_language_class   =>  $acceptable_language_class,
