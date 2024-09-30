@@ -192,24 +192,31 @@ Performs the change name operation.
 package ChangeName::Utilities v1.0.0 {
 
     # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance if they are invoked,
-                                    # on Perl v5.18 or lower.
+    use English qw(
+            -no_match_vars
+        );                      # Use full english names for special perl variables,
+                                # except the regex match variables
+                                # due to a performance if they are invoked,
+                                # on Perl v5.18 or lower.
 
     # Specific:
-    use     Scalar::Util qw(
-                blessed
-                reftype
-            );
+    use Scalar::Util qw(
+            blessed
+            reftype
+        );
+    use Exporter qw(import);
+    use Data::Dumper;
+
+    our @EXPORT =   qw(
+        validate_class
+        valid_object
+    );
 
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
 
         # OBJECT Validation:
-        my  $valid_object                       =   $self->valid_object($value);
+        my  $valid_object                       =   _valid_object($self, $value);
         return                                      undef
                                                     unless $valid_object;
 
@@ -223,18 +230,25 @@ package ChangeName::Utilities v1.0.0 {
         return                                      $valid_object_of_acceptable_class;
     }
     
-    sub valid_object {
+    sub _valid_object {
 
         my  ($self, $value) =   @ARG;
 
-        my  $valid_object   =   (defined $value) && blessed($value)?  $value:
-                                                    undef;
+        my  $valid_object   =   (defined $value) && blessed($value)?    $value:
+                                undef;
+        my  $caller_depth           =   2;
+        my  $calling_subroutine     =   (caller $caller_depth)[3];
+        my  $calling_line_number    =   (caller $caller_depth-1)[2];
 
-        $self->logger           ->debug('utilities.valid_object.invalid_object')
+        $self->logger           ->debug('utilities.valid_object.invalid_object', $calling_subroutine, $calling_line_number) #->dumper($value)->dumper(caller 2[3])
                                 unless $valid_object;
 
         return                  $valid_object;
 
+    }
+    
+    sub valid_object {
+        _valid_object(@ARG);
     }
 
 }
@@ -536,7 +550,7 @@ my  @tokens = (
 'log.type.trace'                =>  'trace',
 
 'utilities.valid_object.invalid_object' =>
-'Error - Not a valid object.',
+'Error - Not a valid object, at [_1] line [_2].',
 
 'utilities.validate_class.invalid_class' =>
 'Error - Your [_1] object is considered an invalid object
@@ -1613,7 +1627,8 @@ See L</new> method for info on acceptable object parameters.
         my  ($self, $params)            =   @ARG;
         my  @nothing                    =   ();
         my  $acceptable_language_class  =   'ChangeName::Language';
-        
+        my  $valid_language_object      =   $self->validate_class($params->{language} => $acceptable_language_class);
+
         %{
             $self
         }                               =   (
@@ -1643,9 +1658,10 @@ See L</new> method for info on acceptable object parameters.
             dumper_exclude              =>  $params->{dumper_exclude} // [],
     
             # Internationalisation:
-            acceptable_language_class   =>  $acceptable_language_class
-            # Why isn't logger accepting a language object on construction?
-            language                    =>  $acceptable_language_class->new(
+            acceptable_language_class   =>  $acceptable_language_class,
+
+            language                    =>  $valid_language_object? $valid_language_object:
+                                            $acceptable_language_class->new(
                                                 (
                                                     (
                                                         exists $params->{language} 
@@ -1662,6 +1678,10 @@ See L</new> method for info on acceptable object parameters.
         $self->{dumper_default}         =  $self;
         
         return  $self;
+    }
+
+    sub logger {
+        shift;
     }
 
     sub set_dumper_class_name_only {
@@ -1732,7 +1752,7 @@ See L</new> method for info on acceptable object parameters.
     }
     
     sub language {
-        return $self->{language};
+        shift->{language};
     }
     
     sub set_dumper_default {
@@ -1753,12 +1773,10 @@ See L</new> method for info on acceptable object parameters.
 
     sub set_repository {
         my  $self                   =   shift;
-        my  $new_repository         =   $self->validate_class(shift => 'EPrints::Repository'); # Valid or undef.
+        my  $replacement_repository =   $self->validate_class(shift => 'EPrints::Repository'); # Valid or undef.
         
-        $self->log_debug('log.set_repository.error.bad_value') unless $repository;
-
-        $self->{repository}     =   $repository?    $repository:
-                                    $self->{repository};
+        $self->{repository}         =   $replacement_repository?    $replacement_repository:
+                                        $self->debug('log.set_repository.error.bad_value')->{repository};
 
         return $self;
     }
@@ -1938,15 +1956,19 @@ See L</new> method for info on acceptable object parameters.
                                 q{};
 
         return sprintf(
-             '[%s] [%s] [%s] - ',                   # Three strings in square brackets, derived from the below...
+             '[%s] [%s, %d] [%s] - ',                   # Three strings in square brackets, derived from the below...
     
-             scalar localtime,                      # Human readable system time and date - linux's ctime(3).
+             scalar localtime,                          # Human readable system time and date - linux's ctime(3).
     
-             ((caller $self->{caller_depth})[3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
-                                                    # and get the 3rd array index value
-                                                    # - the perl module and subroutine name.
-    
-             uc($localised_type),                   # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
+             ((caller $self->{caller_depth})    [3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
+                                                        # and get the 3rd array index value
+                                                        # - the perl module and subroutine name.
+
+             ((caller $self->{caller_depth} - 1)[2]),   # Back by caller depth minus one, to within what called dumper / log_debug / log_verbose,
+                                                        # and get the 2nd array index value
+                                                        # - the line number.
+
+             uc($localised_type),                       # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
          );
     }
 
@@ -1991,7 +2013,7 @@ package ChangeName::Modulino v1.0.0 {
                                                 verbose     =>  0,
                                                 no_trace    =>  0,
                                                 no_dumper   =>  0,
-                                                language    =>  $self->{language},
+                                                language    =>  $self->language,
                                             )->set_caller_depth(3);
 
         # Default Options:
@@ -2073,14 +2095,14 @@ package ChangeName::Modulino v1.0.0 {
 
 
         # Update language and logger with options processed:
-        $self->{language}->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
+        $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
 
         my  %logger_params              =   (
                                                 # Existing options
                                                 %{ $self->{options} },
 
                                                 # Our overriding options:
-                                                language    =>  $self->{language},
+                                                language    =>  $self->language,
                                             );
         $self->{logger}                 =   ChangeName::Log->new(%logger_params)->set_caller_depth(3);
 
@@ -2169,11 +2191,11 @@ package ChangeName::Modulino v1.0.0 {
     }
     
     sub logger {
-        return shift->{logger};
+        shift->{logger};
     }
 
     sub language {
-        return shift->{language};
+        shift->{language};
     }
 
     sub utf8_check {
@@ -3131,8 +3153,6 @@ To do.
 
         $self->log_debug    ('Set Repo. About to add attributes from params...'             );
 
-        $self
-
         %{
             $self
         }                           =   (
@@ -3143,18 +3163,6 @@ To do.
             # From params:
             live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
-            logger                  =>  $params->{logger}?  $params->{logger}->set_dumper_class_name_only($dumper_class_name_only)->set_dumper_exclude($dumper_exclude):    # TODO: Code setters.
-                                        ChangeName::Log->new(
-                                            debug                   =>  $params->{debug},
-                                            verbose                 =>  $params->{verbose},
-                                            trace                   =>  $params->{trace},
-                                            no_dumper               =>  $params->{no_dumper},
-                                            no_trace                =>  $params->{no_trace},
-                                            language                =>  $params->{language},
-                                            repository              =>  $self->{repository},
-                                            dumper_class_name_only  =>  $dumper_class_name_only,
-                                            dumper_exclude          =>  $dumper_exclude,
-                                        ),
             yaml                    =>  ($params->{config} // ChangeName::Config->new->load->get_data),  # TODO: Test this is a config hash
 
         );
@@ -3725,7 +3733,7 @@ package ChangeName::Language v1.0.0 {
                                     # on Perl v5.18 or lower.
                                     
     ChangeName::Languages->import;
-    #use Data::Dumper;
+    use Data::Dumper;
 
     # Construct Object:
     sub new {
@@ -3736,7 +3744,7 @@ package ChangeName::Language v1.0.0 {
             language_handle     =>  undef,
         );
         my  $self               =   {@default_attributes};
-
+warn 'lang new caller'."\n".Dumper(caller);
         # Object Creation:
         bless $self             ,   $class;
         
@@ -3750,32 +3758,35 @@ package ChangeName::Language v1.0.0 {
     # Instance Methods:
     sub localise {
             my  $self   =   shift;
-            #say 'Dumping caller...'.Dumper (caller);
+            say 'Dumping localise caller...'."\n".Dumper (caller);
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
     
     sub set_language_handle {
-        my  $self                   =   shift;
+        my  $self                       =   shift;
 
-        return                          $self
-                                        unless @ARG;
+        warn 'set_language_handle caller'."\n".Dumper(caller);
 
-        my  @nothing                =   ();
+        return                              $self
+                                            unless @ARG;
 
-        my  @defined_values         =   (
-                                            map {
-                                                defined $ARG?   $ARG:
-                                                $nothing
-                                            }
-                                            @ARG
-                                        );
+        my  @nothing                    =   ();
 
-        $self->{language_handle}    =   @defined_values?   (ChangeName::Languages->get_handle(@defined_values) || $self->{language_handle}):
-                                        $self->{language_handle};
-                                
-        die                     scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language_handle')
-                                unless $self->{language_handle};
+        my  @defined_values             =   (
+                                                map {
+                                                    (defined $ARG)?   $ARG:
+                                                    @nothing
+                                                }
+                                                @ARG
+                                            );
+
+        warn "Def values:\n".Dumper(@defined_values);
+
+        if (@defined_values) {
+            $self->{language_handle}    =   ChangeName::Languages->get_handle(@defined_values) 
+                                            || die scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language_handle');
+        };
 
         return $self;
     }
@@ -3787,7 +3798,7 @@ package ChangeName::Language v1.0.0 {
     }
     
     sub get_language_handle {
-        return shift->{language_handle};
+        shift->{language_handle};
     }
 
 }
