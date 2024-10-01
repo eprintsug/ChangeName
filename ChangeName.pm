@@ -296,8 +296,8 @@ return
 
 EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
-Language Tag: en-GB
-
+'. #Language Tag: en-GB
+'
 Fields to search:
     -   creators_name
     -   contributors_name
@@ -1335,6 +1335,10 @@ my  @phrases = (
     'Premature exit - no result passed in.'=>'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
     'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
     'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
+    'Set search normally, as no --exact flag provided.'=>'Suche normal einstellen, da kein --exact-Flag bereitgestellt wird.',
+    'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'=>'Der Suchbegriff „[_1]“ wird als exakte (wenn auch nicht zwischen Groß- und Kleinschreibung unterscheidende) Zeichenfolge interpretiert, die gesucht werden soll.',
+    'Find attribute set to ([_1]).'=>'Das Attribut „find“ wurde auf ([_1]) gesetzt.',
+    'Search attribute set to ([_1]).'=>'Das Attribut „search“ wurde ([_1]) gesetzt.',
     'Constructed New Logger Object Instance.'=>'Neue Logger-Objektinstanz erstellt.',
     'Starting subroutine.'=>'Unterprogramm wird gestartet.',
     'Multilingual variations of [_1] are as dumped below...'=>'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind ...',
