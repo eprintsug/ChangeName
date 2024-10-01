@@ -200,6 +200,8 @@ package ChangeName::Utilities v1.0.0 {
                                 # on Perl v5.18 or lower.
 
     # Specific:
+    #use lib '/opt/eprints3/perl_lib';
+    #use EPrints;
     use Scalar::Util qw(
             blessed
             reftype
@@ -224,8 +226,15 @@ package ChangeName::Utilities v1.0.0 {
         my  $valid_object_of_acceptable_class   =   $valid_object && $valid_object->isa($acceptable_class)? $valid_object:
                                                     undef;
 
-        $self->logger                               ->debug('utilities.validate_class.invalid_class', blessed($valid_object), $acceptable_class)
-                                                    unless $valid_object_of_acceptable_class;
+        $self->logger                               ->set_caller_depth(4)
+                                                    ->debug(
+                                                        $valid_object_of_acceptable_class?  'utilities.validate_class.valid_class':
+                                                        'utilities.validate_class.invalid_class',
+                                                        blessed($valid_object),
+                                                        $acceptable_class
+                                                    )
+                                                    ->set_caller_depth(3)
+                                                    if _can_log($self);
 
         return                                      $valid_object_of_acceptable_class;
     }
@@ -233,14 +242,19 @@ package ChangeName::Utilities v1.0.0 {
     sub _valid_object {
 
         my  ($self, $value) =   @ARG;
-
+#warn 'value is...'.Dumper($value);
+#EPrints->trace;
         my  $valid_object   =   (defined $value) && blessed($value)?    $value:
                                 undef;
-#warn 'self logger is...'.Dumper($self->logger);
+
         $self->logger           ->set_caller_depth(5)
-                                ->debug('utilities.valid_object.invalid_object')
-                                ->set_caller_depth(4) #->dumper($value)->dumper(caller 2[3])
-                                unless $valid_object;
+                                ->debug(
+                                    $valid_object?  'utilities.valid_object.valid_object':
+                                    'utilities.valid_object.invalid_object'
+                                )
+                                ->set_caller_depth(4) 
+                                if _can_log($self);
+                                
 #(die "enough".Dumper(caller(2))) unless $valid_object;
         return                  $valid_object;
 
@@ -248,6 +262,22 @@ package ChangeName::Utilities v1.0.0 {
     
     sub valid_object {
         _valid_object(@ARG);
+    }
+
+    sub _can_log {
+        my  $object =   shift;
+
+        return
+                defined $object
+                && blessed($object)
+                
+                && $object->can('logger')
+                && defined $object->logger
+                && blessed($object->logger)
+                
+                && $object->logger->can('language')
+                && defined $object->logger->language
+                && blessed($object->logger->language);
     }
 
 }
@@ -551,11 +581,17 @@ my  @tokens = (
 'utilities.valid_object.invalid_object' =>
 'Error - Not a valid object.',
 
+'utilities.valid_object.valid_object' =>
+'Valid object.',
+
 'utilities.validate_class.invalid_class' =>
 'Error - Your [_1] object is considered an invalid object
 for this purpose, due to its class.
 The only acceptable object class for this purpose is [_2]
 - so please use an object of this class instead.',
+
+'utilities.validate_class.valid_class' =>
+'[_1] object is a valid class of object for this purpose.',
 
 'config.load.error.custom_external_not_found'=>
 'Config file [_1] not found.',
@@ -885,6 +921,7 @@ my  @phrases = (
     'Proposed replacement was found to be a valid language object.'=>'Proposed replacement was found to be a valid language object.',
     'Replacement operation performed.'=>'Replacement operation performed.',
     'In method.'=>'In method.',
+    'Language and Logger attributes set.'=>'Language and Logger attributes set.',
     'About to set Repository.'=>'About to set Repository.',
     'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
 );
@@ -982,11 +1019,17 @@ my  @tokens = (
 'utilities.valid_object.invalid_object' =>
 'Fehler – Kein gültiges Objekt.',
 
+'utilities.valid_object.valid_object' =>
+'Gültiges Objekt.',
+
 'utilities.validate_class.invalid_class' =>
 'Fehler - Ihr [_1] Objekt wird aufgrund seiner Klasse
 für diesen Zweck als ungültiges Objekt betrachtet.
 Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
 - verwenden Sie stattdessen ein Objekt dieser Klasse.',
+
+'utilities.validate_class.valid_class' =>
+'[_1] Objekt ist eine gültige Objektklasse für diesen Zweck.',
 
 'config.load.error.custom_external_not_found'=>
 'Konfigurationsdatei [_1] nicht gefunden.',
@@ -1314,6 +1357,7 @@ my  @phrases = (
     'In method.'=>'In der Methode.',
     'About to set Repository.'=>'Der nächste Schritt besteht darin, das Repository einzurichten.',
     'Set Repository. About to add attributes from params...'=>'Legen Sie das zu verwendende Repository fest. Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
+    'Language and Logger attributes set.'=>'Sprach- und Logger-Attribute festgelegt.',
 );
 
 our %Lexicon = (
@@ -1784,10 +1828,13 @@ See L</new> method for info on acceptable object parameters.
     }
 
     sub set_repository {
-        my  $self                   =   shift;
-        my  $replacement_repository =   $self->validate_class(shift => 'EPrints::Repository'); # Valid or undef.
+        my  $self                           =   shift;
+        my  $replacement_repository         =   shift;
+        #warn 'setting repo with following values...';
+        #$self->dumper($replacement_repository); # legit passed repo value.
+        my  $valid_replacement_repository   =   $self->validate_class($replacement_repository => 'EPrints::Repository'); # Valid or undef.
         
-        $self->{repository}         =   $replacement_repository?    $replacement_repository:
+        $self->{repository}         =   $valid_replacement_repository?    $valid_replacement_repository:
                                         $self->debug('log.set_repository.error.bad_value')->{repository};
 
         return $self;
@@ -1904,7 +1951,7 @@ See L</new> method for info on acceptable object parameters.
 
             my  $lang_prefix        =   sprintf($format, uc $current_language);
 
-    warn 'our caller innit'.Dumper(caller 1);
+    #warn 'our caller innit'.Dumper(caller 1);
             my  $message            =   $type eq 'dumper'?  $blank:
                                         $self->language->localise(@ARG);
 
@@ -2263,7 +2310,9 @@ package ChangeName::Modulino v1.0.0 {
         # Initial Values:
         my  $self                       =   shift;
         my  @nothing                    =   ();        
-        my  $prefix                     =   '[ChangeName::Modulino::setup] - ';
+        my  $prefix                     =   '[ChangeName::Modulino::setup] - '; # This should be generated by _get_log_prefix - perhaps shift it to utilities(!?). Or a dedicated prefix interface?
+        
+        
         # Definitions:
         my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
                                             &&      $self->{options}->{config}? ($self->{options}->{config}):
@@ -2274,18 +2323,6 @@ package ChangeName::Modulino v1.0.0 {
             $self->{config},
             $self->{config_messages}
         )                               =   (ChangeName::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
-
-        # Update language, considering config values:
-        my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
-        $self->language->set_language_handle(@language_tag_or_nothing);
-        $self->logger->replace_language_object($self->language);
-
-        # Output:
-        $self->logger
-        ->verbose('Language set to [language_name].')
-        ->debug('Commandline Options are...'    )->dumper(%{$self->{options}})
-        ->debug('Commandline Arguments are...'  )->dumper(%{$self->{arguments}})
-        ->debug('Configuration Values are...'   )->dumper(%{$self->{config}});
 
         if ($self->{config_messages}) {
             
@@ -2300,6 +2337,19 @@ package ChangeName::Modulino v1.0.0 {
             $self->logger->verbose(@{$ARG})         for @{$self->{config_messages}->{verbose}};
 
         }
+
+        # Update language, considering config values:
+        my  @language_tag_or_nothing    =   ($self->{options}->{language} // $self->{config}->{'Language Tag'} // @nothing);
+        $self->language->set_language_handle(@language_tag_or_nothing);
+        $self->logger->replace_language_object($self->language);
+
+        # Output:
+        $self->logger
+        ->verbose('Language set to [language_name].')
+        ->debug('Commandline Options are...'    )->dumper(%{$self->{options}})
+        ->debug('Commandline Arguments are...'  )->dumper(%{$self->{arguments}})
+        ->debug('Configuration Values are...'   )->dumper(%{$self->{config}})
+        ->debug('Leaving method.');
 
         return $self;
 
@@ -2380,6 +2430,7 @@ package ChangeName::Operation v1.0.0 {
                 blessed
                 reftype
             );
+    use     Data::Dumper;
     
 =pod Name, Version
 
@@ -2916,8 +2967,10 @@ To do.
         my  $self           =   shift;
         my  $archive_id     =   shift;
         $self->{repository} =   EPrints::Repository->new(
-                                    $self->_set_archive($archive_id)->{archive}
+                                    ($self->_set_archive($archive_id))->{archive}
                                 );
+#warn 'Repository value is of class [_1].'.blessed($self->{repository}).'...containing:
+#'.Dumper($self->{repository});
         return $self;
     }
     
@@ -3123,6 +3176,7 @@ To do.
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
 
         my  $dumper_class_name_only =   [
+                                            'Repository',
                                             'repository',
                                             'list_of_results',
                                             'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
@@ -3130,18 +3184,7 @@ To do.
         my  $dumper_exclude         =   [
                                             #'repository',
                                         ];
-        %{
-            $self
-        }                           =   (
 
-            # Existing values in $self:
-            %{$self},
-
-            # From params:
-            live                    =>  $params->{live} // 0,
-        );
-
-        #say Dumper($self);
         my  $valid_language_object  =   $self->validate_class(
                                             $params->{language}     =>  'ChangeName::Language',
                                         );
@@ -3170,11 +3213,18 @@ To do.
                                             dumper_exclude          =>  $dumper_exclude,
                                         );
 
-        $self->log_debug    ('In method.'                                                   )
-        ->log_debug         ('About to set Repository.'    )
-        ->_set_repository   ($params->{archive_id}                                          );
+        $self->log_debug    ('In method.'                         )
+        ->log_debug         ('Language and Logger attributes set.')
+        ->log_debug         ('About to set Repository.'           )
+        ->_set_repository   ($params->{archive_id}                );
 
-        $self->{logger}->set_repository($self->{repository});
+        #warn 'What is this then? '.blessed($self->{repository});
+
+        $self->logger->set_repository(
+            $self->{repository}
+        );
+        
+        #die 'That is enough';
 
         $self->log_debug    ('Set Repository. About to add attributes from params...'             );
 
@@ -3186,16 +3236,16 @@ To do.
             %{$self},
 
             # From params:
+            live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
             yaml                    =>  ($params->{config} // ChangeName::Config->new->load->get_data),  # TODO: Test this is a config hash
 
         );
 
-        warn 'About to use the logger...';
+        #warn 'About to use the logger...';
 
         $self
         ->log_debug                     ('Set initial instance attributes using params or defaults.')
-        ->log_debug                     ('Archive, repository, and log related params were all required for log methods.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
         ->_set_replace                  ($params->{replace}, 'no_prompt')   # Optional on object instantiation, so no prompt for value needed if not set.
@@ -3296,6 +3346,10 @@ To do.
     sub language {
         shift->{language};
     }
+    
+    sub logger {
+        shift->{logger};
+    };
 
     sub _tally_frequencies {
     
@@ -3782,7 +3836,7 @@ package ChangeName::Language v1.0.0 {
     # Instance Methods:
     sub localise {
             my  $self   =   shift;
-            say 'Dumping localise caller...'."\n".Dumper (caller);
+            #say 'Dumping localise caller...'."\n".Dumper (caller);
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
