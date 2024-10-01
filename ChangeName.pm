@@ -886,6 +886,7 @@ my  @phrases = (
     'Replacement operation performed.'=>'Replacement operation performed.',
     'In method.'=>'In method.',
     'About to set Repository.'=>'About to set Repository.',
+    'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
 );
 
 our %Lexicon = (
@@ -1312,6 +1313,7 @@ my  @phrases = (
     'Replacement operation performed.'=>'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
     'In method.'=>'In der Methode.',
     'About to set Repository.'=>'Der nächste Schritt besteht darin, das Repository einzurichten.',
+    'Set Repository. About to add attributes from params...'=>'Legen Sie das zu verwendende Repository fest. Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
 );
 
 our %Lexicon = (
