@@ -3168,12 +3168,12 @@ To do.
                                         );
 
         $self->log_debug    ('In method.'                                                   )
-        ->log_debug         ('About to set Repo. About to add attributes from params...'    )
+        ->log_debug         ('About to set Repository.'    )
         ->_set_repository   ($params->{archive_id}                                          );
 
         $self->{logger}->set_repository($self->{repository});
 
-        $self->log_debug    ('Set Repo. About to add attributes from params...'             );
+        $self->log_debug    ('Set Repository. About to add attributes from params...'             );
 
         %{
             $self
