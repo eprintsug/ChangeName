@@ -885,7 +885,7 @@ my  @phrases = (
     'Proposed replacement was found to be a valid language object.'=>'Proposed replacement was found to be a valid language object.',
     'Replacement operation performed.'=>'Replacement operation performed.',
     'In method.'=>'In method.',
-
+    'About to set Repository.'=>'About to set Repository.',
 );
 
 our %Lexicon = (
@@ -1311,6 +1311,7 @@ my  @phrases = (
     'Proposed replacement was found to be a valid language object.'=>'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
     'Replacement operation performed.'=>'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
     'In method.'=>'In der Methode.',
+    'About to set Repository.'=>'Der nächste Schritt besteht darin, das Repository einzurichten.',
 );
 
 our %Lexicon = (
