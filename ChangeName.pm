@@ -3099,9 +3099,10 @@ To do.
     
                 say $self->localise('prompt_for.1or2');
                 chomp($number   =   <STDIN>);
-    
-                $input          =   $number?    $number eq $self->localise('input.1')?  'given':    # should mapping occur to variables set centrally?
-                                                $number eq $self->localise('input.2')?  'family':   # should mapping occur to variables set centrally?
+                my  $one        =   $self->localise_regex_or('input.1');
+                my  $two        =   $self->localise_regex_or('input.2');
+                $input          =   $number?    ($number =~ m/^($one)$/)?  'given':    # should mapping occur to variables set centrally?
+                                                ($number =~ m/^($two)$/)?  'family':   # should mapping occur to variables set centrally?
                                                 undef:
                                     undef;
     
@@ -3115,7 +3116,7 @@ To do.
             @prompt_arguments               =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
             my  $acceptable_input           =   join '|',
                                                 map {
-                                                    quotemeta $self->localise($ARG)
+                                                    $self->localise_regex_or($ARG)
                                                 }
                                                 (
                                                     'input.yes_letter',
@@ -3159,7 +3160,7 @@ To do.
                     chomp(my $typed_input2      =  <STDIN>); # Not validated and should be okay as we only ever use it in an equality test in the line below...
                     
                     # Definition:
-                    my  $blank_input_desired    =   ( fc $typed_input2 eq fc $self->localise('input.yes_letter') ); # fc supported in Perl 5.16 onwards.
+                    my  $blank_input_desired    =   ( $typed_input2 =~ m/^($self->localise_regex_or('input.yes_letter'))$/i ); # fc supported in Perl 5.16 onwards.
     
                     if ($blank_input_desired) {
                         $input = q{};
@@ -3183,7 +3184,9 @@ To do.
             return          $self->language?    $self->language->localise(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
-    
+    sub localise_regex_or {
+        shift->language->localise_regex_or(@ARG)
+    }
     # Private subs:
     
     sub _set_attributes {
@@ -3860,7 +3863,21 @@ package ChangeName::Language v1.0.0 {
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
-    
+
+    sub localise_no_formatting {
+            my  $self   =   shift;
+            #say 'Dumping localise caller...'."\n".Dumper (caller);
+            return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
+                            (ChangeName::Languages->maketext_in_all_languages(@ARG)); # Attempting list context.
+    }
+
+    sub localise_regex_or {
+            my  $self   =   shift;
+            #say 'Dumping localise caller...'."\n".Dumper (caller);
+            return          $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
+                            join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@ARG));
+    }
+
     sub set_language_handle {
         my  $self                       =   shift;
 
