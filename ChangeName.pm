@@ -559,12 +559,6 @@ my  @tokens = (
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 
-'separator.name_parts'          =>  ' ', #space
-'separator.name_values'         =>  ', ', #comma space
-'separator.new_line'            =>  $new_line,
-'separator.search_fields'       =>  ', ', #comma space
-'separator.stringify_arrayref'  =>  ', ', #comma space
-
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
 'name.honourific'               =>  'Honourific Name',
@@ -618,11 +612,6 @@ or is a path to a directory that does not appear to exist.',
 'modulino.perl_lib_path' =>
 'The EPrints Perl Library Path value was:
 [_1]',
-
-'horizontal.rule'               =>  
-'
--------
-',
 
 'format_single_line_for_display.error.no_params' =>
 'Method format_single_line_for_display requires
@@ -924,6 +913,7 @@ my  @phrases = (
     'Language and Logger attributes set.'=>'Language and Logger attributes set.',
     'About to set Repository.'=>'About to set Repository.',
     'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
+    'Data dump prevented by no_dumper option.'=>'Data dump prevented by no_dumper option.',
 );
 
 our %Lexicon = (
@@ -993,22 +983,12 @@ my  @tokens = (
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 
-'separator.name_parts'          =>  ' ', #space
-'separator.name_values'         =>  ', ', #comma space
-'separator.new_line'            =>  $new_line,
-'separator.search_fields'       =>  ', ', #comma space
-'separator.stringify_arrayref'  =>  ', ', #comma space
 
 'name.given'                    =>  'Vorname',
 'name.family'                   =>  'Familienname',
 'name.honourific'               =>  'Ehrenname',
 'name.lineage'                  =>  'Abstammungsname', # Unsure about this one - it's literally Ancestral Name
 'display_line'                  =>  'Datensatz [_1]: [_2].',
-
-'horizontal.rule'               =>  
-'
--------
-',
 
 'log.type.verbose'              =>  'ausführlich',
 'log.type.log'                  =>  'protokoll',
@@ -1362,6 +1342,7 @@ my  @phrases = (
     'About to set Repository.'=>'Der nächste Schritt besteht darin, das Repository einzurichten.',
     'Set Repository. About to add attributes from params...'=>'Legen Sie das zu verwendende Repository fest. Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
     'Language and Logger attributes set.'=>'Sprach- und Logger-Attribute festgelegt.',
+    'Data dump prevented by no_dumper option.'=>'Datendump durch Option kein_dumper verhindert.',
 );
 
 our %Lexicon = (
@@ -1396,6 +1377,26 @@ package ChangeName::Languages v1.0.0 {
     # Specific:
     use     parent qw(Locale::Maketext);
     use     mro;
+
+    my  @tokens =   (
+
+'separator.name_parts'          =>  ' ', #space
+'separator.name_values'         =>  ', ', #comma space
+'separator.new_line'            =>  "\n",
+'separator.search_fields'       =>  ', ', #comma space
+'separator.stringify_arrayref'  =>  ', ', #comma space
+'horizontal.rule'               =>  
+'
+-------
+',
+    );
+    
+    our %Lexicon = (
+        #'_AUTO' => 1, # Commented out the auto for now.
+        #@configurations,
+        @tokens,
+        #@phrases,
+    );
 
     sub priority_language_class {
         return 'en_gb'; # Will be first in ordered_language_handles and thus also first in any multi-language translations.
@@ -1484,12 +1485,17 @@ package ChangeName::Languages v1.0.0 {
     }
 
     sub maketext_in_all_languages {
+    
         # Initial Values:
         my  $self                                   =   shift;
+        my  @arguments                              =   @ARG;
+        my  $phrase_key                             =   shift;
+        my  $phrase_considered_universal            =   scalar (grep {$phrase_key eq $ARG} keys %Lexicon);  # Inspired by David (and the "any" documentation).
         my  @in_all_languages                       =   ();
         my  $in_all_languages_string                =   q{};
         my  $language_base_class                    =   __PACKAGE__;
-        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline.
+        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline (useful as line seperator).
+        my  $remove_trailing_new_line               =   qr/\n$/;    # Remove any trailing newline possibly left by the above format.
 
         # Processing:
         for my $language_handle ($self->ordered_language_handles) {
@@ -1502,25 +1508,33 @@ package ChangeName::Languages v1.0.0 {
 
                 my  $language_tag                   =   $language_instance->language_tag # Typically lower-case.
                                                         || undef; # Or undefined.
-                                                        
+
                 next unless $language_tag;
 
-                my  $phrase                     =   $language_instance->maketext(@ARG);
-                my  $phrase_is_valid            =   $phrase || $phrase eq '0';
+                my  $phrase                         =   $language_instance->maketext(@arguments);
+                my  $phrase_is_valid                =   $phrase || $phrase eq '0';
+                
 
                 # HASH context:
                 push @in_all_languages, (
-                    "$language_tag"             =>  $phrase_is_valid?   $phrase:
-                                                    undef,
+                    "$language_tag"                 =>  $phrase_is_valid?   $phrase:
+                                                        undef,
                 );
 
-                # SCALAR context...                 
-                $in_all_languages_string        .=  sprintf($format, uc($language_tag), $phrase)
-                                                    if $phrase_is_valid; #...if valid phrase.
+                # SCALAR context...
+
+                $in_all_languages_string            .=  (
+                                                            $phrase_considered_universal?   $phrase:
+                                                            sprintf($format, uc($language_tag), $phrase)
+                                                        )
+                                                        if $phrase_is_valid; #...if valid phrase.
+                                                        
+                last if $phrase_considered_universal;
 
             };
 
         };
+        $in_all_languages_string                    =~  s/$remove_trailing_new_line//;
 
         #Output:
         return  wantarray?  @in_all_languages: # key value pairs in a list
@@ -1865,7 +1879,9 @@ See L</new> method for info on acceptable object parameters.
     sub dumper {
         my  $self   =   shift;
     
-        return $self if $self->{no_dumper};
+        return          $self->debug('Data dump prevented by no_dumper option.')
+                        if $self->{no_dumper};
+
         return $self unless ($self->{debug} || $self->{verbose} > 1);
     
         # Default Params if no arguments passed in...
