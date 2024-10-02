@@ -2641,7 +2641,7 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
     
         $self->{records_found}      =   scalar @{$self->{list_of_results}->{ids}};
     
-        say $self->localise('No Results Found.') unless $self->{records_found};
+        say $self->language->localise('No Results Found.') unless $self->{records_found};
         $self->log_verbose('Found Results.') if $self->{records_found};
     
         return $self->log_debug('Leaving method.')->dumper;
@@ -2718,7 +2718,7 @@ it will prompt the user for them too.
         $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
     
         # Processing:
-        say $self->localise('Thank you for your patience. Your request is being processed...');
+        say $self->language->localise('Thank you for your patience. Your request is being processed...');
         for my $unique_name (@{$self->{'unique_names'}}) {
     
             $self->log_debug('Processing Unique name: [_1]', $unique_name);
@@ -2736,7 +2736,7 @@ it will prompt the user for them too.
             
         };
     
-        say $self->localise('Nothing was found to match.') unless $self->{display_set};
+        say $self->language->localise('Nothing was found to match.') unless $self->{display_set};
     
         # Output:
         return $self->log_debug('Leaving display method.')->dumper;
@@ -2832,8 +2832,8 @@ To do.
             my  $can_or_cannot                  =   $fresh_result->is_locked?   'cannot':
                                                     'can';
     
-            say $self->localise('horizontal.rule');
-            say $self->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
+            say $self->language->localise('horizontal.rule');
+            say $self->language->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
     
             $name->{"$self->{'part'}"}          =   $self->{'replace'};
             $result->set_value($search_field, $names);
@@ -2848,20 +2848,20 @@ To do.
             # If not, then there's really no reason to be using the original working result we confirmed on
             # - we only need the id to get our fresh result.
     
-            say $self->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
+            say $self->language->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
         
             if ($self->{live}) {
                 unless ($fresh_result->is_locked) {
                     $fresh_result->commit(@{$self->{force_or_not}});
-                    say $self->localise('change.done');
+                    say $self->language->localise('change.done');
                     $self->{changes_made}++;
                 }
                 else {
-                    say $self->localise('change.locked', $fresh_result->id);
+                    say $self->language->localise('change.locked', $fresh_result->id);
                 };
             }
             else {
-                say $self->localise('change.dry_run');
+                say $self->language->localise('change.dry_run');
             };
     
         };
@@ -2881,10 +2881,10 @@ To do.
 
     sub finish {
         my  $self   =   shift;
-        say $self->localise('horizontal.rule');
-        say $self->localise('finish.change', $self->{changes_made}, scalar @{$self->{what_to_change}});
-        say $self->localise('finish.no_change') unless $self->{changes_made};
-        say $self->localise('finish.thank_you');
+        say $self->language->localise('horizontal.rule');
+        say $self->language->localise('finish.change', $self->{changes_made}, scalar @{$self->{what_to_change}});
+        say $self->language->localise('finish.no_change') unless $self->{changes_made};
+        say $self->language->localise('finish.thank_you');
         return $self;
     }
     
@@ -2972,7 +2972,7 @@ To do.
                                                 $ARG || $ARG eq '0'? ($ARG):    # True or zero - use.
                                                 ();                             # Else filter out.
                                         } 
-                                        split $not_a_name_part, $self->localise('name_parts.display_order')
+                                        split $not_a_name_part, $self->language->localise('name_parts.display_order')
                                     ]; # Array ref, so order preserved.
     
         $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
@@ -3003,13 +3003,13 @@ To do.
     
         $self->log_debug('Entered method.');
     
-        die                                 $self->localise('format_single_line_for_display.error.no_params')
+        die                                 $self->language->localise('format_single_line_for_display.error.no_params')
                                             unless ($result && $field);
     
         $self->log_debug('Found params, and about to process them...');
     
         my  $names                      =   join(
-                                                $self->localise('separator.name_values'),
+                                                $self->language->localise('separator.name_values'),
                                                 map {$self->_stringify_name($ARG) // ()}
                                                 @{$result->get_value("$field")}
                                             );
@@ -3018,7 +3018,7 @@ To do.
     
     
         return                              $self->log_debug('Returning localised display line as we leave the method.')
-                                            ->localise('display_line', $result->id, $names);
+                                            ->language->localise('display_line', $result->id, $names);
     
     }
     
@@ -3042,14 +3042,14 @@ To do.
     
     sub stringify_arrayref {
         my $self    =   shift;
-        return join $self->localise('separator.stringify_arrayref'), @{ (shift) };
+        return join $self->language->localise('separator.stringify_arrayref'), @{ (shift) };
     }
     
     sub prompt_for {
     
         my  $self                   =   shift;
         my  $prompt_type            =   shift;
-        die                             $self->localise('prompt_for.error.no_prompt_type')
+        die                             $self->language->localise('prompt_for.error.no_prompt_type')
                                         unless $prompt_type;
                                 
         my  $prompt                 =   'prompt_for.'.$prompt_type;
@@ -3072,10 +3072,10 @@ To do.
         my  $matches_prompt_on_blank=   qr/^($prompt_on_blank_for)$/;   # This list to join to regex is done so often, it should be a subroutine or method.
     
         if  ($find_prompt) {
-            die                         $self->localise('prompt_for.find.error.no_part')
+            die                         $self->language->localise('prompt_for.find.error.no_part')
                                         unless $self->{part};
             @prompt_arguments       =   (
-                                            $self->localise('name.'.$self->{part}),
+                                            $self->language->localise('name.'.$self->{part}),
                                         );
         };
     
@@ -3093,16 +3093,15 @@ To do.
                                                 );
             my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
     
-            say $self->localise($prompt, @prompt_arguments);
+            say $self->language->localise($prompt, @prompt_arguments);
     
             until ( $input && ($input =~ $matches_acceptable_input) ) {
     
-                say $self->localise('prompt_for.1or2');
+                say $self->language->localise('prompt_for.1or2');
                 chomp($number   =   <STDIN>);
-                my  $one        =   $self->localise_regex_or('input.1');
-                my  $two        =   $self->localise_regex_or('input.2');
-                $input          =   $number?    ($number =~ m/^($one)$/)?  'given':    # should mapping occur to variables set centrally?
-                                                ($number =~ m/^($two)$/)?  'family':   # should mapping occur to variables set centrally?
+
+                $input          =   $number?    $self->language->matches_case_sensitively($number, 'input.1')?  'given':    # should mapping occur to variables set centrally?
+                                                $self->language->matches_case_sensitively($number, 'input.2')?  'family':   # should mapping occur to variables set centrally?
                                                 undef:
                                     undef;
     
@@ -3114,23 +3113,18 @@ To do.
         
             my  $confirmation;
             @prompt_arguments               =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
-            my  $acceptable_input           =   join '|',
-                                                map {
-                                                    $self->localise_regex_or($ARG)
-                                                }
-                                                (
-                                                    'input.yes_letter',
-                                                    'input.no_letter',
-                                                    'input.all',
-                                                    'input.none',
+            my  @acceptable_input           =   (
+                                                    ['input.yes_letter'],
+                                                    ['input.no_letter'],
+                                                    ['input.all'],
+                                                    ['input.none'],
                                                 );
-            my  $matches_acceptable_input   =   qr/^($acceptable_input)$/i;
     
-            say $self->localise($prompt, @prompt_arguments);
-            say $self->localise('horizontal.rule');
+            say $self->language->localise($prompt, @prompt_arguments);
+            say $self->language->localise('horizontal.rule');
     
-            until ( $confirmation && ($confirmation =~ $matches_acceptable_input) ) {
-                say $self->localise('prompt_for.confirm.acceptable_input');
+            until ( $confirmation && $self->language->matches_case_insensitively($confirmation, @acceptable_input) ) {
+                say $self->language->localise('prompt_for.confirm.acceptable_input');
                 chomp($confirmation   =   <STDIN>)
             };
     
@@ -3139,8 +3133,8 @@ To do.
     
         elsif ($continue_prompt) {
     
-            say $self->localise($prompt);
-            say $self->localise('horizontal.rule');
+            say $self->language->localise($prompt);
+            say $self->language->localise('horizontal.rule');
             chomp($input   =   <STDIN>);
     
         }
@@ -3149,18 +3143,18 @@ To do.
         
             until ($input) {
         
-                say $self->localise($prompt, @prompt_arguments);
+                say $self->language->localise($prompt, @prompt_arguments);
                 chomp(my $typed_input           =   <STDIN>);
                 ($input)                        =   $self->_validate( ($typed_input) );
                 
                 last if $input;
                 if ($prompt_type =~ $matches_prompt_on_blank) {
         
-                    say $self->localise($prompt.'.prompt_on_blank');
+                    say $self->language->localise($prompt.'.prompt_on_blank');
                     chomp(my $typed_input2      =  <STDIN>); # Not validated and should be okay as we only ever use it in an equality test in the line below...
                     
                     # Definition:
-                    my  $blank_input_desired    =   ( $typed_input2 =~ m/^($self->localise_regex_or('input.yes_letter'))$/i ); # fc supported in Perl 5.16 onwards.
+                    my  $blank_input_desired    =   $self->language->matches_case_insensitively($typed_input2, 'input.yes_letter');
     
                     if ($blank_input_desired) {
                         $input = q{};
@@ -3177,16 +3171,7 @@ To do.
     
     }
     
-    sub localise {
-            # This smacks of duplication of code already in ChangeName::Language->localise.
-            my  $self   =   shift;
-            
-            return          $self->language?    $self->language->localise(@ARG):
-                            scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
-    }
-    sub localise_regex_or {
-        shift->language->localise_regex_or(@ARG)
-    }
+
     # Private subs:
     
     sub _set_attributes {
@@ -3478,10 +3463,10 @@ To do.
                                             unless $result;
     
         my  ($yes,$all,$no,$none)       =   (
-                                                $self->localise('input.yes_letter'),
-                                                $self->localise('input.all'),
-                                                $self->localise('input.no_letter'),
-                                                $self->localise('input.none'),
+                                                $self->language->localise('input.yes_letter'),
+                                                $self->language->localise('input.all'),
+                                                $self->language->localise('input.no_letter'),
+                                                $self->language->localise('input.none'),
                                             );
     
         foreach my $search_field (@{$self->{'fields_to_search'}}) {
@@ -3501,16 +3486,16 @@ To do.
                            
                 unless ($self->{display_lines_shown}) {
     
-                    say $self->localise('horizontal.rule');
-                    say $self->localise(
+                    say $self->language->localise('horizontal.rule');
+                    say $self->language->localise(
                             'seeking_confirmation.display_lines',
                             $self->_stringify_name($name),
                             join(
-                                $self->localise('separator.new_line'),
+                                $self->language->localise('separator.new_line'),
                                 @{$self->{display_lines}->{"$self->{unique_name}"}},
                             ),
                         );
-                    say $self->localise('horizontal.rule');
+                    say $self->language->localise('horizontal.rule');
     
                     $self->{display_lines_shown}    =   'Yes';
     
@@ -3593,8 +3578,8 @@ To do.
     
         return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
-        my  $output                                             =   $self->localise('horizontal.rule').
-                                                                    $self->localise('_confirmation_feedback.heading.confirmed_so_far');
+        my  $output                                             =   $self->language->localise('horizontal.rule').
+                                                                    $self->language->localise('_confirmation_feedback.heading.confirmed_so_far');
         my  $at_least_one_confirmation                          =   undef;
         my  $heading_shown_for                                  =   {};
     
@@ -3614,10 +3599,10 @@ To do.
     
                     $at_least_one_confirmation                  =   'Yes';
     
-                    $output                                     .=  $self->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
+                    $output                                     .=  $self->language->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
                                                                     unless $heading_shown_for->{$current_unique_name};
     
-                    $output                                     .=  $self->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
+                    $output                                     .=  $self->language->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
             
                     $heading_shown_for->{"$current_unique_name"}=   'Yes';
     
@@ -3632,7 +3617,7 @@ To do.
             $self->log_debug('Exited unique name loop.');
         };
         
-        #$output                                                 .=  $self->localise('horizontal.rule');    # Not needed if continue prompt will follow.
+        #$output                                                 .=  $self->language->localise('horizontal.rule');    # Not needed if continue prompt will follow.
         
         $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
                                                                     undef;
@@ -3705,7 +3690,7 @@ To do.
         my  $name           =   shift;
         
         # Premature Exit:
-        die                     $self->localise('_stringify_name.error.no_params')
+        die                     $self->language->localise('_stringify_name.error.no_params')
                                 unless $name; # hash ref check?
 
         my  @order_or_omit  =   ();
@@ -3717,7 +3702,7 @@ To do.
             ();
         };
 
-        return                  @order_or_omit? join $self->localise('separator.name_parts'), @order_or_omit:
+        return                  @order_or_omit? join $self->language->localise('separator.name_parts'), @order_or_omit:
                                 undef;
     }
 
@@ -3732,7 +3717,7 @@ To do.
         my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;    
     
         # Premature death:
-        die                                     $self->localise('_validate.error.no_arguments')
+        die                                     $self->language->localise('_validate.error.no_arguments')
                                                 unless $number_of_input_arguments; # Blank string or a zero are both valid values.
     
         # Processing:
@@ -3743,7 +3728,7 @@ To do.
                                                 $input[$current_index];
     
             # Stop out of range input:
-            die                                 $self->localise('_validate.error.four_byte_character')
+            die                                 $self->language->localise('_validate.error.four_byte_character')
                                                 if (
                                                     $input[$current_index]
                                                     && ($input[$current_index] =~ $matches_four_byte_character)
