@@ -3896,11 +3896,12 @@ package ChangeName::Language v1.0.0 {
 
             # Initial Values:
             my  @array_refs_only    =   grep {reftype($ARG) eq 'ARRAY'} @ARG;
+            my  @regex_strings      =   ();
 
             # Processing:
             foreach my $current_phrase_and_arguments (@array_refs_only) {
                 my  @arguments      =   @{ $current_phrase_and_arguments };
-                push @regex_strings ,   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext($arguments)):
+                push @regex_strings ,   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@arguments)):
                                         join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@arguments));
 
             }
