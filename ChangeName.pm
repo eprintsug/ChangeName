@@ -3819,6 +3819,9 @@ package ChangeName::Language v1.0.0 {
                                     # on Perl v5.18 or lower.
                                     
     ChangeName::Languages->import;
+    use     Scalar::Util qw(
+                reftype
+            );
     use Data::Dumper;
 
     # Construct Object:
@@ -3862,6 +3865,67 @@ package ChangeName::Language v1.0.0 {
             return          $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
                             join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@ARG));
     }
+
+    sub matches_case_sensitively {
+        shift->_get_match(0,@ARG);
+    }
+
+    sub matches_case_insensitively {
+        shift->_get_match(1,@ARG);
+    }
+
+    sub _get_match {
+
+        # Initial Values:
+        my  $self                   =   shift;
+        my  $case_insensitive       =   shift; # expects true or false value - i.e 1 or 0.
+        my  $value                  =   shift;
+
+        # Premature Exit:
+        return                          undef
+                                        unless $value;
+
+        # More Initial Values:
+        my  $many                   =   reftype($ARG[0]) eq 'ARRAY';
+        my  $regex_string           =   q{};
+
+
+        # Processing Regex String - many or single:
+
+        if ($many) {
+
+            # Initial Values:
+            my  @array_refs_only    =   grep {reftype($ARG) eq 'ARRAY'} @ARG;
+
+            # Processing:
+            foreach my $current_phrase_and_arguments (@array_refs_only) {
+                my  @arguments      =   @{ $current_phrase_and_arguments };
+                push @regex_strings ,   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext($arguments)):
+                                        join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@arguments));
+
+            }
+
+            # Output:
+            $regex_string           =   join '|', @regex_strings;
+
+        }
+        else {
+            # Output:
+            $regex_string           =   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
+                                        join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@ARG));
+        }
+
+        # Processing Match:
+        my  $matches                =   $case_insensitive?  qr/^($regex_string)\z/im:
+                                        qr/^($regex_string)\z/m;
+
+        my  $match                  =   $value && ($value =~ $matches);
+
+        # Output:
+        return $match;
+
+    }
+
 
     sub set_language_handle {
         my  $self                       =   shift;
