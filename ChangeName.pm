@@ -3907,8 +3907,8 @@ package ChangeName::Language v1.0.0 {
     sub localise_in_coders_language {
             my  $self   =   shift;
             #say 'Dumping localise caller...'."\n".Dumper (caller);
-            return          $self->{language_handle}->maketext(@ARG): # Change to coders handle.
-                            
+            return          $self->{language_handle}->maketext(@ARG); # Change to coders handle.
+
     }
 
     sub localise_regex_or {
