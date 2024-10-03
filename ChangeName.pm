@@ -914,6 +914,7 @@ my  @phrases = (
     'About to set Repository.'=>'About to set Repository.',
     'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
     'Data dump prevented by no_dumper option.'=>'Data dump prevented by no_dumper option.',
+    'No specific language set. Using all supported languages: [_1].'=>'No specific language set. Using all supported languages: [_1].',
 );
 
 our %Lexicon = (
@@ -1343,6 +1344,7 @@ my  @phrases = (
     'Set Repository. About to add attributes from params...'=>'Legen Sie das zu verwendende Repository fest. Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
     'Language and Logger attributes set.'=>'Sprach- und Logger-Attribute festgelegt.',
     'Data dump prevented by no_dumper option.'=>'Datendump durch Option kein_dumper verhindert.',
+    'No specific language set. Using all supported languages: [_1].'=>'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1]',
 );
 
 our %Lexicon = (
@@ -1482,6 +1484,26 @@ package ChangeName::Languages v1.0.0 {
         # Output:                                                        
         return  @ordered_language_handles;
 
+    }
+
+    sub ordered_language_names {
+    
+        # Initial Values:
+        my  $self                                   =   shift;
+        my  @output_strings                         =   ();
+        for my $language_handle ($self->ordered_language_handles) {
+
+            my  $language_instance                  =   (__PACKAGE__.'::'.$language_handle)->new;
+
+            next unless $language_instance;
+
+            push @output_strings                    ,   $language_instance->language_name;
+
+        };
+        my  $output_strings                         =   join $Lexicon{'separator.name_values'}, @output_strings;
+        
+        return  wantarray?  @output_strings:
+                $output_strings;
     }
 
     sub maketext_in_all_languages {
@@ -1756,6 +1778,11 @@ See L</new> method for info on acceptable object parameters.
 
     sub logger {
         shift;
+    } # Why is this here?
+
+    sub language_is_set {
+        my  $self   =   shift;
+        return $self->language && $self->language->get_language_handle;
     }
 
     sub set_dumper_class_name_only {
@@ -2364,8 +2391,22 @@ package ChangeName::Modulino v1.0.0 {
         $self->logger->replace_language_object($self->language);
 
         # Output:
+
+        if ($self->logger->language_is_set) {
+
+            $self->logger->verbose('Language set to [language_name].');
+
+        }
+        else {
+
+            $self->logger->verbose(
+                'No specific language set. Using all supported languages: [_1].',
+                scalar ChangeName::Languages->ordered_language_names
+            );
+
+        };
+
         $self->logger
-        ->verbose('Language set to [language_name].')
         ->debug('Commandline Options are...'    )->dumper(%{$self->{options}})
         ->debug('Commandline Arguments are...'  )->dumper(%{$self->{arguments}})
         ->debug('Configuration Values are...'   )->dumper(%{$self->{config}})
@@ -3462,11 +3503,15 @@ To do.
         return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                             unless $result;
     
-        my  ($yes,$all,$no,$none)       =   (
+#        my  ($yes,$all,$no,$none)       =   (
+#                                                $self->language->localise('input.yes_letter'),
+#                                                $self->language->localise('input.all'),
+#                                                $self->language->localise('input.no_letter'),
+#                                                $self->language->localise('input.none'),
+#                                            );
+        my  ($yes, $no)                 =   (
                                                 $self->language->localise('input.yes_letter'),
-                                                $self->language->localise('input.all'),
                                                 $self->language->localise('input.no_letter'),
-                                                $self->language->localise('input.none'),
                                             );
     
         foreach my $search_field (@{$self->{'fields_to_search'}}) {
@@ -3522,17 +3567,17 @@ To do.
                 # Process confirmation:
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
     
-                if (fc $confirmation eq fc $none) {
+                if ( $self->language->matches_case_insensitively($confirmation, 'input.none') ) {
                     $self->{auto_no}    =   $self->{unique_name};
                     $confirmation       =   $no;
                 };
     
-                if (fc $confirmation eq fc $all) {
+                if ($self->language->matches_case_insensitively($confirmation, 'input.all')) {
                     $self->{auto_yes}   =   $self->{unique_name};
                     $confirmation       =   $yes;
                 };
     
-                if (fc $confirmation eq fc $yes) {
+                if ($self->language->matches_case_insensitively($confirmation, 'input.yes_letter')) {
     
                     my  $feedback       =   [
                                                 $self->{matches_unique_name},
@@ -3859,6 +3904,13 @@ package ChangeName::Language v1.0.0 {
                             (ChangeName::Languages->maketext_in_all_languages(@ARG)); # Attempting list context.
     }
 
+    sub localise_in_coders_language {
+            my  $self   =   shift;
+            #say 'Dumping localise caller...'."\n".Dumper (caller);
+            return          $self->{language_handle}->maketext(@ARG): # Change to coders handle.
+                            
+    }
+
     sub localise_regex_or {
             my  $self   =   shift;
             #say 'Dumping localise caller...'."\n".Dumper (caller);
@@ -3886,7 +3938,7 @@ package ChangeName::Language v1.0.0 {
                                         unless $value;
 
         # More Initial Values:
-        my  $many                   =   reftype($ARG[0]) eq 'ARRAY';
+        my  $many                   =   reftype($ARG[0]) && (reftype($ARG[0]) eq 'ARRAY');
         my  $regex_string           =   q{};
 
 
@@ -3895,7 +3947,7 @@ package ChangeName::Language v1.0.0 {
         if ($many) {
 
             # Initial Values:
-            my  @array_refs_only    =   grep {reftype($ARG) eq 'ARRAY'} @ARG;
+            my  @array_refs_only    =   grep {reftype($ARG) && (reftype($ARG) eq 'ARRAY')} @ARG;
             my  @regex_strings      =   ();
 
             # Processing:
