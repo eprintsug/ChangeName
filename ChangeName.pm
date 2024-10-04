@@ -355,7 +355,7 @@ package ChangeName::Utilities v1.0.0 {
                                             }
                                             keys %{ $options }
                                         );
-
+        say 'Dumping the option strings'.Dumper(@options_specifications);
         # Output:
         Getopt::Long::Parser->new->getoptionsfromarray($arguments, $options, @options_specifications);
         say 'Dumping'.Dumper($options);
@@ -2273,6 +2273,7 @@ package ChangeName::Modulino v1.0.0 {
         };
 
         $self->{options}                =   $self->get_options(\@ARG, $default_options);
+        say 'Options are'.Dumper($self->{options});
         $self->{arguments}              =   {
             archive_id                  =>  shift,
             search                      =>  shift,
