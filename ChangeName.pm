@@ -1510,9 +1510,8 @@ package ChangeName::Languages v1.0.0 {
     
         # Initial Values:
         my  $self                                   =   shift;
-        my  @arguments                              =   @ARG;
-        my  $phrase_key                             =   shift;
-        my  $phrase_considered_universal            =   scalar (grep {$phrase_key eq $ARG} keys %Lexicon);  # Inspired by David (and the "any" documentation).
+        my  $phrase_key                             =   $ARG[0];
+        my  $phrase_considered_universal            =   scalar (grep {$phrase_key && $phrase_key eq $ARG} keys %Lexicon);  # Inspired by David (and the "any" documentation).
         my  @in_all_languages                       =   ();
         my  $in_all_languages_string                =   q{};
         my  $language_base_class                    =   __PACKAGE__;
@@ -1533,7 +1532,7 @@ package ChangeName::Languages v1.0.0 {
 
                 next unless $language_tag;
 
-                my  $phrase                         =   $language_instance->maketext(@arguments);
+                my  $phrase                         =   $language_instance->maketext(@ARG);
                 my  $phrase_is_valid                =   $phrase || $phrase eq '0';
                 
 
@@ -3868,6 +3867,8 @@ package ChangeName::Language v1.0.0 {
                 reftype
             );
     use Data::Dumper;
+#    use lib '/opt/eprints3/perl_lib/';
+#    use EPrints;
 
     # Construct Object:
     sub new {
@@ -3893,6 +3894,8 @@ package ChangeName::Language v1.0.0 {
     sub localise {
             my  $self   =   shift;
             #say 'Dumping localise caller...'."\n".Dumper (caller);
+#        EPrints->trace;
+ #       say Dumper(@ARG? @ARG: 'No args');
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
                             scalar ChangeName::Languages->maketext_in_all_languages(@ARG);
     }
@@ -3905,10 +3908,12 @@ package ChangeName::Language v1.0.0 {
     }
 
     sub get_first_localisation_for {
-        [(shift->localise->maketext(@ARG))]->[0];   # This will return the first result for the lexicon key.
-                                                    # First attempting any language set.
-                                                    # Only if no language is set, will it then look in all languages as ordered by ChangeName::Languages::ordered_language_handles - which is typically the priority language first, followed by all other languages in alphabetical order.
-                                                    # Uses localise to obtain the current language translation, or all language translations, and takes the first result of either situation, delivering only one test string back.
+        #EPrints->trace;
+        #say Dumper(@ARG);
+        [(shift->localise(@ARG))]->[0]; # Uses localise to obtain
+                                        # the current language translation,
+                                        # or all language translations,
+                                        # and takes the first result of either situation, delivering only one test string back.
 
     }
 
