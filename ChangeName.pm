@@ -1484,7 +1484,7 @@ package ChangeName::Languages v1.0.0 {
         # Output:                                                        
         return  @ordered_language_handles;
 
-    }
+    } # technically, these are ordered classes.
 
     sub ordered_language_names {
     
@@ -3904,10 +3904,11 @@ package ChangeName::Language v1.0.0 {
                             (ChangeName::Languages->maketext_in_all_languages(@ARG)); # Attempting list context.
     }
 
-    sub localise_in_coders_language {
-            my  $self   =   shift;
-            #say 'Dumping localise caller...'."\n".Dumper (caller);
-            return          $self->{language_handle}->maketext(@ARG); # Change to coders handle.
+    sub get_first_localisation {
+        [(shift->localise->maketext(@ARG))]->[0];   # This will return the first result for the lexicon key.
+                                                    # First attempting any language set.
+                                                    # Only if no language is set, will it then look in all languages as ordered by ChangeName::Languages::ordered_language_handles - which is typically the priority language first, followed by all other languages in alphabetical order.
+                                                    # Uses localise to obtain the current language translation, or all language translations, and takes the first result of either situation, delivering only one test string back.
 
     }
 
