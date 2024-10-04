@@ -208,6 +208,7 @@ package ChangeName::Utilities v1.0.0 {
         );
     use Exporter qw(import);
     use Data::Dumper;
+    use Getopt::Long;
 
     our @EXPORT =   qw(
         validate_class
@@ -279,6 +280,182 @@ package ChangeName::Utilities v1.0.0 {
                 && defined $object->logger->language
                 && blessed($object->logger->language);
     }
+    
+    sub _can_log {
+        my  $object =   shift;
+
+        return
+                defined $object
+                && blessed($object)
+                
+                && $object->can('logger')
+                && defined $object->logger
+                && blessed($object->logger)
+                
+                && $object->logger->can('language')
+                && defined $object->logger->language
+                && blessed($object->logger->language);
+    }
+    
+#    sub _can {
+#        my  $object     =   shift;
+#        my  $is_object  =   defined $object
+#                            && blessed($object);
+#        return undef unless $is_object;
+#        
+#        my  $can_yeild_object   =   sub {
+#                                        my  $object =   shift;
+#                                        my  $can    =   shift;
+#                                        my  $result =   $object->can($can)
+#                                                        && defined $object->$can
+#                                                        && blessed($object->$can);
+#                                    };
+#        $can_yeild_object->(
+#        my  $can        =   scalar(
+#                                grep { 
+#        return
+#
+#                
+#                && $object->can('logger')
+#                && defined $object->logger
+#                && blessed($object->logger)
+#                
+#                && $object->logger->can('language')
+#                && defined $object->logger->language
+#                && blessed($object->logger->language);
+#    }
+
+
+    sub get_options {
+    
+        my  $self                       =   shift;
+        my  $option_types               =   shift;
+        my  $options                    =   {};
+        
+        foreach $option_type (keys %{ $option_types }) {
+            
+            %{ $options }               =   (
+
+                # Existing values:
+                %{ $options },
+
+                # Additional/Overriding Values:
+                _get_options($self, $option_type, $option_types->{$option_type}, @ARG),
+
+            );
+        };
+        
+        return $options;
+    }
+    
+    sub _get_options {
+
+        # Initial Values:
+        my  $self                   =   shift;
+        my  $option_type            =   shift;
+        my  $options                =   shift;
+        my  $suffix_for             =   {
+            optional_string         =>  ':s',
+            negatable_options       =>  '!',
+            incremental_options     =>  '+',
+        };
+
+        # Processing:
+        my  @options_specifications =   (
+                                            map {
+                                                _multilingual_option_specification($self, $ARG, $suffix_for{$option_type})
+                                            }
+                                            keys %{ $options }
+                                        );
+
+        # Output:
+        Getopt::Long::Parser->new->getoptionsfromarray(\@ARG, $options, @options_specifications);
+
+        return $options;
+
+    }
+
+    sub _multilingual_option_specification {
+
+        # Initial Values:
+        my ($self, $option, $option_suffix) =   @ARG;
+        my  $blank                          =   q{};
+
+        $self->logger->debug('Starting subroutine.')
+        if _can_log($self);
+
+        my  %multilingual_options_hash      =   ChangeName::Languages->maketext_in_all_languages('options.'.$option);
+
+        # Premature exits:
+        return () unless ($option || ($option eq '0'));
+        return () unless %multilingual_options_hash;
+
+        $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper({%multilingual_options_hash})
+        if _can_log($self);
+
+        # Further Initial Values:
+        $option_suffix                      //= $blank;
+        my  @skip                           =   ();
+        my  $option_separator               =   '|';
+
+        # Regular Expressions:
+        my  $contiguous_white_space         =   qr/
+                                                    [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
+                                                    +                                           # Anything in the set one or more times.
+                                                /x;                                             # x - to allow whitespace and comments in regex.
+                                                                                                # Note x does not allow whitespace within the angled brackets
+                                                                                                # and xx would allow it in Perl 5.26 or higher.
+
+        my  $matches_leading_whitespace     =   qr/
+                                                    ^                                           # Start of string.
+                                                    $contiguous_white_space                     # White Space however previously defined.
+                                                    (?<data>                                    # Begin Capturing Group.
+                                                        .*                                      # Zero or more of anything.
+                                                    )                                           # End capturing group.
+                                                    $                                           # End of string.
+                                                /xs;                                            # x - to allow whitespace and comments in regex.
+                                                                                                # s - to include newlines in 'anything'.
+
+        # Processing:
+        
+        # Build our option:
+        my  $our_option_string              =   $option;
+
+        my  $used_already = {
+            "$option"                       =>  1
+        };
+
+        # Add translations to option:        
+        foreach my $translation (values %multilingual_options_hash) {
+                
+            $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
+                                            $translation;
+            $self->logger->debug('Initial option translation...')->dumper($translation)
+            if _can_log($self);
+
+            my  @values                 =   map {
+                                                my  $value              =   $ARG;
+                                                my  @value_to_use       =   $used_already->{$value}?    @skip:
+                                                                            ($value);
+                                                $used_already->{$value} =   1;
+                                                @value_to_use;
+                                            }
+                                            split $contiguous_white_space, $translation;
+            if ( _can_log($self) ) {
+                $self->logger->debug('Option translation as a list with codebase\'s existing option key "[_1]" omitted...', $option)->dumper(@values) if @values;
+                $self->logger->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation, ) unless @values;
+            };
+            $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
+                                            $blank;
+        };
+        
+        $our_option_string              .=  $option_suffix;
+        $self->logger->debug('Option string is: [_1]', $our_option_string)->debug('Leaving subroutine.')
+        if _can_log($self);
+
+        return  $our_option_string;
+    }
+
 
 }
 
@@ -391,7 +568,26 @@ package ChangeName::Config v1.0.0 {
         # Initial Values:
         my  ($self)                 =   shift;
         my  $params                 =   shift;
-    
+
+        $self->{language}               =   ChangeName::Language->new;
+
+        # Logger before options processed, so options are hardcoded here.
+        $self->{logger}                 =   ChangeName::Log->new(
+                                                debug       =>  0,
+                                                verbose     =>  0,
+                                                no_trace    =>  0,
+                                                no_dumper   =>  0,
+                                                language    =>  $self->language,
+                                            )->set_caller_depth(3);
+                                            
+        my  $default_options = {
+            optional_strings =>  {
+                config                  =>  undef,
+            },
+        };
+
+        $self->{options}                =   $self->get_options($params, $default_options);
+                                            
         %{
             $self
         }                           =   (
@@ -407,7 +603,8 @@ package ChangeName::Config v1.0.0 {
                                             debug   =>  [],
                                             verbose =>   [],
                                         },
-            
+            external_yaml_filepath  =>  exists $self->{options}->{config} && $self->{options}->{config}?    $self->{options}->{config}:
+                                        undef,
         );
 
         # Load data if any config filepath params provided:
@@ -421,12 +618,16 @@ package ChangeName::Config v1.0.0 {
         return shift->{default_yaml_filepath};
     }
 
+    sub get_external_yaml_filepath {
+        return shift->{external_yaml_filepath};
+    }
+
     
     sub load {
 
         # Initial Values:
         my  $self                   =   shift;
-        my  $external_filepath      =   shift;
+        my  $external_filepath      =   shift // $self->get_external_yaml_filepath;
         my  $default_filepath       =   $self->get_default_yaml_filepath;
 
         # Definitions:    
@@ -1566,51 +1767,6 @@ package ChangeName::Languages v1.0.0 {
     1;
 }; # ChangeName::Languages Package.
 
-package ChangeName::CompileTimeConfigValues {
-
-    # Standard:
-    use     English qw(
-                -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance issue if they are invoked,
-                                    # on Perl v5.18 or lower.
-    use Data::Dumper;
-
-    sub new {
-        # Initial Values:
-        my  $class                  =   shift;
-        #my  $filepath               =   shift;
-        my  $prefix                 =   '[ChangeName::CompileTimeConfigValues::new] - ';
-        #my  @filepath_or_blank      =   $filepath || $filepath eq '0'?  ($filepath):
-        #                                ();
-
-        my  @object_params          =   (
-
-            # Our own params:
-            config_message_prefix   =>  $prefix,
-            
-        );
-
-        # Set Attributes:
-        my  $self                   =   {
-            config                  =>  ChangeName::Config->new(@object_params)->load()->get_data, # Load cannot use external currently.
-        };
-
-        # Make Object:
-        bless $self                 ,   $class;
-
-        # Output:
-        return $self;
-    }
-
-    sub get_path_to_eprints_perl_library {
-        #die Dumper shift->{config};
-        return shift->{config}->{'EPrints Perl Library Path'};
-    }
-
-} # ChangeName::CompileTimeValues Package.
-
 package ChangeName::Log v1.0.0 {
 
     # Standard:
@@ -1623,7 +1779,7 @@ package ChangeName::Log v1.0.0 {
 
     # Specific:
     ChangeName::Utilities->import;
-    use     lib ChangeName::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
+    use     lib ChangeName::Config->new(@ARGV)->load->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
@@ -2090,8 +2246,9 @@ package ChangeName::Modulino v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    use     Getopt::Long;
+    #use     Getopt::Long;
     use     Data::Dumper;
+    ChangeName::Utilities->import;
 
     # Modulino:
     ChangeName::Modulino->run(@ARGV) unless caller;
@@ -2121,19 +2278,6 @@ package ChangeName::Modulino v1.0.0 {
                                                 language    =>  $self->language,
                                             )->set_caller_depth(3);
 
-        # Default Options:
-        my $options                     =   {
-            language                    =>  undef,
-            live                        =>  0,
-            verbose                     =>  0,
-            debug                       =>  0,
-            trace                       =>  0,
-            no_dumper                   =>  0,
-            no_trace                    =>  0,
-            config                      =>  undef,
-            exact                       =>  0,
-        };
-
         my  $default_options = {
             optional_strings =>  {
                 language                =>  undef,
@@ -2151,44 +2295,8 @@ package ChangeName::Modulino v1.0.0 {
                 no_trace                =>  0,
             },
         };
-    
-        # Command Line Options:    
-        Getopt::Long::Parser->new->getoptionsfromarray(
-            \@ARG,                                              # Array to get options from.
-            $options,                                           # Hash to store options to.
-    
-            # Actual options:
-            $self->multilingual_options('language',     ':s'),  # Optional string.
-                                                                # Use 'language' for the hash ref key, 
-                                                                # accept '--language' or '--lang' from the commandline.
-                                                                # Syntax can be --lang=en-GB or --lang en-GB
-    
-            $self->multilingual_options('config',       ':s'),  # Optional string.
-                                                                # Use 'config' for the hash ref key, 
-                                                                # accept '--config' from the commandline.
-                                                                # Syntax can be --config=path/to/yaml_config.yml or --config path/to/yaml_config.yml
-     
-            $self->multilingual_options('live',         '!'),   # if --live present,    set $live to 1,
-                                                                # if --nolive present,  set $live to 0.
-    
-            $self->multilingual_options('verbose',      '+'),   # if --verbose present,    set $verbose
-                                                                # to the number of times it is present.
-                                                                # i.e. --verbose --verbose would set $verbose to 2.
-    
-            $self->multilingual_options('debug',        '!'),   # if --debug present,    set $debug to 1,
-                                                                # if --nodebug present,  set $debug to 0.
-    
-            $self->multilingual_options('trace',        '!'),   # if --trace present,    set $trace to 1,
-                                                                # if --notrace present,  set $trace to 0.
-                                
-            $self->multilingual_options('no_dumper',    '+'),   # if --no_dumper present set $no_dumper to 1.
-    
-            $self->multilingual_options('no_trace',     '+'),   # if --no_trace present  set $no_trace  to 1.
-            
-            $self->multilingual_options('exact',        '!'),   # if --exact present,   set $exact to 1,
-                                                                # if --noexact present, set $exact to 0.
-        );
-        $self->{options}                =   $options;
+
+        $self->{options}                =   $self->get_options(\@ARG, $default_options);
         $self->{arguments}              =   {
             archive_id                  =>  shift,
             search                      =>  shift,
@@ -2220,81 +2328,6 @@ package ChangeName::Modulino v1.0.0 {
     
     }
 
-    sub multilingual_options {
-        # Initial Values:
-        my ($self, $option, $option_suffix) =   @ARG;
-        my  $blank                          =   q{};
-
-        $self->logger->debug('Starting subroutine.');
-
-        my  %multilingual_options_hash      =   ChangeName::Languages->maketext_in_all_languages('options.'.$option);
-
-        # Premature exits:
-        return () unless ($option || ($option eq '0'));
-        return () unless %multilingual_options_hash;
-
-        $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper({%multilingual_options_hash});
-
-        # Further Initial Values:
-        $option_suffix                      //= $blank;
-        my  @skip                           =   ();
-        my  $option_separator               =   '|';
-
-        # Regular Expressions:
-        my  $contiguous_white_space         =   qr/
-                                                    [\p{White_Space}\p{Pattern_White_Space}]    # Set of Properties that count as white space.
-                                                    +                                           # Anything in the set one or more times.
-                                                /x;                                             # x - to allow whitespace and comments in regex.
-                                                                                                # Note x does not allow whitespace within the angled brackets
-                                                                                                # and xx would allow it in Perl 5.26 or higher.
-
-        my  $matches_leading_whitespace     =   qr/
-                                                    ^                                           # Start of string.
-                                                    $contiguous_white_space                     # White Space however previously defined.
-                                                    (?<data>                                    # Begin Capturing Group.
-                                                        .*                                      # Zero or more of anything.
-                                                    )                                           # End capturing group.
-                                                    $                                           # End of string.
-                                                /xs;                                            # x - to allow whitespace and comments in regex.
-                                                                                                # s - to include newlines in 'anything'.
-
-        # Processing:
-        
-        # Build our option:
-        my  $our_option_string              =   $option;
-
-        my  $used_already = {
-            "$option"                       =>  1
-        };
-
-        # Add translations to option:        
-        foreach my $translation (values %multilingual_options_hash) {
-                
-            $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
-                                            $translation;
-            $self->logger->debug('Initial option translation...')->dumper($translation);
-
-            my  @values                 =   map {
-                                                my  $value              =   $ARG;
-                                                my  @value_to_use       =   $used_already->{$value}?    @skip:
-                                                                            ($value);
-                                                $used_already->{$value} =   1;
-                                                @value_to_use;
-                                            }
-                                            split $contiguous_white_space, $translation;
-
-            $self->logger->debug('Option translation as a list with codebase\'s existing option key "[_1]" omitted...', $option)->dumper(@values) if @values;
-            $self->logger->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation, ) unless @values;
-
-            $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
-                                            $blank;
-        };
-        
-        $our_option_string              .=  $option_suffix;
-        $self->logger->debug('Option string is: [_1]', $our_option_string)->debug('Leaving subroutine.');
-        return  $our_option_string;
-    }
-    
     sub logger {
         shift->{logger};
     }
@@ -2357,18 +2390,12 @@ package ChangeName::Modulino v1.0.0 {
         my  $self                       =   shift;
         my  @nothing                    =   ();        
         my  $prefix                     =   '[ChangeName::Modulino::setup] - '; # This should be generated by _get_log_prefix - perhaps shift it to utilities(!?). Or a dedicated prefix interface?
-        
-        
-        # Definitions:
-        my  @config_filepath_or_nothing =   exists  $self->{options}->{config}
-                                            &&      $self->{options}->{config}? ($self->{options}->{config}):
-                                            @nothing;
 
         # Processing:
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   (ChangeName::Config->new->load(@config_filepath_or_nothing)->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
+        )                               =   (ChangeName::Config->new($self->{options})->load->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
 
         if ($self->{config_messages}) {
             
@@ -2479,7 +2506,7 @@ package ChangeName::Operation v1.0.0 {
 
     # Specific:
 
-    use     lib ChangeName::CompileTimeConfigValues->new(@ARGV)->get_path_to_eprints_perl_library;
+    use     lib ChangeName::Config->new(@ARGV)->load->ChangeName::Config->new(@ARGV)->load->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
