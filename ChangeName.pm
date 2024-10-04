@@ -200,8 +200,8 @@ package ChangeName::Utilities v1.0.0 {
                                 # on Perl v5.18 or lower.
 
     # Specific:
-    #use lib '/opt/eprints3/perl_lib';
-    #use EPrints;
+    use lib '/opt/eprints3/perl_lib';
+    use EPrints;
     use Scalar::Util qw(
             blessed
             reftype
@@ -213,6 +213,7 @@ package ChangeName::Utilities v1.0.0 {
     our @EXPORT =   qw(
         validate_class
         valid_object
+        get_options
     );
 
     sub validate_class {
@@ -280,22 +281,7 @@ package ChangeName::Utilities v1.0.0 {
                 && defined $object->logger->language
                 && blessed($object->logger->language);
     }
-    
-    sub _can_log {
-        my  $object =   shift;
 
-        return
-                defined $object
-                && blessed($object)
-                
-                && $object->can('logger')
-                && defined $object->logger
-                && blessed($object->logger)
-                
-                && $object->logger->can('language')
-                && defined $object->logger->language
-                && blessed($object->logger->language);
-    }
     
 #    sub _can {
 #        my  $object     =   shift;
@@ -329,10 +315,11 @@ package ChangeName::Utilities v1.0.0 {
     sub get_options {
     
         my  $self                       =   shift;
+        my  $arguments                  =   shift;
         my  $option_types               =   shift;
         my  $options                    =   {};
-        
-        foreach $option_type (keys %{ $option_types }) {
+        EPrints->trace;
+        foreach my $option_type (keys %{ $option_types }) {
             
             %{ $options }               =   (
 
@@ -340,7 +327,7 @@ package ChangeName::Utilities v1.0.0 {
                 %{ $options },
 
                 # Additional/Overriding Values:
-                _get_options($self, $option_type, $option_types->{$option_type}, @ARG),
+                %{ _get_options($self, $option_type, $option_types->{$option_type}, $arguments) },
 
             );
         };
@@ -354,23 +341,24 @@ package ChangeName::Utilities v1.0.0 {
         my  $self                   =   shift;
         my  $option_type            =   shift;
         my  $options                =   shift;
+        my  $arguments              =   shift;
         my  $suffix_for             =   {
-            optional_string         =>  ':s',
+            optional_strings        =>  ':s',
             negatable_options       =>  '!',
             incremental_options     =>  '+',
         };
-
+        EPrints->trace;
         # Processing:
         my  @options_specifications =   (
                                             map {
-                                                _multilingual_option_specification($self, $ARG, $suffix_for{$option_type})
+                                                _multilingual_option_specification($self, $ARG, $suffix_for->{$option_type})
                                             }
                                             keys %{ $options }
                                         );
 
         # Output:
-        Getopt::Long::Parser->new->getoptionsfromarray(\@ARG, $options, @options_specifications);
-
+        Getopt::Long::Parser->new->getoptionsfromarray($arguments, $options, @options_specifications);
+        say 'Dumping'.Dumper($options);
         return $options;
 
     }
@@ -380,7 +368,7 @@ package ChangeName::Utilities v1.0.0 {
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
         my  $blank                          =   q{};
-
+        EPrints->trace;
         $self->logger->debug('Starting subroutine.')
         if _can_log($self);
 
@@ -550,43 +538,31 @@ package ChangeName::Config v1.0.0 {
                 Load
             );                      # Standard module in Core Perl since Perl 5.14. 
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
-                                    
+        ChangeName::Utilities->import;
     sub new {
         my  $class      =   shift;
-        my  $params     =   {@ARG};
     
         my  $self       =   {};
         bless $self, $class;
-    
-        $self->_set_attributes($params);
-    
-        return $self;
-    }
 
-    sub _set_attributes {
-
-        # Initial Values:
-        my  ($self)                 =   shift;
-        my  $params                 =   shift;
-
-        $self->{language}               =   ChangeName::Language->new;
+        #$self->{language}               =   ChangeName::Language->new;
 
         # Logger before options processed, so options are hardcoded here.
-        $self->{logger}                 =   ChangeName::Log->new(
-                                                debug       =>  0,
-                                                verbose     =>  0,
-                                                no_trace    =>  0,
-                                                no_dumper   =>  0,
-                                                language    =>  $self->language,
-                                            )->set_caller_depth(3);
+        #$self->{logger}                 =   ChangeName::Log->new(
+        #                                        debug       =>  0,
+        #                                        verbose     =>  0,
+        #                                        no_trace    =>  0,
+        #                                        no_dumper   =>  0,
+        #                                        language    =>  $self->language,
+        #                                    )->set_caller_depth(3);
                                             
         my  $default_options = {
             optional_strings =>  {
                 config                  =>  undef,
             },
         };
-
-        $self->{options}                =   $self->get_options($params, $default_options);
+        ChangeName::Utilities->import;
+        $self->{options}                =   ChangeName::Utilities::get_options($self, \@ARG, $default_options);
                                             
         %{
             $self
@@ -1779,7 +1755,7 @@ package ChangeName::Log v1.0.0 {
 
     # Specific:
     ChangeName::Utilities->import;
-    use     lib ChangeName::Config->new(@ARGV)->load->{'EPrints Perl Library Path'};
+    use     lib ChangeName::Config->new(@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
@@ -2506,7 +2482,7 @@ package ChangeName::Operation v1.0.0 {
 
     # Specific:
 
-    use     lib ChangeName::Config->new(@ARGV)->load->ChangeName::Config->new(@ARGV)->load->{'EPrints Perl Library Path'};
+    use     lib ChangeName::Config->new(@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
