@@ -3510,8 +3510,8 @@ To do.
 #                                                $self->language->localise('input.none'),
 #                                            );
         my  ($yes, $no)                 =   (
-                                                $self->language->localise('input.yes_letter'),
-                                                $self->language->localise('input.no_letter'),
+                                                $self->language->get_first_localisation_for('input.yes_letter'),
+                                                $self->language->get_first_localisation_for('input.no_letter'),
                                             );
     
         foreach my $search_field (@{$self->{'fields_to_search'}}) {
@@ -3904,7 +3904,7 @@ package ChangeName::Language v1.0.0 {
                             (ChangeName::Languages->maketext_in_all_languages(@ARG)); # Attempting list context.
     }
 
-    sub get_first_localisation {
+    sub get_first_localisation_for {
         [(shift->localise->maketext(@ARG))]->[0];   # This will return the first result for the lexicon key.
                                                     # First attempting any language set.
                                                     # Only if no language is set, will it then look in all languages as ordered by ChangeName::Languages::ordered_language_handles - which is typically the priority language first, followed by all other languages in alphabetical order.
