@@ -317,51 +317,31 @@ package ChangeName::Utilities v1.0.0 {
         my  $self                       =   shift;
         my  $arguments                  =   shift;
         my  $option_types               =   shift;
-        my  $options                    =   {};
-        EPrints->trace;
-        foreach my $option_type (keys %{ $option_types }) {
-            
-            %{ $options }               =   (
-
-                # Existing values:
-                %{ $options },
-
-                # Additional/Overriding Values:
-                %{ _get_options($self, $option_type, $option_types->{$option_type}, $arguments) },
-
-            );
-        };
-        
-        return $options;
-    }
-    
-    sub _get_options {
-
-        # Initial Values:
-        my  $self                   =   shift;
-        my  $option_type            =   shift;
-        my  $options                =   shift;
-        my  $arguments              =   shift;
+        my  $options                    =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
+        my  $parser                     =   Getopt::Long::Parser->new;
         my  $suffix_for             =   {
             optional_strings        =>  ':s',
             negatable_options       =>  '!',
             incremental_options     =>  '+',
         };
         EPrints->trace;
-        # Processing:
+
         my  @options_specifications =   (
                                             map {
-                                                _multilingual_option_specification($self, $ARG, $suffix_for->{$option_type})
+                                                _multilingual_option_specification($self, $ARG, $suffix_for->{$ARG})
                                             }
                                             keys %{ $options }
                                         );
-        say 'Dumping the option strings'.Dumper(@options_specifications);
-        # Output:
-        Getopt::Long::Parser->new->getoptionsfromarray($arguments, $options, @options_specifications);
-        say 'Dumping'.Dumper($options);
-        return $options;
 
+        #(push @options                  ,   %{ _get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
+
+        $parser->getoptionsfromarray($arguments, $options, @options_specifications);
+        #_get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
+
+        say 'Dumping final option return'.Dumper($options).'from'.Dumper(caller);
+        return $options;
     }
+    
 
     sub _multilingual_option_specification {
 
@@ -556,11 +536,30 @@ package ChangeName::Config v1.0.0 {
         #                                        language    =>  $self->language,
         #                                    )->set_caller_depth(3);
                                             
-        my  $default_options = {
+        #my  $default_options = {
+        #    optional_strings =>  {
+        #        config                  =>  undef,
+        #    },
+        #};
+        
+                my  $default_options = {
             optional_strings =>  {
+                language                =>  undef,
                 config                  =>  undef,
             },
+            negatable_options => {
+                live                    =>  0,
+                debug                   =>  0,
+                trace                   =>  0,
+                exact                   =>  0,
+            },
+            incremental_options => {
+                verbose                 =>  0,
+                no_dumper               =>  0,
+                no_trace                =>  0,
+            },
         };
+        
         ChangeName::Utilities->import;
         $self->{options}                =   ChangeName::Utilities::get_options($self, \@ARG, $default_options);
                                             
@@ -2271,9 +2270,10 @@ package ChangeName::Modulino v1.0.0 {
                 no_trace                =>  0,
             },
         };
-
+        say 'passed in args to derive modulino options from'.Dumper(@ARG);
+        say 'Default options being passed to get_options within modulino'.Dumper(@ARG);
         $self->{options}                =   $self->get_options(\@ARG, $default_options);
-        say 'Options are'.Dumper($self->{options});
+        say 'Options delivered to modulino instance are'.Dumper($self->{options});
         $self->{arguments}              =   {
             archive_id                  =>  shift,
             search                      =>  shift,
