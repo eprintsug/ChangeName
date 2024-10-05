@@ -316,30 +316,41 @@ package ChangeName::Utilities v1.0.0 {
     
         my  $self                       =   shift;
         my  $arguments                  =   shift;
+        say 'Arguments are '.Dumper($arguments);
         my  $option_types               =   shift;
-        my  $options                    =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
+        my  $default_options            =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
+        say 'Combined options'.Dumper($default_options);
+        my  @options_specifications     =   ();
         my  $parser                     =   Getopt::Long::Parser->new;
-        my  $suffix_for             =   {
-            optional_strings        =>  ':s',
-            negatable_options       =>  '!',
-            incremental_options     =>  '+',
+        my  $suffix_for                 =   {
+            optional_strings            =>  ':s',
+            negatable_options           =>  '!',
+            incremental_options         =>  '+',
         };
         EPrints->trace;
 
-        my  @options_specifications =   (
-                                            map {
-                                                _multilingual_option_specification($self, $ARG, $suffix_for->{$ARG})
-                                            }
-                                            keys %{ $options }
-                                        );
-
+        for my $option_type  (keys %{ $option_types }) {
+            push @options_specifications,   (
+                                                map {
+                                                    _multilingual_option_specification(
+                                                        $self, $ARG, $suffix_for->{$option_type}
+                                                    )
+                                                }
+                                                keys %{
+                                                    $option_types->{$option_type}
+                                                }
+                                            );
+        };
+        say 'Op_specs are:'.Dumper(@options_specifications);
         #(push @options                  ,   %{ _get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
 
-        $parser->getoptionsfromarray($arguments, $options, @options_specifications);
+        my $other = $parser->getoptionsfromarray(\@ARGV, $default_options, @options_specifications);
         #_get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
 
-        say 'Dumping final option return'.Dumper($options).'from'.Dumper(caller);
-        return $options;
+        say 'Dumping final option return'.Dumper($default_options).'from'.Dumper(caller);
+        say 'other'.Dumper($other);
+        die 'enough';
+        return $default_options;
     }
     
 
@@ -347,6 +358,7 @@ package ChangeName::Utilities v1.0.0 {
 
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
+        
         my  $blank                          =   q{};
         EPrints->trace;
         $self->logger->debug('Starting subroutine.')
@@ -519,6 +531,7 @@ package ChangeName::Config v1.0.0 {
             );                      # Standard module in Core Perl since Perl 5.14. 
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
         ChangeName::Utilities->import;
+    use Data::Dumper;
     sub new {
         my  $class      =   shift;
     
@@ -561,6 +574,7 @@ package ChangeName::Config v1.0.0 {
         };
         
         ChangeName::Utilities->import;
+        say 'args from which to get ops in Config new constructor.'.Dumper(@ARG);
         $self->{options}                =   ChangeName::Utilities::get_options($self, \@ARG, $default_options);
                                             
         %{
