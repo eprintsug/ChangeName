@@ -313,7 +313,7 @@ package ChangeName::Utilities v1.0.0 {
 
 
     sub get_options {
-    
+        EPrints->trace;    
         my  $self                       =   shift;
         my  $arguments                  =   shift;
         say 'Arguments are '.Dumper($arguments);
@@ -327,7 +327,7 @@ package ChangeName::Utilities v1.0.0 {
             negatable_options           =>  '!',
             incremental_options         =>  '+',
         };
-        EPrints->trace;
+
 
         for my $option_type  (keys %{ $option_types }) {
             push @options_specifications,   (
@@ -344,7 +344,7 @@ package ChangeName::Utilities v1.0.0 {
         say 'Op_specs are:'.Dumper(@options_specifications);
         #(push @options                  ,   %{ _get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
 
-        my $other = $parser->getoptionsfromarray(\@ARGV, $default_options, @options_specifications);
+        my $other = $parser->getoptionsfromarray($arguments, $default_options, @options_specifications);
         #_get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
 
         say 'Dumping final option return'.Dumper($default_options).'from'.Dumper(caller);
