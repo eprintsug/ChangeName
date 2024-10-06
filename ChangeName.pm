@@ -349,7 +349,7 @@ package ChangeName::Utilities v1.0.0 {
 
         say 'Dumping final option return'.Dumper($default_options).'from'.Dumper(caller);
         say 'other'.Dumper($other);
-        die 'enough';
+        #die 'enough';
         return $default_options;
     }
     
@@ -532,22 +532,23 @@ package ChangeName::Config v1.0.0 {
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
         ChangeName::Utilities->import;
     use Data::Dumper;
+
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
         my  $self       =   {};
         bless $self, $class;
 
-        #$self->{language}               =   ChangeName::Language->new;
+        $self->{language}               =   ChangeName::Language->new;
 
         # Logger before options processed, so options are hardcoded here.
-        #$self->{logger}                 =   ChangeName::Log->new(
-        #                                        debug       =>  0,
-        #                                        verbose     =>  0,
-        #                                        no_trace    =>  0,
-        #                                        no_dumper   =>  0,
-        #                                        language    =>  $self->language,
-        #                                    )->set_caller_depth(3);
+        $self->{logger}                 =   ChangeName::Log->new(
+                                                debug       =>  0,
+                                                verbose     =>  0,
+                                                no_trace    =>  0,
+                                                no_dumper   =>  0,
+                                                language    =>  $self->language,
+                                            )->set_caller_depth(3);
                                             
         #my  $default_options = {
         #    optional_strings =>  {
@@ -574,9 +575,10 @@ package ChangeName::Config v1.0.0 {
         };
         
         ChangeName::Utilities->import;
-        say 'args from which to get ops in Config new constructor.'.Dumper(@ARG);
-        $self->{options}                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')? $params->{options}:
-                                            ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options);
+        #$self->logger->debug('args from which to get ops in Config new constructor.'.Dumper(@ARG);
+        $self->{options}                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')?   $params->{options}:
+                                            $params->{commandline_arguments}?                                       ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options):
+                                            ChangeName::Utilities::get_options($self, q{}, $default_options);
                                             
         %{
             $self
@@ -612,6 +614,13 @@ package ChangeName::Config v1.0.0 {
         return shift->{external_yaml_filepath};
     }
 
+    sub logger {
+        shift->{logger};
+    }
+
+    sub language {
+        shift->{language};
+    }
     
     sub load {
 
