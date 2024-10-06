@@ -2264,7 +2264,7 @@ package ChangeName::Modulino v1.0.0 {
 
     sub run {
         my  $self = shift;
-        say 'Args are...'.Dumper(@ARG); die 'enough2';        
+        say 'Args are...'.Dumper(@ARG); #die 'enough2';        
         $self->new(@ARG)->start_change_name_operation;
     }
     
