@@ -534,7 +534,7 @@ package ChangeName::Config v1.0.0 {
     use Data::Dumper;
     sub new {
         my  $class      =   shift;
-    
+        my  $params     =   {@ARG};
         my  $self       =   {};
         bless $self, $class;
 
@@ -555,7 +555,7 @@ package ChangeName::Config v1.0.0 {
         #    },
         #};
         
-                my  $default_options = {
+        my  $default_options = {
             optional_strings =>  {
                 language                =>  undef,
                 config                  =>  undef,
@@ -575,7 +575,8 @@ package ChangeName::Config v1.0.0 {
         
         ChangeName::Utilities->import;
         say 'args from which to get ops in Config new constructor.'.Dumper(@ARG);
-        $self->{options}                =   ChangeName::Utilities::get_options($self, \@ARG, $default_options);
+        $self->{options}                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')? $params->{options}:
+                                            ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options);
                                             
         %{
             $self
@@ -1768,7 +1769,7 @@ package ChangeName::Log v1.0.0 {
 
     # Specific:
     ChangeName::Utilities->import;
-    use     lib ChangeName::Config->new(@ARGV)->load->get_data->{'EPrints Perl Library Path'};
+    use     lib ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     Scalar::Util qw(
@@ -2497,7 +2498,7 @@ package ChangeName::Operation v1.0.0 {
 
     # Specific:
 
-    use     lib ChangeName::Config->new(@ARGV)->load->get_data->{'EPrints Perl Library Path'};
+    use     lib ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
@@ -3240,6 +3241,10 @@ To do.
         my  $matches_yes            =   qr/^(y|yes)$/i; # Used with YAML. Case insensitive y or yes and an exact match - no partial matches like yesterday.
         my  $matches_match_types    =   qr/^(IN|EQ|EX|SET|NO)$/;
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
+        my  $config_param_is_a_hash =   exists $params->{config}
+                                        && (
+                                            reftype($params->{config}) eq 'HASH'
+                                        );
 
         my  $dumper_class_name_only =   [
                                             'Repository',
@@ -3304,7 +3309,8 @@ To do.
             # From params:
             live                    =>  $params->{live} // 0,
             exact                   =>  $params->{exact} // 0,
-            yaml                    =>  ($params->{config} // ChangeName::Config->new->load->get_data),  # TODO: Test this is a config hash
+            yaml                    =>  $config_param_is_a_hash? $params->{config}:
+                                        (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
 
