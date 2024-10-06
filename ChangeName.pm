@@ -530,6 +530,10 @@ package ChangeName::Config v1.0.0 {
                 Load
             );                      # Standard module in Core Perl since Perl 5.14. 
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
+    use     Scalar::Util qw(
+                blessed
+                reftype
+            );
         ChangeName::Utilities->import;
     use Data::Dumper;
 
@@ -538,6 +542,11 @@ package ChangeName::Config v1.0.0 {
         my  $params     =   {@ARG};
         my  $self       =   {};
         bless $self, $class;
+
+        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')? $params->{options}:
+                                                    undef;
+        my  $valid_commandline_arguments_param  =   exists $params->{commandline_arguments} && (reftype($params->{commandline_arguments}) eq 'ARRAY')? [(@{ $params->{commandline_arguments} })]:
+                                                    undef;
 
         #$self->{language}               =   ChangeName::Language->new;
 
@@ -576,9 +585,9 @@ package ChangeName::Config v1.0.0 {
         
         ChangeName::Utilities->import;
         #$self->logger->debug('args from which to get ops in Config new constructor.'.Dumper(@ARG);
-        $self->{options}                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')?   $params->{options}:
-                                            $params->{commandline_arguments}?                                       ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options):
-                                            ChangeName::Utilities::get_options($self, q{}, $default_options);
+        $self->{options}                =   $valid_options_param?               $valid_options_param:
+                                            $valid_commandline_arguments_param? ChangeName::Utilities::get_options($self, $valid_commandline_arguments_param, $default_options):
+                                            ChangeName::Utilities::get_options($self, [], $default_options);
                                             
         %{
             $self
@@ -2250,10 +2259,13 @@ package ChangeName::Modulino v1.0.0 {
     ChangeName::Utilities->import;
 
     # Modulino:
+    say 'Args are...'.Dumper(@ARGV);
     ChangeName::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        shift->new(@ARG)->start_change_name_operation;
+        my  $self = shift;
+        say 'Args are...'.Dumper(@ARG); die 'enough2';        
+        $self->new(@ARG)->start_change_name_operation;
     }
     
     sub new {
@@ -2396,7 +2408,7 @@ package ChangeName::Modulino v1.0.0 {
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   (ChangeName::Config->new($self->{options})->load->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
+        )                               =   (ChangeName::Config->new(options => $self->{options})->load->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
 
         if ($self->{config_messages}) {
             
