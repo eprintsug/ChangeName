@@ -539,16 +539,16 @@ package ChangeName::Config v1.0.0 {
         my  $self       =   {};
         bless $self, $class;
 
-        $self->{language}               =   ChangeName::Language->new;
+        #$self->{language}               =   ChangeName::Language->new;
 
         # Logger before options processed, so options are hardcoded here.
-        $self->{logger}                 =   ChangeName::Log->new(
-                                                debug       =>  0,
-                                                verbose     =>  0,
-                                                no_trace    =>  0,
-                                                no_dumper   =>  0,
-                                                language    =>  $self->language,
-                                            )->set_caller_depth(3);
+        #$self->{logger}                 =   ChangeName::Log->new(
+        #                                        debug       =>  0,
+        #                                        verbose     =>  0,
+        #                                        no_trace    =>  0,
+        #                                        no_dumper   =>  0,
+        #                                        language    =>  $self->language,
+        #                                    )->set_caller_depth(3);
                                             
         #my  $default_options = {
         #    optional_strings =>  {
