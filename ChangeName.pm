@@ -3612,17 +3612,19 @@ To do.
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
     
                 if ( $self->language->matches_case_insensitively($confirmation, 'input.none') ) {
+                    warn 'detected none';
                     $self->{auto_no}    =   $self->{unique_name};
                     $confirmation       =   $no;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.all')) {
+                    warn 'detected all';
                     $self->{auto_yes}   =   $self->{unique_name};
                     $confirmation       =   $yes;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.yes_letter')) {
-    
+                    warn 'detected yes';
                     my  $feedback       =   [
                                                 $self->{matches_unique_name},
                                                 $self->_stringify_name($name),
@@ -3664,7 +3666,8 @@ To do.
     
         my  $prerequisites                                      =   @{$self->{what_to_change}}
                                                                     && @{$self->{unique_names}};
-    
+        warn 'check what up';
+        EPrints->trace;
         return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
         my  $output                                             =   $self->language->localise('horizontal.rule').
@@ -3912,8 +3915,8 @@ package ChangeName::Language v1.0.0 {
                 reftype
             );
     use Data::Dumper;
-#    use lib '/opt/eprints3/perl_lib/';
-#    use EPrints;
+    use lib '/opt/eprints3/perl_lib/';
+    use EPrints;
 
     # Construct Object:
     sub new {
@@ -3949,13 +3952,13 @@ package ChangeName::Language v1.0.0 {
             my  $self   =   shift;
             #say 'Dumping localise caller...'."\n".Dumper (caller);
             return          $self->{language_handle}?   $self->{language_handle}->maketext(@ARG):
-                            (ChangeName::Languages->maketext_in_all_languages(@ARG)); # Attempting list context.
+                            (values %{{(ChangeName::Languages->maketext_in_all_languages(@ARG))}}); # Attempting list context.
     }
 
     sub get_first_localisation_for {
         #EPrints->trace;
         #say Dumper(@ARG);
-        [(shift->localise(@ARG))]->[0]; # Uses localise to obtain
+        [(shift->localise_no_formatting(@ARG))]->[0]; # Uses localise to obtain
                                         # the current language translation,
                                         # or all language translations,
                                         # and takes the first result of either situation, delivering only one test string back.
@@ -3966,7 +3969,7 @@ package ChangeName::Language v1.0.0 {
             my  $self   =   shift;
             #say 'Dumping localise caller...'."\n".Dumper (caller);
             return          $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
-                            join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@ARG));
+                            join '|', map {quotemeta($ARG)} values %{{(ChangeName::Languages->maketext_in_all_languages(@ARG))}};
     }
 
     sub matches_case_sensitively {
@@ -3978,12 +3981,13 @@ package ChangeName::Language v1.0.0 {
     }
 
     sub _get_match {
-
+        warn 'Eprint trace for _get_match...';
+        EPrints->trace;
         # Initial Values:
         my  $self                   =   shift;
         my  $case_insensitive       =   shift; # expects true or false value - i.e 1 or 0.
         my  $value                  =   shift;
-
+        die 'enough' if $value eq 'input.all';
         # Premature Exit:
         return                          undef
                                         unless $value;
@@ -4005,7 +4009,7 @@ package ChangeName::Language v1.0.0 {
             foreach my $current_phrase_and_arguments (@array_refs_only) {
                 my  @arguments      =   @{ $current_phrase_and_arguments };
                 push @regex_strings ,   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@arguments)):
-                                        join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@arguments));
+                                        join '|', map {quotemeta($ARG)} values %{{(ChangeName::Languages->maketext_in_all_languages(@arguments))}};
 
             }
 
@@ -4016,12 +4020,13 @@ package ChangeName::Language v1.0.0 {
         else {
             # Output:
             $regex_string           =   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
-                                        join '|', map {quotemeta($ARG)} (ChangeName::Languages->maketext_in_all_languages(@ARG));
+                                        join '|', map {quotemeta($ARG)} values %{{(ChangeName::Languages->maketext_in_all_languages(@ARG))}};
         }
-
+        warn '_get_match regex string:'.Dumper($regex_string);
+        EPrints->trace;
         # Processing Match:
-        my  $matches                =   $case_insensitive?  qr/^($regex_string)\z/im:
-                                        qr/^($regex_string)\z/m;
+        my  $matches                =   $case_insensitive?  qr/^($regex_string)$/i:
+                                        qr/^($regex_string)$/;
 
         my  $match                  =   $value && ($value =~ $matches);
 
