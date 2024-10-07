@@ -313,43 +313,42 @@ package ChangeName::Utilities v1.0.0 {
 
 
     sub get_options {
-        EPrints->trace;    
-        my  $self                       =   shift;
-        my  $arguments                  =   shift;
+        #EPrints->trace;    
+        my  $self                                   =   shift;
+        my  $arguments                              =   shift;
         say 'Arguments are '.Dumper($arguments);
-        my  $option_types               =   shift;
-        my  $default_options            =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
+        my  $valid_destructable_copy_of_arguments   =   $arguments && (reftype($arguments) eq 'ARRAY')?  [(@{ $arguments })]:
+                                                        undef;
+        my  $option_types                           =   shift;
+        my  $default_options                        =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
         say 'Combined options'.Dumper($default_options);
-        my  @options_specifications     =   ();
-        my  $parser                     =   Getopt::Long::Parser->new;
-        my  $suffix_for                 =   {
-            optional_strings            =>  ':s',
-            negatable_options           =>  '!',
-            incremental_options         =>  '+',
+        my  @options_specifications                 =   ();
+        my  $parser                                 =   Getopt::Long::Parser->new;
+        my  $suffix_for                             =   {
+            optional_strings                        =>  ':s',
+            negatable_options                       =>  '!',
+            incremental_options                     =>  '+',
         };
 
 
         for my $option_type  (keys %{ $option_types }) {
-            push @options_specifications,   (
-                                                map {
-                                                    _multilingual_option_specification(
-                                                        $self, $ARG, $suffix_for->{$option_type}
-                                                    )
-                                                }
-                                                keys %{
-                                                    $option_types->{$option_type}
-                                                }
-                                            );
+            push @options_specifications            ,   (
+                                                            map {
+                                                                _multilingual_option_specification(
+                                                                    $self, $ARG, $suffix_for->{$option_type}
+                                                                )
+                                                            }
+                                                            keys %{
+                                                                $option_types->{$option_type}
+                                                            }
+                                                        );
         };
         say 'Op_specs are:'.Dumper(@options_specifications);
-        #(push @options                  ,   %{ _get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
 
-        my $other = $parser->getoptionsfromarray($arguments, $default_options, @options_specifications);
-        #_get_options($self, $ARG, $option_types->{$ARG}, $parser, $arguments) }) for keys %{ $option_types };
+        $parser->getoptionsfromarray($valid_destructable_copy_of_arguments, $default_options, @options_specifications);
 
         say 'Dumping final option return'.Dumper($default_options).'from'.Dumper(caller);
-        say 'other'.Dumper($other);
-        #die 'enough';
+
         return $default_options;
     }
     
@@ -545,8 +544,6 @@ package ChangeName::Config v1.0.0 {
 
         my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')? $params->{options}:
                                                     undef;
-        my  $valid_commandline_arguments_param  =   exists $params->{commandline_arguments} && (reftype($params->{commandline_arguments}) eq 'ARRAY')? [(@{ $params->{commandline_arguments} })]:
-                                                    undef;
 
         #$self->{language}               =   ChangeName::Language->new;
 
@@ -586,8 +583,7 @@ package ChangeName::Config v1.0.0 {
         ChangeName::Utilities->import;
         #$self->logger->debug('args from which to get ops in Config new constructor.'.Dumper(@ARG);
         $self->{options}                =   $valid_options_param?               $valid_options_param:
-                                            $valid_commandline_arguments_param? ChangeName::Utilities::get_options($self, $valid_commandline_arguments_param, $default_options):
-                                            ChangeName::Utilities::get_options($self, [], $default_options);
+                                            ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options);
                                             
         %{
             $self
