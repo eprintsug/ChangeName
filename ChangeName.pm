@@ -200,14 +200,11 @@ package ChangeName::Utilities v1.0.0 {
                                 # on Perl v5.18 or lower.
 
     # Specific:
-    #use lib '/opt/eprints3/perl_lib';
-    #use EPrints;
     use Scalar::Util qw(
             blessed
             reftype
         );
     use Exporter qw(import);
-    use Data::Dumper;
     use Getopt::Long;
 
     ENSURE_EXPORTED_METHODS_AVAILABLE_FROM_START: BEGIN {
@@ -216,6 +213,7 @@ package ChangeName::Utilities v1.0.0 {
             valid_object
             process_commandline_arguments
             get_options
+            list_to_regex_logical_or_grouping
         );
     }
 
@@ -243,12 +241,11 @@ package ChangeName::Utilities v1.0.0 {
 
         return                                      $valid_object_of_acceptable_class;
     }
-    
+
     sub _valid_object {
 
         my  ($self, $value) =   @ARG;
-#warn 'value is...'.Dumper($value);
-#EPrints->trace;
+
         my  $valid_object   =   (defined $value) && blessed($value)?    $value:
                                 undef;
 
@@ -259,12 +256,11 @@ package ChangeName::Utilities v1.0.0 {
                                 )
                                 ->set_caller_depth(4) 
                                 if _can_log($self);
-                                
-#(die "enough".Dumper(caller(2))) unless $valid_object;
+
         return                  $valid_object;
 
     }
-    
+
     sub valid_object {
         _valid_object(@ARG);
     }
@@ -285,35 +281,6 @@ package ChangeName::Utilities v1.0.0 {
                 && blessed($object->logger->language);
     }
 
-    
-#    sub _can {
-#        my  $object     =   shift;
-#        my  $is_object  =   defined $object
-#                            && blessed($object);
-#        return undef unless $is_object;
-#        
-#        my  $can_yeild_object   =   sub {
-#                                        my  $object =   shift;
-#                                        my  $can    =   shift;
-#                                        my  $result =   $object->can($can)
-#                                                        && defined $object->$can
-#                                                        && blessed($object->$can);
-#                                    };
-#        $can_yeild_object->(
-#        my  $can        =   scalar(
-#                                grep { 
-#        return
-#
-#                
-#                && $object->can('logger')
-#                && defined $object->logger
-#                && blessed($object->logger)
-#                
-#                && $object->logger->can('language')
-#                && defined $object->logger->language
-#                && blessed($object->logger->language);
-#    }
-
     sub get_options {
         return [process_commandline_arguments(@ARG)]->[0];
     }
@@ -331,6 +298,8 @@ package ChangeName::Utilities v1.0.0 {
             negatable_options                       =>  '!',
             incremental_options                     =>  '+',
         };
+        my  $arguments                              =   {};
+        my  $expected_arguments                     =   shift // _get_default_expected_arguments($self);
 
         $self                                           ->logger
                                                         ->debug('Passed in commandline arguments from which to derive both options and arguments from are as follows...')
@@ -375,14 +344,10 @@ package ChangeName::Utilities v1.0.0 {
         Getopt::Long::Parser->new->getoptionsfromarray($valid_destructable_copy_of_arguments, $default_options, @options_specifications);
 
         my  @list_of_arguments                      =   @{ $valid_destructable_copy_of_arguments };
-        my  $arguments                              =   {
-            archive_id                              =>  shift @list_of_arguments,
-            search                                  =>  shift @list_of_arguments,
-            replace                                 =>  shift @list_of_arguments,
-            part                                    =>  shift @list_of_arguments,
-        };
         my  $no_input                               =   !(scalar @list_of_arguments);
-
+        for (@{ $expected_arguments }) {
+            $arguments->{$ARG}                      =   shift @list_of_arguments;
+        };
 
         # Output:
 
@@ -397,7 +362,6 @@ package ChangeName::Utilities v1.0.0 {
         return ($default_options, $arguments, $no_input);
 
     }
-    
 
     sub _get_default_options {
 
@@ -416,7 +380,7 @@ package ChangeName::Utilities v1.0.0 {
                 language                =>  undef,
                 config                  =>  undef,
             },
-            negatable_options => {
+            negatable_options           =>  {
                 # Negatable options do not allow
                 # for the negating "no" prefix to be localised.
                 # To have full control over the localisation
@@ -424,7 +388,7 @@ package ChangeName::Utilities v1.0.0 {
                 # for both the option and the negated option,
                 # and then process them in your business logic.
             },
-            incremental_options => {
+            incremental_options         =>  {
                 verbose                 =>  0,
             },
         };
@@ -435,28 +399,41 @@ package ChangeName::Utilities v1.0.0 {
 
     }
 
+    sub _get_default_expected_arguments {
+
+        my  $self                       =   shift;
+
+        my  $default_expected_arguments =   [
+                                                # Enter List of expected arguments, if any.
+                                            ];
+
+        $self->logger->debug('Default expected arguments were requested and are being returned as follows...')->dumper($default_expected_arguments) if _can_log($self);
+
+        return $default_expected_arguments;
+
+    }
+
     sub _multilingual_option_specification {
 
         # Initial Values:
         my ($self, $option, $option_suffix) =   @ARG;
-        
-        my  $blank                          =   q{};
-        #EPrints->trace;
+        my  @skip                           =   ();
+
         $self->logger->debug('Starting subroutine.')
         if _can_log($self);
 
         my  %multilingual_options_hash      =   ChangeName::Languages->maketext_in_all_languages('options.'.$option);
 
         # Premature exits:
-        return () unless ($option || ($option eq '0'));
-        return () unless %multilingual_options_hash;
+        return @skip unless ($option || ($option eq '0'));
+        return @skip unless %multilingual_options_hash;
 
         $self->logger->debug('Multilingual variations of [_1] are as dumped below...', $option)->dumper({%multilingual_options_hash})
         if _can_log($self);
 
         # Further Initial Values:
+        my  $blank                          =   q{};
         $option_suffix                      //= $blank;
-        my  @skip                           =   ();
         my  $option_separator               =   '|';
 
         # Regular Expressions:
@@ -478,7 +455,7 @@ package ChangeName::Utilities v1.0.0 {
                                                                                                 # s - to include newlines in 'anything'.
 
         # Processing:
-        
+
         # Build our option:
         my  $our_option_string              =   $option;
 
@@ -488,39 +465,71 @@ package ChangeName::Utilities v1.0.0 {
 
         # Add translations to option:        
         foreach my $translation (values %multilingual_options_hash) {
-                
-            $translation                =   $translation =~ $matches_leading_whitespace?   $+{data}:
-                                            $translation;
+
+            $translation                    =   $translation =~ $matches_leading_whitespace?   $+{data}:
+                                                $translation;
+
             $self->logger->debug('Initial option translation...')->dumper($translation)
             if _can_log($self);
 
-            my  @values                 =   map {
-                                                my  $value              =   $ARG;
-                                                my  @value_to_use       =   $used_already->{$value}?    @skip:
-                                                                            ($value);
-                                                $used_already->{$value} =   1;
-                                                @value_to_use;
-                                            }
-                                            split $contiguous_white_space, $translation;
+            my  @values                     =   map {
+                                                    my  $value              =   $ARG;
+                                                    my  @value_to_use       =   $used_already->{$value}?    @skip:
+                                                                                ($value);
+                                                    $used_already->{$value} =   1;
+                                                    @value_to_use;
+                                                }
+                                                split $contiguous_white_space, $translation;
             if ( _can_log($self) ) {
-                $self->logger->debug('Option translation as a list with codebase\'s existing option key "[_1]" omitted...', $option)->dumper(@values) if @values;
-                $self->logger->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation, ) unless @values;
+                $self                           ->logger
+                                                ->debug('Option translation as a list with codebase\'s existing option key "[_1]" omitted...', $option)
+                                                ->dumper(@values)
+                                                if @values;
+
+                $self                           ->logger
+                                                ->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation)
+                                                unless @values;
             };
-            $our_option_string          .=  @values? $option_separator.join($option_separator, @values):
-                                            $blank;
+
+            $our_option_string              .=  @values? $option_separator.join($option_separator, @values):
+                                                $blank;
+
         };
-        
-        $our_option_string              .=  $option_suffix;
+
+        $our_option_string                  .=  $option_suffix;
+
+        # Output:
+
         $self->logger->debug('Option string is: [_1]', $our_option_string)->debug('Leaving subroutine.')
         if _can_log($self);
 
-        return  $our_option_string;
+        return $our_option_string;
+
     }
 
+    sub list_to_regex_logical_or_grouping {
 
-}
+        my  $self   =   shift;
 
-# Load Configuration - positioned last and without a package block, so __DATA__ can be used:
+        return  join(
+
+            # Join by regex OR...
+            '|',
+
+            # Regex safe:
+            map {quotemeta($ARG)}
+
+            # List:
+            (@ARG)
+
+        );
+
+    }
+
+    1;
+
+} # ChangeName::Utilities Package.
+
 package ChangeName::Config::YAML v1.0.0 {
 
 sub data {
@@ -591,7 +600,7 @@ Search Field Merge Type: ANY
 
 1;
 
-}
+} # ChangeName::Config::YAML Package.
 
 package ChangeName::Config v1.0.0 {
 
@@ -602,8 +611,15 @@ package ChangeName::Config v1.0.0 {
                                     # except the regex match variables
                                     # due to a performance if they are invoked,
                                     # on Perl v5.18 or lower.
-                                    
+
     # Specific:
+    LOAD_UTILITIES_FIRST: BEGIN {
+
+        ChangeName::Utilities->import(qw(
+            get_options
+        ));
+
+    }
     use     File::Basename;         # Will use this to get the directory name that this file is in,
                                     # when looking for yaml file.
     use     CPAN::Meta::YAML qw(
@@ -612,16 +628,8 @@ package ChangeName::Config v1.0.0 {
             );                      # Standard module in Core Perl since Perl 5.14. 
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
     use     Scalar::Util qw(
-                blessed
                 reftype
             );
-    LOAD_UTILITIES_FIRST: BEGIN {
-        ChangeName::Utilities->import(qw(
-            get_options
-        ));
-
-    }
-    use Data::Dumper;
 
     sub new {
         my  $class                              =   shift;
@@ -753,6 +761,8 @@ package ChangeName::Config v1.0.0 {
         return shift->{external_yaml_filepath};
     }
 
+    1;
+
 }; # ChangeName::Config Package.
 
 LOAD_LANGUAGE_CLASSES_FIRST: BEGIN {
@@ -788,6 +798,8 @@ my  @tokens = (
 
 'language.name'                 =>  'English (United Kingdom)',
 'language.error.set_language_handle'   =>  'Trouble finding a language to use.',
+
+'nest.error.key'                =>  'Error nesting a Lexicon value.',
 
 'options.language'              =>  'language lang',
 'options.config'                =>  'config configuration',
@@ -1170,6 +1182,10 @@ my  @phrases = (
     'Options after processing the commandline arguments are now as follows...'=>'Options after processing the commandline arguments are now as follows...',
     'Arguments after processing the commandline arguments are as follows...'=>'Arguments after processing the commandline arguments are as follows...',
     'The no_input flag will be returned with the value: "[_1]".'=>'The no_input flag will be returned with the value: "[_1]".',
+    'Params to be used for a new logger are as follows...'=>'Params to be used for a new logger are as follows...',
+    'Detected [nest,input.none].'=>'Detected [nest,input.none].',
+    'Detected [nest,input.all].'=>'Detected [nest,input.all].',
+    'Detected [nest,input.yes_letter].'=>'Detected [nest,input.yes_letter].',
 );
 
 our %Lexicon = (
@@ -1181,6 +1197,12 @@ our %Lexicon = (
 
 sub language_name {
     return $Lexicon{'language.name'};
+}
+
+sub nest {
+    my  $key    =   shift;
+    return          exists $Lexicon{$key}?  $Lexicon{$key}:
+                    $Lexicon{'nest.error.key'};
 }
 
 # ----------------------------------
@@ -1221,6 +1243,8 @@ my  @tokens = (
 
 'language.name'                 =>  'Deutsch (Deutschland)',
 'language.error.set_language_handle'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
+
+'nest.error.key'                =>  'Fehler beim Verschachteln eines Lexikonwerts.',
 
 'options.language'              =>  'sprache spr',
 'options.config'                =>  'konfig konfiguration',
@@ -1608,6 +1632,10 @@ my  @phrases = (
     'Options after processing the commandline arguments are now as follows...'=>'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
     'Arguments after processing the commandline arguments are as follows...'=>'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
     'The no_input flag will be returned with the value: "[_1]".'=>'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
+    'Params to be used for a new logger are as follows...'=>'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
+    'Detected [nest,input.none].'=>'„[nest,input.none]“ erkannt.',
+    'Detected [nest,input.all].'=>'„[nest,input.all]“ erkannt.',
+    'Detected [nest,input.yes_letter].'=>'Erkannt „[nest,input.yes_letter]“.',
 );
 
 our %Lexicon = (
@@ -1621,13 +1649,19 @@ sub language_name {
     return $Lexicon{'language.name'};
 }
 
+sub nest {
+    my  $key    =   shift;
+    return          exists $Lexicon{$key}?  $Lexicon{$key}:
+                    $Lexicon{'nest.error.key'};
+}
+
 # ----------------------------------
 
 1;
 
 }
 
-};
+}; # LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
 
 package ChangeName::Languages v1.0.0 {
 
@@ -1638,35 +1672,37 @@ package ChangeName::Languages v1.0.0 {
                                     # except the regex match variables
                                     # due to a performance if they are invoked,
                                     # on Perl v5.18 or lower.
-    
+
     # Specific:
     use     parent qw(Locale::Maketext);
     use     mro;
 
-    my  @tokens =   (
-
-'separator.name_parts'          =>  ' ', #space
-'separator.name_values'         =>  ', ', #comma space
-'separator.new_line'            =>  "\n",
-'separator.search_fields'       =>  ', ', #comma space
-'separator.stringify_arrayref'  =>  ', ', #comma space
-'horizontal.rule'               =>  
-'
--------
-',
+    my  @tokens = (
+        'separator.name_parts'          =>  ' ',            # space
+        'separator.name_values'         =>  ', ',           # comma, space
+        'separator.new_line'            =>  "\n",           # new line
+        'separator.search_fields'       =>  ', ',           # comma, space
+        'separator.stringify_arrayref'  =>  ', ',           # comma, space
+        'horizontal.rule'               =>  "\n-------\n",  # new line, horizontal line made of dashes, new line.
     );
     
+    my  @configurations = (
+    );
+
+    my  @phrases = (
+    );
+
     our %Lexicon = (
         #'_AUTO' => 1, # Commented out the auto for now.
-        #@configurations,
+        @configurations,
         @tokens,
-        #@phrases,
+        @phrases,
     );
 
     sub priority_language_class {
         return 'en_gb'; # Will be first in ordered_language_handles and thus also first in any multi-language translations.
     }
-    
+
     sub fallback_language_classes {
         my  $self   =   shift;
         # I believe these are to be given as relative to ChangeName::Languages
@@ -1695,7 +1731,6 @@ package ChangeName::Languages v1.0.0 {
                                                             )                               # End named capture group.
                                                             $                               # End of string.
                                                         /x;                                 # x flag - Ignore white space and allow comments.
-
 
         # Filters:
         my  $language_handle_only_filter            =   sub {
@@ -1734,9 +1769,8 @@ package ChangeName::Languages v1.0.0 {
 
         # Further Processing:
         my  @found_priority_handle                  =   $priority_only_filter->(@language_handles);
-
         my  @non_priority_handles                   =   $non_priority_filter->(@language_handles);
-                                                        
+
         # Lead with priority...
         push @ordered_language_handles              ,   @found_priority_handle
                                                         if @found_priority_handle;
@@ -1744,16 +1778,17 @@ package ChangeName::Languages v1.0.0 {
         # ...followed by others...                      ...sorted:
         push @ordered_language_handles              ,   $sort_alphabetically->(@non_priority_handles);
 
-        # Output:                                                        
+        # Output:
         return  @ordered_language_handles;
 
-    } # technically, these are ordered classes.
+    } # technically, these are ordered classes rather than language handle objects.
 
     sub ordered_language_names {
-    
+
         # Initial Values:
         my  $self                                   =   shift;
         my  @output_strings                         =   ();
+
         for my $language_handle ($self->ordered_language_handles) {
 
             my  $language_instance                  =   (__PACKAGE__.'::'.$language_handle)->new;
@@ -1763,14 +1798,15 @@ package ChangeName::Languages v1.0.0 {
             push @output_strings                    ,   $language_instance->language_name;
 
         };
+
         my  $output_strings                         =   join $Lexicon{'separator.name_values'}, @output_strings;
-        
+
         return  wantarray?  @output_strings:
                 $output_strings;
     }
 
     sub maketext_in_all_languages {
-    
+
         # Initial Values:
         my  $self                                   =   shift;
         my  $phrase_key                             =   $ARG[0];
@@ -1825,8 +1861,8 @@ package ChangeName::Languages v1.0.0 {
                 $in_all_languages_string;       # Multi-line string
     }
 
-
     1;
+
 }; # ChangeName::Languages Package.
 
 package ChangeName::Log v1.0.0 {
@@ -1841,9 +1877,12 @@ package ChangeName::Log v1.0.0 {
 
     # Specific:
     LOAD_UTILITIES_FIRST: BEGIN {
+
         ChangeName::Utilities->import(qw(
             validate_class
+            list_to_regex_logical_or_grouping
         ));
+
     }
     use     lib ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
@@ -1861,7 +1900,7 @@ package ChangeName::Log v1.0.0 {
     no warnings 'redefine';
     local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
     use warnings 'redefine';
- 
+
 =pod Name, Version
 
 =encoding utf8
@@ -1920,27 +1959,33 @@ See L</new> method for info on acceptable object parameters.
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
-        #say Dumper($params);
-    
+
         my  $self       =   {};
         bless $self, $class;
-    
+
         $self->_set_attributes($params)->debug('Constructed New Logger Object Instance.')->dumper($self)->set_caller_depth(4);
-    
+
         return $self;
     }
 
     sub _set_attributes {
+
+        # Initial Values:
         my  ($self, $params)            =   @ARG;
         my  @nothing                    =   ();
 
+        # Some Validation:
+        my  $acceptable_language_class  =   'ChangeName::Language';
+        my  $valid_language_object      =   $self->validate_class($params->{language} => $acceptable_language_class);
+
+        # Object Attributes:
         %{
             $self
         }                               =   (
-    
+
             # Existing values in $self:
             %{$self},
-    
+
             # From params:
             debug                       =>  $params->{debug} // 0,
             verbose                     =>  $params->{verbose} // 0,
@@ -1961,19 +2006,7 @@ See L</new> method for info on acceptable object parameters.
             dumper_class_name_only      =>  $params->{dumper_class_name_only} // [],
 
             dumper_exclude              =>  $params->{dumper_exclude} // [],
-        );
 
-        my  $acceptable_language_class  =   'ChangeName::Language';
-        my  $valid_language_object      =   $self->validate_class($params->{language} => $acceptable_language_class);
-
-
-        %{
-            $self
-        }                               =   (
-    
-            # Existing values in $self:
-            %{$self},
-    
             # Internationalisation:
             acceptable_language_class   =>  $acceptable_language_class,
 
@@ -1988,18 +2021,19 @@ See L</new> method for info on acceptable object parameters.
                                                     || @nothing
                                                 )
                                             ),
-    
+            # EPrints specific:
+            acceptable_repository_class =>  'EPrints::Repository',
         );
 
-        $self->{repository}             =  $self->validate_class($params->{repository} => 'EPrints::Repository'); # Requires language to be set first.
-        $self->{dumper_default}         =  $self;
-        
+        $self->{repository}             =  $self->validate_class($params->{repository} => $self->get_acceptable_repository_class); # Requires language to be set first.
+        $self->{dumper_default}         =  $self; # Isn't this frozen in time?
+
         return  $self;
     }
 
-    sub logger {
-        shift;
-    } # Why is this here?
+    sub get_acceptable_repository_class {
+        return shift->{acceptable_repository_class};
+    }
 
     sub language_is_set {
         my  $self   =   shift;
@@ -2015,7 +2049,7 @@ See L</new> method for info on acceptable object parameters.
 
         $self->{dumper_class_name_only} =   $valid_value?   $valid_value:
                                             $self->{dumper_class_name_only};
-                                            
+
         return $self;
     }
 
@@ -2028,21 +2062,8 @@ See L</new> method for info on acceptable object parameters.
 
         $self->{dumper_exclude}         =   $valid_value?   $valid_value:
                                             $self->{dumper_exclude};
-                                            
+
         return $self;
-    }
-
-    sub valid_repository {
-        my  $self               =   shift;
-        my  $value              =   shift // $self->{respository};
-        my  $value_is_valid     =   defined $value
-                                    && blessed($value)
-                                    && $value->isa('EPrints::Repository');
-        #say 'Dumping...'.Dumper($self->language);
-        #$self->debug('log.valid_repository.error.invalid') unless $value_is_valid; # Was a warn. Changed to debug and triggered deep recusion.
-
-        return  $value_is_valid?    $value:
-                undef;
     }
 
     sub replace_language_object {
@@ -2072,11 +2093,11 @@ See L</new> method for info on acceptable object parameters.
         # Output:
         return $self->debug('Leaving method.');
     }
-    
+
     sub language {
         shift->{language};
     }
-    
+
     sub set_dumper_default {
         my  $self   =   shift;
 
@@ -2096,66 +2117,50 @@ See L</new> method for info on acceptable object parameters.
     sub set_repository {
         my  $self                           =   shift;
         my  $replacement_repository         =   shift;
-        #warn 'setting repo with following values...';
-        #$self->dumper($replacement_repository); # legit passed repo value.
-        my  $valid_replacement_repository   =   $self->validate_class($replacement_repository => 'EPrints::Repository'); # Valid or undef.
-        
-        $self->{repository}         =   $valid_replacement_repository?    $valid_replacement_repository:
-                                        $self->debug('log.set_repository.error.bad_value')->{repository};
+
+        $self->{repository}                 =   $self->validate_class($replacement_repository => $self->get_acceptable_repository_class)
+                                                // $self->debug('log.set_repository.error.bad_value')->{repository};
 
         return $self;
     }
 
     sub verbose {
         my  $self   =   shift;
-    
+
         # Premature Exit:
         return $self unless ($self->{verbose} || $self->{debug});
-    
+
         return $self->_log('verbose',@ARG);
     }
-    
+
     sub debug {
         my  $self   =   shift;
-    
+
         # Premature Exit:
         return $self unless $self->{debug};
-    
+
         return $self->_log('debug',@ARG);
     }
-    
+
     sub dumper {
         my  $self   =   shift;
-    
+
         return          $self->debug('Data dump prevented by no_dumper option.')
                         if $self->{no_dumper};
 
-        return $self unless ($self->{debug} || $self->{verbose} > 1);
-    
+        return          $self->debug('Premature exit - Prerequisites not met.')
+                        unless ($self->{debug} || $self->{verbose} > 1);
+
         # Default Params if no arguments passed in...
-        my  $exclude    =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
+        my  $exclude    =   $self->list_to_regex_logical_or_grouping(
                                 # List of attributes to exclude from dump...
                                 (
-                                #    'repository',
+                                    #    'repository',
                                     @{ $self->{dumper_exclude} },
                                 )
                             );
-    
-        my  $class_only =   join(
-    
-                                # Join by regex OR...
-                                '|',
-    
-                                # Regex safe:
-                                map {quotemeta($ARG)}
-    
+
+        my  $class_only =   $self->list_to_regex_logical_or_grouping(
                                 # List of attributes
                                 # that are objects
                                 # we wish to dump only
@@ -2164,33 +2169,32 @@ See L</new> method for info on acceptable object parameters.
                                     @{ $self->{dumper_class_name_only} },
                                 )
                             );
-    
+
         my  %default    =   map
                             {
                                 $ARG =~ m/^($class_only)$/
-                                && blessed($self->{$ARG})? ($ARG => blessed($self->{$ARG})):
+                                && blessed($self->{$ARG})?  ($ARG => blessed($self->{$ARG})):
                                 ($ARG => $self->{$ARG})
                             }
                             map {$ARG =~ m/^($exclude)$/? ():($ARG)}
                             keys %{$self->{dumper_default}};
-    
+
         # Set params:
         my  @params     =   @ARG?   @ARG:
                             (\%default);
-        #say 'MY PARAMS ARE'.Dumper(@params);
+
         return $self->_log('dumper',@params);
     }
-    
+
     sub _log {
-    
-        my  $self       =   shift;
-    
+
         # Initial Values:
+        my  $self                   =   shift;
         my  $type                   =   shift;
         my  $use_prefix             =   $self->{verbose} > 1 || $self->{debug};
 
-        my  $valid_repository       =   $self->valid_repository($self->{repository});
-        
+        my  $valid_repository       =   $self->validate_class($self->{repository} => $self->get_acceptable_repository_class);
+
         my  $language_handle        =   $self->language->get_language_handle;
         my  $blank                  =   q{};
         my  $messages               =   $blank;
@@ -2199,12 +2203,12 @@ See L</new> method for info on acceptable object parameters.
         my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
 
         # Content:
-        
+
         my  @languages              =   $language_handle?  ($language_handle->language_tag):
                                         ChangeName::Languages->ordered_language_handles;
 
         my  $number_of_languages    =   scalar @languages;
-                                          
+
         foreach my $current_language (@languages) {
 
             $self->language->set_language_handle($current_language);
@@ -2214,12 +2218,11 @@ See L</new> method for info on acceptable object parameters.
             my  $suffix             =   $last_loop? $blank:
                                         $self->language->localise('separator.new_line');
 
-            my  $prefix             =   $use_prefix?    $self->_get_log_prefix(uc($type)):
+            my  $prefix             =   $use_prefix?    $self->_generate_log_prefix(uc($type)):
                                         $blank;
 
             my  $lang_prefix        =   sprintf($format, uc $current_language);
 
-    #warn 'our caller innit'.Dumper(caller 1);
             my  $message            =   $type eq 'dumper'?  $blank:
                                         $self->language->localise(@ARG);
 
@@ -2255,7 +2258,7 @@ See L</new> method for info on acceptable object parameters.
             my  $suffix             =   $last_loop? $blank:
                                         $self->language->localise('separator.new_line');
 
-            my  $trace_prefix       =   $self->_get_log_prefix('trace');
+            my  $trace_prefix       =   $self->_generate_log_prefix('trace');
 
             my  $lang_prefix        =   sprintf($format, uc $current_language);
 
@@ -2271,12 +2274,14 @@ See L</new> method for info on acceptable object parameters.
         say STDERR $trace_prefixes                  unless  $valid_repository;
 
         EPrints->trace;
-        
+
         # Final log-and-trace exit:
         return $self;
+
     }
-    
-    sub _get_log_prefix {
+
+    sub _generate_log_prefix {
+
         my  $self           =   shift;
         my  $type           =   shift;
         my  $localised_type =   $type?  $self->language->localise('log.type.' . lc $type):
@@ -2284,9 +2289,9 @@ See L</new> method for info on acceptable object parameters.
 
         return sprintf(
              '[%s] [%s, %d] [%s] - ',                   # Three strings in square brackets, derived from the below...
-    
+
              scalar localtime,                          # Human readable system time and date - linux's ctime(3).
-    
+
              ((caller $self->{caller_depth})    [3]),   # Back by caller depth, to what called dumper / log_debug / log_verbose,
                                                         # and get the 3rd array index value
                                                         # - the perl module and subroutine name.
@@ -2297,7 +2302,10 @@ See L</new> method for info on acceptable object parameters.
 
              uc($localised_type),                       # Log type - LOG / DEBUG / DUMPER / TRACE, etc...
          );
+
     }
+
+    1;
 
 }; # ChangeName::Log Package.
 
@@ -2312,26 +2320,29 @@ package ChangeName::Modulino v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    #use     Getopt::Long;
-    use     Data::Dumper;
     LOAD_UTILITIES_FIRST: BEGIN {
+
         ChangeName::Utilities->import(qw(
             process_commandline_arguments
         ));
+
     }
+
     # Modulino:
-    say 'Argv beforfe run is...'.Dumper(@ARGV);
+
     ChangeName::Modulino->run(@ARGV) unless caller;
 
+    # Class Methods:
+
     sub run {
-        my  $self                   =   shift;
-        my  $commandline_arguments  =   \@ARG;
-        say 'Arg before new is...'.Dumper(@ARG);
-        #die 'enough2';
-        $self->new(commandline_arguments => $commandline_arguments)->start_change_name_operation;
+        my  $class  =   shift;
+        $class->new(commandline_arguments => \@ARG)->start_change_name_operation;
     }
-    
+
+    # Constructor:
+
     sub new {
+
         # Initial Values:
         my  $class                      =   shift;
         my  $self                       =   {};
@@ -2352,11 +2363,16 @@ package ChangeName::Modulino v1.0.0 {
                                                 language    =>  $self->language,
                                             )->set_caller_depth(3);
 
-        ($self->{options}, $self->{arguments}, $self->{no_input}) = $self->process_commandline_arguments($params->{commandline_arguments});
+        (
+            $self->{options},
+            $self->{arguments},
+            $self->{no_input},
+        )                               =   $self->process_commandline_arguments($params->{commandline_arguments});
 
-        # Update language and logger with options processed:
+        # Update language with options processed:
         $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
 
+        # Update logger with options processed:
         my  %logger_params              =   (
                                                 # Existing options
                                                 %{ $self->{options} },
@@ -2364,16 +2380,15 @@ package ChangeName::Modulino v1.0.0 {
                                                 # Our overriding options:
                                                 language    =>  $self->language,
                                             );
-        say 'Options are...'.Dumper(%logger_params);
+        $self->logger->debug('Params to be used for a new logger are as follows...')->dumper(%logger_params);
         $self->{logger}                 =   ChangeName::Log->new(%logger_params)->set_caller_depth(3);
 
-        
         # Set later via setup method, called in last line of this new method:
         $self->{config}                 =   undef;
         $self->{config_messages}        =   undef;
 
-        return $self->utf8_check->setup;    # Setup will attempt to define config and config_messages attributes.
-    
+        return $self->utf8_check->setup;    # Setup method will attempt to define config and config_messages attributes.
+
     }
 
     sub logger {
@@ -2425,7 +2440,7 @@ package ChangeName::Modulino v1.0.0 {
             $acceptable_utf8_options?           'commandline.utf8_enabled':
             'commandline.utf8_not_enabled'
         );
-        
+
         die                                     $self->language->localise('commandline.end_program')
                                                 unless $continue;
 
@@ -2436,22 +2451,20 @@ package ChangeName::Modulino v1.0.0 {
 
         # Initial Values:
         my  $self                       =   shift;
-        my  @nothing                    =   ();        
-        my  $prefix                     =   '[ChangeName::Modulino::setup] - '; # This should be generated by _get_log_prefix - perhaps shift it to utilities(!?). Or a dedicated prefix interface?
+        my  @nothing                    =   ();
 
         # Processing:
         (
             $self->{config},
             $self->{config_messages}
-        )                               =   (ChangeName::Config->new(options => $self->{options})->load->get_data_and_messages); # If nothing, will load default from YAML in ChangeName::Config::YAML.
+        )                               =   (ChangeName::Config->new(options => $self->{options})->load->get_data_and_messages);
 
         if ($self->{config_messages}) {
-            
+
             # Display order is Error, Debug, Verbose, by design. 
             # See ChangeName::Config::load for context.
 
-            say $prefix. # localise doesn't implement a prefix like logging methods, so we put one here.
-                $self->language->localise(@{$ARG})  for @{$self->{config_messages}->{error}};
+            say $self->language->localise(@{$ARG})  for @{$self->{config_messages}->{error}};
 
             $self->logger->debug(@{$ARG})           for @{$self->{config_messages}->{debug}};
 
@@ -2501,7 +2514,8 @@ package ChangeName::Modulino v1.0.0 {
 
         my  @object_params  =   (
 
-            # Flatten to one list - arguments overwrite options:
+            # Flatten to one list
+            # (arguments overwrite options):
 
             %{
                 $self->{options}
@@ -2511,6 +2525,9 @@ package ChangeName::Modulino v1.0.0 {
                 $self->{arguments}
             },
 
+            # Overwrite above with our attributes
+            # (as constructed in new method,
+            # and setup in setup method):
             config          =>  $self->config,
             language        =>  $self->language,
             logger          =>  $self->logger,
@@ -2528,7 +2545,7 @@ package ChangeName::Modulino v1.0.0 {
         return $self->logger->debug('Leaving method.');
 
     }
-    
+
     sub config {
         my  $self   =   shift;
 
@@ -2538,9 +2555,9 @@ package ChangeName::Modulino v1.0.0 {
         return $self->{config};
     }
 
+    1;
+
 } # ChangeName::Modulino Package.
-
-
 
 package ChangeName::Operation v1.0.0 {
 
@@ -3650,19 +3667,19 @@ To do.
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
     
                 if ( $self->language->matches_case_insensitively($confirmation, 'input.none') ) {
-                    warn 'detected none';
+                    $self->log_debug('Detected [nest,input.none].');
                     $self->{auto_no}    =   $self->{unique_name};
                     $confirmation       =   $no;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.all')) {
-                    warn 'detected all';
+                    $self->log_debug('Detected [nest,input.all].');
                     $self->{auto_yes}   =   $self->{unique_name};
                     $confirmation       =   $yes;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.yes_letter')) {
-                    warn 'detected yes';
+                    $self->log_debug('Detected [nest,input.yes_letter].');
                     my  $feedback       =   [
                                                 $self->{matches_unique_name},
                                                 $self->_stringify_name($name),
@@ -4112,7 +4129,9 @@ package ChangeName::Language v1.0.0 {
         shift->{language_handle};
     }
 
-}
+    1;
+
+} # ChangeName::Language Package.
 
 =head2 Language Packages:
 
@@ -4158,7 +4177,7 @@ Andrew Mehta
 
 =cut
 
-__DATA__
+__END__
 # This is a YAML Configuration File:
 %YAML 1.2
 # Three dashes to start new YAML document.
