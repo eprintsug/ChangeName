@@ -779,6 +779,9 @@ package ChangeName::Languages::en_gb {
 
 ChangeName::Languages->import;
 our @ISA                        =   ('ChangeName::Languages');
+use Scalar::Util qw(
+        reftype
+    );
 
 # ----------------------------------
 
@@ -1183,9 +1186,9 @@ my  @phrases = (
     'Arguments after processing the commandline arguments are as follows...'=>'Arguments after processing the commandline arguments are as follows...',
     'The no_input flag will be returned with the value: "[_1]".'=>'The no_input flag will be returned with the value: "[_1]".',
     'Params to be used for a new logger are as follows...'=>'Params to be used for a new logger are as follows...',
-    'Detected [nest,input.none].'=>'Detected [nest,input.none].',
-    'Detected [nest,input.all].'=>'Detected [nest,input.all].',
-    'Detected [nest,input.yes_letter].'=>'Detected [nest,input.yes_letter].',
+    'Detected [nest,_*].'=>'Detected [nest,_*].',
+    'Detected [nest,_*].'=>'Detected [nest,_*].',
+    'Detected [nest,_*].'=>'Detected [nest,_*].',
 );
 
 our %Lexicon = (
@@ -1200,9 +1203,13 @@ sub language_name {
 }
 
 sub nest {
+    my  $lh     =   shift;
     my  $key    =   shift;
-    return          exists $Lexicon{$key}?  $Lexicon{$key}:
-                    $Lexicon{'nest.error.key'};
+    my  $result =   (exists $Lexicon{$key}?  $Lexicon{$key}:
+                    $Lexicon{'nest.error.key'});
+    my  $string =   reftype($result) eq 'SCALAR'?   ${  $result }:
+                    $result;
+    return $string;
 }
 
 # ----------------------------------
@@ -1224,7 +1231,9 @@ package ChangeName::Languages::de_de {
 # Specific:
 ChangeName::Languages->import;
 our @ISA                        =   ('ChangeName::Languages');
-
+use Scalar::Util qw(
+        reftype
+    );
 # ----------------------------------
 
 my  $new_line                   =   "\n";
@@ -1633,9 +1642,9 @@ my  @phrases = (
     'Arguments after processing the commandline arguments are as follows...'=>'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
     'The no_input flag will be returned with the value: "[_1]".'=>'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
     'Params to be used for a new logger are as follows...'=>'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
-    'Detected [nest,input.none].'=>'„[nest,input.none]“ erkannt.',
-    'Detected [nest,input.all].'=>'„[nest,input.all]“ erkannt.',
-    'Detected [nest,input.yes_letter].'=>'Erkannt „[nest,input.yes_letter]“.',
+    'Detected [nest,_*].'=>'„[nest,_*]“ erkannt.',
+    'Detected [nest,_*].'=>'„[nest,_*]“ erkannt.',
+    'Detected [nest,_*].'=>'Erkannt „[nest,_*]“.',
 );
 
 our %Lexicon = (
@@ -1650,9 +1659,13 @@ sub language_name {
 }
 
 sub nest {
+    my  $lh     =   shift;
     my  $key    =   shift;
-    return          exists $Lexicon{$key}?  $Lexicon{$key}:
-                    $Lexicon{'nest.error.key'};
+    my  $result =   (exists $Lexicon{$key}?  $Lexicon{$key}:
+                    $Lexicon{'nest.error.key'});
+    my  $string =   reftype($result) eq 'SCALAR'?   ${  $result }:
+                    $result;
+    return $string;
 }
 
 # ----------------------------------
@@ -3667,19 +3680,19 @@ To do.
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
     
                 if ( $self->language->matches_case_insensitively($confirmation, 'input.none') ) {
-                    $self->log_debug('Detected [nest,input.none].');
+                    $self->log_debug('Detected [nest,_*].', 'input.none');
                     $self->{auto_no}    =   $self->{unique_name};
                     $confirmation       =   $no;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.all')) {
-                    $self->log_debug('Detected [nest,input.all].');
+                    $self->log_debug('Detected [nest,_*].', 'input.all');
                     $self->{auto_yes}   =   $self->{unique_name};
                     $confirmation       =   $yes;
                 };
     
                 if ($self->language->matches_case_insensitively($confirmation, 'input.yes_letter')) {
-                    $self->log_debug('Detected [nest,input.yes_letter].');
+                    $self->log_debug('Detected [nest,_*].', 'input.yes_letter');
                     my  $feedback       =   [
                                                 $self->{matches_unique_name},
                                                 $self->_stringify_name($name),
