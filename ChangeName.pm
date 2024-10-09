@@ -210,11 +210,14 @@ package ChangeName::Utilities v1.0.0 {
     use Data::Dumper;
     use Getopt::Long;
 
-    our @EXPORT =   qw(
-        validate_class
-        valid_object
-        get_options
-    );
+    ENSURE_EXPORTED_METHODS_AVAILABLE_FROM_START: BEGIN {
+        our @EXPORT_OK =   qw(
+            validate_class
+            valid_object
+            process_commandline_arguments
+            get_options
+        );
+    }
 
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
@@ -311,27 +314,46 @@ package ChangeName::Utilities v1.0.0 {
 #                && blessed($object->logger->language);
 #    }
 
-
     sub get_options {
-        #EPrints->trace;    
+        return [process_commandline_arguments(@ARG)]->[0];
+    }
+
+    sub process_commandline_arguments {
+
+        # Intial Values:
         my  $self                                   =   shift;
-        my  $arguments                              =   shift;
-        say 'Arguments are '.Dumper($arguments);
-        my  $valid_destructable_copy_of_arguments   =   $arguments && (reftype($arguments) eq 'ARRAY')?  [(@{ $arguments })]:
-                                                        undef;
+        my  $commandline_arguments                  =   shift;
         my  $option_types                           =   shift;
-        my  $default_options                        =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
-        say 'Combined options'.Dumper($default_options);
         my  @options_specifications                 =   ();
-        my  $parser                                 =   Getopt::Long::Parser->new;
         my  $suffix_for                             =   {
             optional_strings                        =>  ':s',
             negatable_options                       =>  '!',
             incremental_options                     =>  '+',
         };
 
+        $self                                           ->logger
+                                                        ->debug('Passed in commandline arguments from which to derive both options and arguments from are as follows...')
+                                                        ->dumper($commandline_arguments)
+                                                        if _can_log($self);
 
-        for my $option_type  (keys %{ $option_types }) {
+        # Definition:
+        my  $valid_destructable_copy_of_arguments   =   $commandline_arguments && (reftype($commandline_arguments) eq 'ARRAY')?  [(@{ $commandline_arguments })]:
+                                                        undef;
+
+        $self                                           ->logger
+                                                        ->debug('Validated copy of arguments is as follows...')
+                                                        ->dumper($valid_destructable_copy_of_arguments)
+                                                        if _can_log($self);
+
+        # Processing:
+        my  $default_options                        =   {map {%{ $option_types->{$ARG} }} keys %{$option_types}};
+
+        $self                                           ->logger
+                                                        ->debug('Flattened list of default options are as follows...')
+                                                        ->dumper($default_options)
+                                                        if _can_log($self);
+
+        for my $option_type (keys %{ $option_types }) {
             push @options_specifications            ,   (
                                                             map {
                                                                 _multilingual_option_specification(
@@ -343,13 +365,36 @@ package ChangeName::Utilities v1.0.0 {
                                                             }
                                                         );
         };
-        say 'Op_specs are:'.Dumper(@options_specifications);
 
-        $parser->getoptionsfromarray($valid_destructable_copy_of_arguments, $default_options, @options_specifications);
+        $self                                           ->logger
+                                                        ->debug('Option Specifications have been determined as being as follows...')
+                                                        ->dumper(@options_specifications)
+                                                        if _can_log($self);
 
-        say 'Dumping final option return'.Dumper($default_options).'from'.Dumper(caller);
+        Getopt::Long::Parser->new->getoptionsfromarray($valid_destructable_copy_of_arguments, $default_options, @options_specifications);
 
-        return $default_options;
+        my  @list_of_arguments                      =   @{ $valid_destructable_copy_of_arguments };
+        my  $arguments                              =   {
+            archive_id                              =>  shift @list_of_arguments,
+            search                                  =>  shift @list_of_arguments,
+            replace                                 =>  shift @list_of_arguments,
+            part                                    =>  shift @list_of_arguments,
+        };
+        my  $no_input                               =   !(scalar @list_of_arguments);
+
+
+        # Output:
+
+        $self                                           ->logger
+                                                        ->debug('Options after processing the commandline arguments are now as follows...')
+                                                        ->dumper($default_options)
+                                                        ->debug('Arguments after processing the commandline arguments are as follows...')
+                                                        ->dumper($arguments)
+                                                        ->debug('The no_input flag will be returned with the value: "[_1]".', $no_input)
+                                                        if _can_log($self);
+
+        return ($default_options, $arguments, $no_input);
+
     }
     
 
@@ -359,7 +404,7 @@ package ChangeName::Utilities v1.0.0 {
         my ($self, $option, $option_suffix) =   @ARG;
         
         my  $blank                          =   q{};
-        EPrints->trace;
+        #EPrints->trace;
         $self->logger->debug('Starting subroutine.')
         if _can_log($self);
 
@@ -533,7 +578,12 @@ package ChangeName::Config v1.0.0 {
                 blessed
                 reftype
             );
-        ChangeName::Utilities->import;
+    LOAD_UTILITIES_FIRST: BEGIN {
+        ChangeName::Utilities->import(qw(
+            get_options
+        ));
+
+    }
     use Data::Dumper;
 
     sub new {
@@ -542,53 +592,22 @@ package ChangeName::Config v1.0.0 {
         my  $self       =   {};
         bless $self, $class;
 
-        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH')? $params->{options}:
+        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH') && scalar %{$params->{options}}?   $params->{options}:
                                                     undef;
 
-        #$self->{language}               =   ChangeName::Language->new;
-
-        # Logger before options processed, so options are hardcoded here.
-        #$self->{logger}                 =   ChangeName::Log->new(
-        #                                        debug       =>  0,
-        #                                        verbose     =>  0,
-        #                                        no_trace    =>  0,
-        #                                        no_dumper   =>  0,
-        #                                        language    =>  $self->language,
-        #                                    )->set_caller_depth(3);
-                                            
-        #my  $default_options = {
-        #    optional_strings =>  {
-        #        config                  =>  undef,
-        #    },
-        #};
-        
         my  $default_options = {
             optional_strings =>  {
-                language                =>  undef,
                 config                  =>  undef,
             },
-            negatable_options => {
-                live                    =>  0,
-                debug                   =>  0,
-                trace                   =>  0,
-                exact                   =>  0,
-            },
-            incremental_options => {
-                verbose                 =>  0,
-                no_dumper               =>  0,
-                no_trace                =>  0,
-            },
         };
-        
-        ChangeName::Utilities->import;
-        #$self->logger->debug('args from which to get ops in Config new constructor.'.Dumper(@ARG);
+
         $self->{options}                =   $valid_options_param?               $valid_options_param:
-                                            ChangeName::Utilities::get_options($self, $params->{commandline_arguments}, $default_options);
-                                            
+                                            $self->get_options($params->{commandline_arguments}, $default_options);
+
         %{
             $self
         }                           =   (
-    
+
             # Existing values in $self:
             %{$self},
 
@@ -604,29 +623,10 @@ package ChangeName::Config v1.0.0 {
                                         undef,
         );
 
-        # Load data if any config filepath params provided:
-        #$self->load($params->{config}) if $params->{config};
-
         return $self;
-            
+
     }
 
-    sub get_default_yaml_filepath {
-        return shift->{default_yaml_filepath};
-    }
-
-    sub get_external_yaml_filepath {
-        return shift->{external_yaml_filepath};
-    }
-
-    sub logger {
-        shift->{logger};
-    }
-
-    sub language {
-        shift->{language};
-    }
-    
     sub load {
 
         # Initial Values:
@@ -698,18 +698,25 @@ package ChangeName::Config v1.0.0 {
     sub get_data {
         return shift->{data};
     }
-    
+
+    sub get_messages {
+        return shift->{messages};
+    }
+
     sub get_data_and_messages {
         my  $self   =   shift;
 
         return  ($self->{data}, $self->{messages});
                 #[$self->{data}, $self->{messages}];
     }
-    
-    sub get_messages {
-        return shift->{messages};
+
+    sub get_default_yaml_filepath {
+        return shift->{default_yaml_filepath};
     }
-    
+
+    sub get_external_yaml_filepath {
+        return shift->{external_yaml_filepath};
+    }
 
 }; # ChangeName::Config Package.
 
@@ -1120,6 +1127,14 @@ my  @phrases = (
     'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
     'Data dump prevented by no_dumper option.'=>'Data dump prevented by no_dumper option.',
     'No specific language set. Using all supported languages: [_1].'=>'No specific language set. Using all supported languages: [_1].',
+    'Default options set as follows...'=>'Default options set as follows...',
+    'Passed in commandline arguments from which to derive both options and arguments from are as follows...'=>'Passed in commandline arguments from which to derive both options and arguments from are as follows...',
+    'Validated copy of arguments is as follows...'=>'Validated copy of arguments is as follows...',
+    'Flattened list of default options are as follows...'=>'Flattened list of default options are as follows...',
+    'Option Specifications have been determined as being as follows...'=>'Option Specifications have been determined as being as follows...',
+    'Options after processing the commandline arguments are now as follows...'=>'Options after processing the commandline arguments are now as follows...',
+    'Arguments after processing the commandline arguments are as follows...'=>'Arguments after processing the commandline arguments are as follows...',
+    'The no_input flag will be returned with the value: "[_1]".'=>'The no_input flag will be returned with the value: "[_1]".',
 );
 
 our %Lexicon = (
@@ -1550,6 +1565,14 @@ my  @phrases = (
     'Language and Logger attributes set.'=>'Sprach- und Logger-Attribute festgelegt.',
     'Data dump prevented by no_dumper option.'=>'Datendump durch Option kein_dumper verhindert.',
     'No specific language set. Using all supported languages: [_1].'=>'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1]',
+    'Default options set as follows...'=>'Die Standardoptionen sind wie folgt eingestellt ...',
+    'Passed in commandline arguments from which to derive both options and arguments from are as follows...'=>'Die bereitgestellten Befehlszeilenargumente, aus denen sowohl Optionen als auch Argumente abgeleitet werden müssen, sind wie folgt...',
+    'Validated copy of arguments is as follows...'=>'Eine validierte Kopie der Argumente lautet wie folgt...',
+    'Flattened list of default options are as follows...'=>'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
+    'Option Specifications have been determined as being as follows...'=>'Die Optionsspezifikationen wurden wie folgt festgelegt...',
+    'Options after processing the commandline arguments are now as follows...'=>'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
+    'Arguments after processing the commandline arguments are as follows...'=>'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
+    'The no_input flag will be returned with the value: "[_1]".'=>'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
 );
 
 our %Lexicon = (
@@ -1782,7 +1805,11 @@ package ChangeName::Log v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
-    ChangeName::Utilities->import;
+    LOAD_UTILITIES_FIRST: BEGIN {
+        ChangeName::Utilities->import(qw(
+            validate_class
+        ));
+    }
     use     lib ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
@@ -2252,33 +2279,38 @@ package ChangeName::Modulino v1.0.0 {
     # Specific:
     #use     Getopt::Long;
     use     Data::Dumper;
-    ChangeName::Utilities->import;
-
+    LOAD_UTILITIES_FIRST: BEGIN {
+        ChangeName::Utilities->import(qw(
+            process_commandline_arguments
+        ));
+    }
     # Modulino:
-    say 'Args are...'.Dumper(@ARGV);
+    say 'Argv beforfe run is...'.Dumper(@ARGV);
     ChangeName::Modulino->run(@ARGV) unless caller;
 
     sub run {
-        my  $self = shift;
-        say 'Args are...'.Dumper(@ARG); #die 'enough2';        
-        $self->new(@ARG)->start_change_name_operation;
+        my  $self                   =   shift;
+        my  $commandline_arguments  =   \@ARG;
+        say 'Arg before new is...'.Dumper(@ARG);
+        #die 'enough2';
+        $self->new(commandline_arguments => $commandline_arguments)->start_change_name_operation;
     }
     
     sub new {
         # Initial Values:
         my  $class                      =   shift;
         my  $self                       =   {};
+        my  $params                     =   {@ARG};
 
         # Object construction - blessed hash approach:
         bless $self, $class;
 
         # Object Attributes:
-        $self->{no_input}               =   !(scalar @ARG);
         $self->{language}               =   ChangeName::Language->new;
 
-        # Logger before options processed, so options are hardcoded here:
+        # Logger options hardcoded here before commandline options processed:
         $self->{logger}                 =   ChangeName::Log->new(
-                                                debug       =>  0,
+                                                debug       =>  1,
                                                 verbose     =>  0,
                                                 no_trace    =>  0,
                                                 no_dumper   =>  0,
@@ -2302,19 +2334,9 @@ package ChangeName::Modulino v1.0.0 {
                 no_trace                =>  0,
             },
         };
-        say 'passed in args to derive modulino options from'.Dumper(@ARG);
-        say 'Default options being passed to get_options within modulino'.Dumper(@ARG);
-        $self->{options}                =   $self->get_options(\@ARG, $default_options);
-        say 'Options delivered to modulino instance are'.Dumper($self->{options});
-        $self->{arguments}              =   {
-            archive_id                  =>  shift,
-            search                      =>  shift,
-            replace                     =>  shift,
-            part                        =>  shift,
-        };
 
-        # Use options to set language attribute:
-
+        $self->logger->debug('Default options set as follows...')->dumper($default_options);
+        ($self->{options}, $self->{arguments}, $self->{no_input}) = $self->process_commandline_arguments($params->{commandline_arguments}, $default_options);
 
         # Update language and logger with options processed:
         $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
@@ -2326,6 +2348,7 @@ package ChangeName::Modulino v1.0.0 {
                                                 # Our overriding options:
                                                 language    =>  $self->language,
                                             );
+        say 'Options are...'.Dumper(%logger_params);
         $self->{logger}                 =   ChangeName::Log->new(%logger_params)->set_caller_depth(3);
 
         
@@ -2527,7 +2550,11 @@ package ChangeName::Operation v1.0.0 {
                 reftype
             );
     use     Data::Dumper;
-    
+    LOAD_UTILITIES_FIRST: BEGIN {
+        ChangeName::Utilities->import(qw(
+            validate_class
+        )); # Unsure why this won't work at start of package, as it does in Log class.
+    }
 =pod Name, Version
 
 =encoding utf8
@@ -2665,8 +2692,7 @@ can be called.
 =cut
 
     sub new {
-        ChangeName::Utilities->import; # Unsure why this won't work at start of package, as it does in Log class.
-        
+
         my  $class      =   shift;
         my  $params     =   {@ARG};
         
@@ -3662,8 +3688,8 @@ To do.
     
         my  $prerequisites                                      =   @{$self->{what_to_change}}
                                                                     && @{$self->{unique_names}};
-        warn 'check what up';
-        EPrints->trace;
+        #warn 'check what up';
+        #EPrints->trace;
         return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
         my  $output                                             =   $self->language->localise('horizontal.rule').
@@ -3977,8 +4003,8 @@ package ChangeName::Language v1.0.0 {
     }
 
     sub _get_match {
-        warn 'Eprint trace for _get_match...';
-        EPrints->trace;
+        #warn 'Eprint trace for _get_match...';
+        #EPrints->trace;
         # Initial Values:
         my  $self                   =   shift;
         my  $case_insensitive       =   shift; # expects true or false value - i.e 1 or 0.
@@ -4018,8 +4044,8 @@ package ChangeName::Language v1.0.0 {
             $regex_string           =   $self->{language_handle}?   quotemeta($self->{language_handle}->maketext(@ARG)):
                                         join '|', map {quotemeta($ARG)} values %{{(ChangeName::Languages->maketext_in_all_languages(@ARG))}};
         }
-        warn '_get_match regex string:'.Dumper($regex_string);
-        EPrints->trace;
+        #warn '_get_match regex string:'.Dumper($regex_string);
+        #EPrints->trace;
         # Processing Match:
         my  $matches                =   $case_insensitive?  qr/^($regex_string)$/i:
                                         qr/^($regex_string)$/;
