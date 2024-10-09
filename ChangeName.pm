@@ -200,8 +200,8 @@ package ChangeName::Utilities v1.0.0 {
                                 # on Perl v5.18 or lower.
 
     # Specific:
-    use lib '/opt/eprints3/perl_lib';
-    use EPrints;
+    #use lib '/opt/eprints3/perl_lib';
+    #use EPrints;
     use Scalar::Util qw(
             blessed
             reftype
@@ -323,9 +323,10 @@ package ChangeName::Utilities v1.0.0 {
         # Intial Values:
         my  $self                                   =   shift;
         my  $commandline_arguments                  =   shift;
-        my  $option_types                           =   shift;
+        my  $option_types                           =   shift // _get_default_options($self);
         my  @options_specifications                 =   ();
         my  $suffix_for                             =   {
+            simple_options                          =>  q{},
             optional_strings                        =>  ':s',
             negatable_options                       =>  '!',
             incremental_options                     =>  '+',
@@ -397,6 +398,42 @@ package ChangeName::Utilities v1.0.0 {
 
     }
     
+
+    sub _get_default_options {
+
+        my  $self                       =   shift;
+
+        my  $default_options            =   {
+            simple_options              =>  {
+                trace                   =>  0,
+                no_trace                =>  0,
+                live                    =>  0,
+                debug                   =>  0,
+                exact                   =>  0,
+                no_dumper               =>  0,
+            },
+            optional_strings            =>  {
+                language                =>  undef,
+                config                  =>  undef,
+            },
+            negatable_options => {
+                # Negatable options do not allow
+                # for the negating "no" prefix to be localised.
+                # To have full control over the localisation
+                # consider using dedicated simple options
+                # for both the option and the negated option,
+                # and then process them in your business logic.
+            },
+            incremental_options => {
+                verbose                 =>  0,
+            },
+        };
+
+        $self->logger->debug('Default options set as follows...')->dumper($default_options) if _can_log($self);
+
+        return $default_options;
+
+    }
 
     sub _multilingual_option_specification {
 
@@ -587,40 +624,37 @@ package ChangeName::Config v1.0.0 {
     use Data::Dumper;
 
     sub new {
-        my  $class      =   shift;
-        my  $params     =   {@ARG};
-        my  $self       =   {};
-        bless $self, $class;
+        my  $class                              =   shift;
+        my  $params                             =   {@ARG};
+        my  $self                               =   {};
+        bless $self                             ,   $class;
 
-        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH') && scalar %{$params->{options}}?   $params->{options}:
+        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH') && scalar keys %{ $params->{options} }?    $params->{options}:
                                                     undef;
 
-        my  $default_options = {
-            optional_strings =>  {
-                config                  =>  undef,
-            },
-        };
+        $self->{options}                        =   $valid_options_param?   $valid_options_param:
+                                                    $self->get_options($params->{commandline_arguments}); # No validation that get_options returns okay.
 
-        $self->{options}                =   $valid_options_param?               $valid_options_param:
-                                            $self->get_options($params->{commandline_arguments}, $default_options);
+        my  $valid_external_filepath_string     =   exists $self->{options}->{config} && $self->{options}->{config}?                $self->{options}->{config}:
+                                                    exists $params->{external_yaml_filepath} && $params->{external_yaml_filepath}?  $params->{external_yaml_filepath}:
+                                                    undef;
 
         %{
             $self
-        }                           =   (
+        }                                       =   (
 
             # Existing values in $self:
             %{$self},
 
             # Defaults:
-            default_yaml_filepath   =>  dirname(__FILE__).'/ChangeNameConfig.yml',
-            data                    =>  undef,
-            messages                =>  {
-                                            error   =>  [],
-                                            debug   =>  [],
-                                            verbose =>   [],
-                                        },
-            external_yaml_filepath  =>  exists $self->{options}->{config} && $self->{options}->{config}?    $self->{options}->{config}:
-                                        undef,
+            default_yaml_filepath               =>  dirname(__FILE__).'/ChangeNameConfig.yml',
+            data                                =>  undef,
+            messages                            =>  {
+                                                        error   =>  [],
+                                                        debug   =>  [],
+                                                        verbose =>   [],
+                                                    },
+            external_yaml_filepath              =>  $valid_external_filepath_string,
         );
 
         return $self;
@@ -630,51 +664,51 @@ package ChangeName::Config v1.0.0 {
     sub load {
 
         # Initial Values:
-        my  $self                   =   shift;
-        my  $external_filepath      =   shift // $self->get_external_yaml_filepath;
-        my  $default_filepath       =   $self->get_default_yaml_filepath;
+        my  $self                               =   shift;
+        my  $external_filepath                  =   shift // $self->get_external_yaml_filepath;
+        my  $default_filepath                   =   $self->get_default_yaml_filepath;
 
         # Definitions:    
-        my  $external               =   defined $external_filepath
-                                        && (
-                                            $external_filepath eq '0'?  1:
-                                            $external_filepath
-                                        )
-                                        && -e $external_filepath;
+        my  $external                           =   defined $external_filepath
+                                                    && (
+                                                        $external_filepath eq '0'?  1:
+                                                        $external_filepath
+                                                    )
+                                                    && -e $external_filepath;
 
-        my  $external_not_found     =   defined $external_filepath
-                                        && (
-                                            $external_filepath eq '0'?  1:
-                                            $external_filepath
-                                        )
-                                        && !(-e $external_filepath);
+        my  $external_not_found                 =   defined $external_filepath
+                                                    && (
+                                                        $external_filepath eq '0'?  1:
+                                                        $external_filepath
+                                                    )
+                                                    && !(-e $external_filepath);
 
-        my  $default                =   defined $default_filepath
-                                        && $default_filepath
-                                        && -e $default_filepath;
+        my  $default                            =   defined $default_filepath
+                                                    && $default_filepath
+                                                    && -e $default_filepath;
 
-        my  $fellback_to_default    =   $external?  undef:
-                                        $default?   1:
-                                        undef;
+        my  $fellback_to_default                =   $external?  undef:
+                                                    $default?   1:
+                                                    undef;
 
-        my  $internal               =   $external?  undef:
-                                        $default?   undef:
-                                        1;
+        my  $internal                           =   $external?  undef:
+                                                    $default?   undef:
+                                                    1;
 
         # Processing:
-        $self->{data}               =   # External YAML file:
-                                        $external?  LoadFile($external_filepath):           # Will die on any load error.
-                                        $default?   LoadFile($default_filepath):            # Will die on any load error.
-                        
-                                        # Internal YAML __DATA__:
-                                        Load(ChangeName::Config::YAML::data);      # Will die on any load error.
-    
-
-                                            #do {                                            # 'do' returns last value of block.
-                                            #    local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
-                                            #    <ChangeName::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
-                                            #}
-                                        #);
+        $self->{data}                           =   # External YAML file:
+                                                    $external?  LoadFile($external_filepath):           # Will die on any load error.
+                                                    $default?   LoadFile($default_filepath):            # Will die on any load error.
+                                    
+                                                    # Internal YAML __DATA__:
+                                                    Load(ChangeName::Config::YAML::data);      # Will die on any load error.
+                
+            
+                                                        #do {                                            # 'do' returns last value of block.
+                                                        #    local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
+                                                        #    <ChangeName::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
+                                                        #}
+                                                    #);
 
         # Messages:                                    
         push @{ $self->{messages}->{error} }    ,   ['config.load.error.custom_external_not_found', $external_filepath]
@@ -704,10 +738,11 @@ package ChangeName::Config v1.0.0 {
     }
 
     sub get_data_and_messages {
+
         my  $self   =   shift;
 
         return  ($self->{data}, $self->{messages});
-                #[$self->{data}, $self->{messages}];
+
     }
 
     sub get_default_yaml_filepath {
@@ -1194,7 +1229,7 @@ my  @tokens = (
 'options.debug'                 =>  'debug',
 'options.trace'                 =>  'stacktrace trace',
 'options.no_dumper'             =>  'kein_dumper kein_dump keindumper keindump',
-'options.no_trace'              =>  'kein_trace keintrace kein_stacktrace kein_stacktrace',
+'options.no_trace'              =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
 'options.exact'                 =>  'exakt genau genaue',
 
 'input.yes_letter'              =>  'J',
@@ -1910,7 +1945,7 @@ See L</new> method for info on acceptable object parameters.
             debug                       =>  $params->{debug} // 0,
             verbose                     =>  $params->{verbose} // 0,
             trace                       =>  (
-                                                ($params->{no_trace} < 1)
+                                                $params->{no_trace} < 1
                                                 &&
                                                 (
                                                     ($params->{verbose} > 2)
@@ -2310,33 +2345,14 @@ package ChangeName::Modulino v1.0.0 {
 
         # Logger options hardcoded here before commandline options processed:
         $self->{logger}                 =   ChangeName::Log->new(
-                                                debug       =>  1,
+                                                debug       =>  0,
                                                 verbose     =>  0,
                                                 no_trace    =>  0,
                                                 no_dumper   =>  0,
                                                 language    =>  $self->language,
                                             )->set_caller_depth(3);
 
-        my  $default_options = {
-            optional_strings =>  {
-                language                =>  undef,
-                config                  =>  undef,
-            },
-            negatable_options => {
-                live                    =>  0,
-                debug                   =>  0,
-                trace                   =>  0,
-                exact                   =>  0,
-            },
-            incremental_options => {
-                verbose                 =>  0,
-                no_dumper               =>  0,
-                no_trace                =>  0,
-            },
-        };
-
-        $self->logger->debug('Default options set as follows...')->dumper($default_options);
-        ($self->{options}, $self->{arguments}, $self->{no_input}) = $self->process_commandline_arguments($params->{commandline_arguments}, $default_options);
+        ($self->{options}, $self->{arguments}, $self->{no_input}) = $self->process_commandline_arguments($params->{commandline_arguments});
 
         # Update language and logger with options processed:
         $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
