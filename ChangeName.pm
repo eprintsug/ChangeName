@@ -2207,16 +2207,16 @@ See L</new> method for info on acceptable object parameters.
         my  %default    =   map
                             {
                                 $ARG =~ m/^($class_only)$/
-                                && blessed($self->{$ARG})?  ($ARG => blessed($self->{$ARG})):
-                                ($ARG => $self->{$ARG})
+                                && blessed($self->{dumper_default}->{$ARG})?  ($ARG => blessed($self->{dumper_default}->{$ARG})):
+                                ($ARG => $self->{dumper_default}->{$ARG})
                             }
                             map {$ARG =~ m/^($exclude)$/? ():($ARG)}
                             keys %{$self->{dumper_default}};
-
+        #warn 'Dumper Default Self'.Dumper($self->{dumper_default});
         # Set params:
         my  @params     =   @ARG?   @ARG:
                             (\%default);
-
+        #warn 'Dumper Default Processed Default Hash'.Dumper(%default);
         return $self->_log('dumper',@params);
     }
 
@@ -3081,7 +3081,7 @@ To do.
     # Setters and Getters:
 
     sub _set_archive {
-    warn 'set archive Args are...'.Dumper(@ARG);
+    #warn 'set archive Args are...'.Dumper(@ARG);
     #die 'enough';
         return shift->_set_or_prompt_for('archive' => shift, @ARG);
     }
@@ -3182,8 +3182,8 @@ To do.
         $self->{repository} =   EPrints::Repository->new(
                                     ($self->_set_archive($archive_id))->{archive}
                                 );
-warn 'Archive value is class [_1].'.$self->{archive};
-warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...containing:
+#warn 'Archive value is class [_1].'.$self->{archive};
+#warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...containing:
 #die 'enough';
 #'.Dumper($self->{repository});
         return $self;
@@ -3388,6 +3388,8 @@ warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...con
                                             'repository',
                                             'list_of_results',
                                             'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
+                                            'logger',
+                                            'language',
                                         ];
         my  $dumper_exclude         =   [
                                             #'repository',
@@ -3452,7 +3454,7 @@ warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...con
                                         (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
-warn 'Self dump2...'.Dumper($self); #die 'enough2';
+#warn 'Self dump2...'.Dumper($self); #die 'enough2';
         #warn 'About to use the logger...';
 
         $self
@@ -3464,7 +3466,7 @@ warn 'Self dump2...'.Dumper($self); #die 'enough2';
 #        warn 'Self dump...'.Dumper($self); die 'enough4';           # Optional on object instantiation, so no prompt for value needed if not set.
         ->_set_part                     ($params->{part},    'no_prompt')   # Also optional on initialisation.
         ->dumper;
-#warn 'Self dump...'.Dumper($self); die 'enough5';        
+#warn 'Self dump5...'.Dumper($self); $self->dumper; $self->dumper($self); die 'enough5';        
         %{
             $self->log_debug('Setting self-referential instance attributes...')
         }                       =   (
@@ -3885,15 +3887,15 @@ warn 'Self dump2...'.Dumper($self); #die 'enough2';
 
     sub _set_or_prompt_for {
         my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
-        warn 'in set and prompt_for';
-        warn 'Args are...'.Dumper(@ARG);
+        #warn 'in set and prompt_for';
+        #warn 'Args are...'.Dumper(@ARG);
         #die 'enough';
         $self->{"$attribute"}                           =   defined $value?                                 $self->_validate($value):
                                                             defined $self->{"$attribute"}?                  $self->{"$attribute"}:
                                                             $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
                                                             $prompt_type?                                   $self->prompt_for($prompt_type):
                                                             $self->prompt_for($attribute);
-        warn 'Self is...'.Dumper($self);
+        #warn 'Self is...'.Dumper($self);
         #die 'enough';
         return $self;
     }
@@ -3950,8 +3952,8 @@ warn 'Self dump2...'.Dumper($self); #die 'enough2';
                                                 );
     
         };
-        warn 'Input 0 is: '.$input[0];
-        warn 'Input array is: '.Dumper(@input);
+        #warn 'validate Input 0 is: '.$input[0];
+        #warn 'validate Input array is: '.Dumper(@input);
         #die 'enough';
         # Output:
         return  # In list context:
