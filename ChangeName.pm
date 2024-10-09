@@ -290,7 +290,21 @@ package ChangeName::Utilities v1.0.0 {
         # Intial Values:
         my  $self                                   =   shift;
         my  $commandline_arguments                  =   shift;
-        my  $option_types                           =   shift // _get_default_options($self);
+        my  $expectations                           =   shift;
+        my  $at_least_some_expectations             =   reftype($expectations) && (reftype ($expectations) eq 'HASH') && scalar keys %{$expectations};
+        my  $option_types                           =   $at_least_some_expectations
+                                                        && $expectations->{expected_options}
+                                                        && reftype($expectations->{expected_options})
+                                                        && (reftype($expectations->{expected_options}) eq 'HASH')
+                                                        && scalar %{$expectations->{expected_options}}?     $expectations->{expected_options}:
+                                                        _get_default_options($self);
+        my  $expected_arguments                     =   $at_least_some_expectations
+                                                        && $expectations->{expected_arguments}
+                                                        && reftype($expectations->{expected_arguments})
+                                                        && (reftype($expectations->{expected_arguments}) eq 'ARRAY')
+                                                        && scalar @{$expectations->{expected_arguments}}?   $expectations->{expected_arguments}:
+                                                        _get_default_expected_arguments($self);
+        my  $arguments                              =   {};
         my  @options_specifications                 =   ();
         my  $suffix_for                             =   {
             simple_options                          =>  q{},
@@ -298,8 +312,7 @@ package ChangeName::Utilities v1.0.0 {
             negatable_options                       =>  '!',
             incremental_options                     =>  '+',
         };
-        my  $arguments                              =   {};
-        my  $expected_arguments                     =   shift // _get_default_expected_arguments($self);
+
 
         $self                                           ->logger
                                                         ->debug('Passed in commandline arguments from which to derive both options and arguments from are as follows...')
@@ -307,7 +320,7 @@ package ChangeName::Utilities v1.0.0 {
                                                         if _can_log($self);
 
         # Definition:
-        my  $valid_destructable_copy_of_arguments   =   $commandline_arguments && (reftype($commandline_arguments) eq 'ARRAY')?  [(@{ $commandline_arguments })]:
+        my  $valid_destructable_copy_of_arguments   =   $commandline_arguments && reftype($commandline_arguments) && (reftype($commandline_arguments) eq 'ARRAY')?  [(@{ $commandline_arguments })]:
                                                         undef;
 
         $self                                           ->logger
@@ -637,7 +650,7 @@ package ChangeName::Config v1.0.0 {
         my  $self                               =   {};
         bless $self                             ,   $class;
 
-        my  $valid_options_param                =   exists $params->{options} && (reftype($params->{options}) eq 'HASH') && scalar keys %{ $params->{options} }?    $params->{options}:
+        my  $valid_options_param                =   exists $params->{options} && reftype($params->{options}) && (reftype($params->{options}) eq 'HASH') && scalar keys %{ $params->{options} }?    $params->{options}:
                                                     undef;
 
         $self->{options}                        =   $valid_options_param?   $valid_options_param:
@@ -1016,7 +1029,7 @@ Enter "NONE" for No to All Remaining for this unique name combination.
 'Your change will be performed using find and replace,
 (looking to find full and not partial matches, and with case insensitivity).
 
-What is your find value when matching within [_1]?
+What is your find value when matching within [nest,_1]?
 ',
 
 'prompt_for.find.error.no_part'             =>  
@@ -1187,6 +1200,9 @@ my  @phrases = (
     'Detected [nest,input.none].'=>'Detected [nest,input.none].',
     'Detected [nest,input.all].'=>'Detected [nest,input.all].',
     'Detected [nest,input.yes_letter].'=>'Detected [nest,input.yes_letter].',
+    'Params have been as follows...'=>'Params have been as follows...',
+    'Options we will use are as follows...'=>'Options we will use are as follows...',
+    'Arguments we will use are as follows...'=>'Arguments we will use are as follows...',
 );
 
 our %Lexicon = (
@@ -1460,7 +1476,7 @@ Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeut
 (wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
 und die Groß-/Kleinschreibung nicht beachtet wird).
 
-Was ist Ihr Suchwert beim Abgleich innerhalb von [_1]?
+Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
 ',
 
 'prompt_for.find.error.no_part'             =>  
@@ -1632,6 +1648,9 @@ my  @phrases = (
     'Detected [nest,input.none].'=>'„[nest,input.none]“ erkannt.',
     'Detected [nest,input.all].'=>'„[nest,input.all]“ erkannt.',
     'Detected [nest,input.yes_letter].'=>'Erkannt „[nest,input.yes_letter]“.',
+    'Params have been as follows...'=>'Die Parameter, mit denen wir gearbeitet haben und weiterhin arbeiten werden, sind die folgenden...',
+    'Options we will use are as follows...'=>'Die von uns verwendeten Optionen sind die folgenden...',
+    'Arguments we will use are as follows...'=>'Wir werden die folgenden Argumente verwenden...',
 );
 
 our %Lexicon = (
@@ -2057,6 +2076,7 @@ See L</new> method for info on acceptable object parameters.
         my  $self                       =   shift;
         my  $value                      =   shift;
         my  $valid_value                =   $value
+                                            && reftype($value)
                                             && (reftype($value) eq 'ARRAY')?  $value:
                                             undef;
 
@@ -2070,6 +2090,7 @@ See L</new> method for info on acceptable object parameters.
         my  $self                       =   shift;
         my  $value                      =   shift;
         my  $valid_value                =   $value
+                                            && reftype($value)
                                             && (reftype($value) eq 'ARRAY')?  $value:
                                             undef;
 
@@ -2376,11 +2397,20 @@ package ChangeName::Modulino v1.0.0 {
                                                 language    =>  $self->language,
                                             )->set_caller_depth(3);
 
+        my  $expecting                  =   {
+            expected_arguments          =>  [qw(
+                                                archive_id
+                                                search
+                                                replace
+                                                part
+                                            )],
+        };
+
         (
             $self->{options},
             $self->{arguments},
             $self->{no_input},
-        )                               =   $self->process_commandline_arguments($params->{commandline_arguments});
+        )                               =   $self->process_commandline_arguments($params->{commandline_arguments},$expecting);
 
         # Update language with options processed:
         $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
@@ -2519,13 +2549,25 @@ package ChangeName::Modulino v1.0.0 {
     sub start_change_name_operation {
 
         # Initial Values:
-        my  $self           =   shift;
+        my  $self               =   shift;
+
+        my  $custom_attributes  =   {
+            # (As constructed in new method,
+            # and setup in setup method):
+            config              =>  $self->config,
+            language            =>  $self->language,
+            logger              =>  $self->logger,
+        };
 
         $self->logger
         ->debug('In subroutine.')
-        ->debug('Creating object params for ChangeName::Operation');
+        ->debug('Creating object params for ChangeName::Operation')
+        ->debug('Options we will use are as follows...')
+        ->dumper($self->{options})
+        ->debug('Arguments we will use are as follows...')
+        ->dumper($self->{arguments});
 
-        my  @object_params  =   (
+        my  @object_params      =   (
 
             # Flatten to one list
             # (arguments overwrite options):
@@ -2539,11 +2581,9 @@ package ChangeName::Modulino v1.0.0 {
             },
 
             # Overwrite above with our attributes
-            # (as constructed in new method,
-            # and setup in setup method):
-            config          =>  $self->config,
-            language        =>  $self->language,
-            logger          =>  $self->logger,
+            %{
+                $custom_attributes
+            },
 
         );
 
@@ -2824,6 +2864,7 @@ it will prompt the user for them too.
     
         # Determine what was set...
         $self->{unique_names_set}   =   $self->{'unique_names'}
+                                        && reftype($self->{'unique_names'})
                                         && (reftype($self->{'unique_names'}) eq 'ARRAY');
             
         $self->{part_specified}     =   $self->{part} && $self->{find} && defined($self->{replace})? 1: 
@@ -2956,7 +2997,8 @@ To do.
         $self->log_debug('Called change method.')->dumper;
     
         my  $prerequisites                      =   $self->{what_to_change}
-                                                    && reftype($self->{what_to_change}) eq 'ARRAY'
+                                                    && reftype($self->{what_to_change})
+                                                    && (reftype($self->{what_to_change}) eq 'ARRAY')
                                                     && @{$self->{what_to_change}};
         
         return                                      $self->log_debug('Premature exit - Nothing to change.')
@@ -3039,6 +3081,8 @@ To do.
     # Setters and Getters:
 
     sub _set_archive {
+    warn 'set archive Args are...'.Dumper(@ARG);
+    #die 'enough';
         return shift->_set_or_prompt_for('archive' => shift, @ARG);
     }
 
@@ -3053,7 +3097,7 @@ To do.
     sub _set_search_normal {
         return shift->_set_or_prompt_for('search' => shift, @ARG);
     }
-    
+
     sub _set_search_exact {
         my  $self   =   shift;
         my  $value  =   shift;
@@ -3081,13 +3125,14 @@ To do.
     }
     
     sub set_name_parts {
-    
+
         my  $self               =   shift;
-        
+
         $self->log_debug('Entering method.')->log_debug('Name parts before we begin:')->dumper($self->{name_parts});
         
         my  $already_set        =   $self->{name_parts}
-                                    && reftype($self->{name_parts}) eq 'ARRAY'
+                                    && reftype($self->{name_parts})
+                                    && (reftype($self->{name_parts}) eq 'ARRAY')
                                     && @{$self->{name_parts}};
     
         return                      $self->log_debug('Premature exit - name parts already populated.')
@@ -3124,7 +3169,7 @@ To do.
                                     ]; # Array ref, so order preserved.
     
         $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
-    
+
         return $self->log_debug('Leaving method.');
     
     }
@@ -3137,7 +3182,9 @@ To do.
         $self->{repository} =   EPrints::Repository->new(
                                     ($self->_set_archive($archive_id))->{archive}
                                 );
-#warn 'Repository value is of class [_1].'.blessed($self->{repository}).'...containing:
+warn 'Archive value is class [_1].'.$self->{archive};
+warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...containing:
+#die 'enough';
 #'.Dumper($self->{repository});
         return $self;
     }
@@ -3223,7 +3270,7 @@ To do.
             die                         $self->language->localise('prompt_for.find.error.no_part')
                                         unless $self->{part};
             @prompt_arguments       =   (
-                                            $self->language->localise('name.'.$self->{part}),
+                                            'name.'.$self->{part},
                                         );
         };
     
@@ -3332,7 +3379,8 @@ To do.
         my  $matches_merge_types    =   qr/^(ANY|ALL)$/;
         my  $config_param_is_a_hash =   exists $params->{config}
                                         && (
-                                            reftype($params->{config}) eq 'HASH'
+                                            reftype($params->{config})
+                                            && (reftype($params->{config}) eq 'HASH')
                                         );
 
         my  $dumper_class_name_only =   [
@@ -3375,6 +3423,8 @@ To do.
 
         $self->log_debug    ('In method.'                         )
         ->log_debug         ('Language and Logger attributes set.')
+        ->log_debug         ('Params have been as follows...')
+        ->dumper            ($params)
         ->log_debug         ('About to set Repository.'           )
         ->_set_repository   ($params->{archive_id}                );
 
@@ -3445,7 +3495,7 @@ To do.
         );
     
         %{
-            $self->log_verbose('Set YAML configurations.')->dumper
+            $self->log_debug('Set YAML configurations.')->dumper
         }                       =   (
         
             # Existing values in $self:
@@ -3738,7 +3788,7 @@ To do.
         #EPrints->trace;
         return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
     
-        my  $output                                             =   $self->language->localise('horizontal.rule').
+        my  $output                                             =   $self->language->localise('horizontal.rule')."\n".
                                                                     $self->language->localise('_confirmation_feedback.heading.confirmed_so_far');
         my  $at_least_one_confirmation                          =   undef;
         my  $heading_shown_for                                  =   {};
@@ -3833,13 +3883,16 @@ To do.
 
     sub _set_or_prompt_for {
         my  ($self, $attribute, $value, $prompt_type)   =   @ARG;
-        #say 'in set and prompt_for';
+        warn 'in set and prompt_for';
+        warn 'Args are...'.Dumper(@ARG);
+        #die 'enough';
         $self->{"$attribute"}                           =   defined $value?                                 $self->_validate($value):
                                                             defined $self->{"$attribute"}?                  $self->{"$attribute"}:
                                                             $prompt_type && ($prompt_type eq 'no_prompt')?  undef:
                                                             $prompt_type?                                   $self->prompt_for($prompt_type):
                                                             $self->prompt_for($attribute);
-
+        warn 'Self is...'.Dumper($self);
+        die 'enough';
         return $self;
     }
 
@@ -3895,7 +3948,9 @@ To do.
                                                 );
     
         };
-    
+        warn 'Input 0 is: '.$input[0];
+        warn 'Input array is: '.Dumper(@input);
+        #die 'enough';
         # Output:
         return  # In list context:
                 wantarray?                          @input:
