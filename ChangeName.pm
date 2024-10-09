@@ -3452,7 +3452,7 @@ warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...con
                                         (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
-
+warn 'Self dump...'.Dumper($self); die 'enough2';
         #warn 'About to use the logger...';
 
         $self
@@ -3892,7 +3892,7 @@ warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...con
                                                             $prompt_type?                                   $self->prompt_for($prompt_type):
                                                             $self->prompt_for($attribute);
         warn 'Self is...'.Dumper($self);
-        die 'enough';
+        #die 'enough';
         return $self;
     }
 
