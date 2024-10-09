@@ -4055,7 +4055,7 @@ package ChangeName::Language v1.0.0 {
         my  $self                   =   shift;
         my  $case_insensitive       =   shift; # expects true or false value - i.e 1 or 0.
         my  $value                  =   shift;
-        die 'enough' if $value eq 'input.all';
+
         # Premature Exit:
         return                          undef
                                         unless $value;
