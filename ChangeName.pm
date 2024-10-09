@@ -779,9 +779,6 @@ package ChangeName::Languages::en_gb {
 
 ChangeName::Languages->import;
 our @ISA                        =   ('ChangeName::Languages');
-use Scalar::Util qw(
-        reftype
-    );
 
 # ----------------------------------
 
@@ -802,6 +799,7 @@ my  @tokens = (
 'language.name'                 =>  'English (United Kingdom)',
 'language.error.set_language_handle'   =>  'Trouble finding a language to use.',
 
+'nest.error.language'           =>  'Not a valid language handle from which to call the maketext method.',
 'nest.error.key'                =>  'Error nesting a Lexicon value.',
 
 'options.language'              =>  'language lang',
@@ -1202,16 +1200,6 @@ sub language_name {
     return $Lexicon{'language.name'};
 }
 
-sub nest {
-    my  $lh     =   shift;
-    my  $key    =   shift;
-    my  $result =   (exists $Lexicon{$key}?  $Lexicon{$key}:
-                    $Lexicon{'nest.error.key'});
-    my  $string =   reftype($result) eq 'SCALAR'?   ${  $result }:
-                    $result;
-    return $string;
-}
-
 # ----------------------------------
 
 1;
@@ -1231,9 +1219,7 @@ package ChangeName::Languages::de_de {
 # Specific:
 ChangeName::Languages->import;
 our @ISA                        =   ('ChangeName::Languages');
-use Scalar::Util qw(
-        reftype
-    );
+
 # ----------------------------------
 
 my  $new_line                   =   "\n";
@@ -1253,6 +1239,7 @@ my  @tokens = (
 'language.name'                 =>  'Deutsch (Deutschland)',
 'language.error.set_language_handle'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
 
+'nest.error.language'           =>  'Ungültiger Sprach-Handle zum Aufrufen der Methode „maketext“.',
 'nest.error.key'                =>  'Fehler beim Verschachteln eines Lexikonwerts.',
 
 'options.language'              =>  'sprache spr',
@@ -1658,16 +1645,6 @@ sub language_name {
     return $Lexicon{'language.name'};
 }
 
-sub nest {
-    my  $lh     =   shift;
-    my  $key    =   shift;
-    my  $result =   (exists $Lexicon{$key}?  $Lexicon{$key}:
-                    $Lexicon{'nest.error.key'});
-    my  $string =   reftype($result) eq 'SCALAR'?   ${  $result }:
-                    $result;
-    return $string;
-}
-
 # ----------------------------------
 
 1;
@@ -1689,6 +1666,10 @@ package ChangeName::Languages v1.0.0 {
     # Specific:
     use     parent qw(Locale::Maketext);
     use     mro;
+    use     Scalar::Util qw(
+                reftype
+                blessed
+            );
 
     my  @tokens = (
         'separator.name_parts'          =>  ' ',            # space
@@ -1872,6 +1853,25 @@ package ChangeName::Languages v1.0.0 {
         #Output:
         return  wantarray?  @in_all_languages: # key value pairs in a list
                 $in_all_languages_string;       # Multi-line string
+    }
+
+    sub nest {
+        my  $self   =   shift;
+        die             ChangeName::Languages::maketext_in_all_languages('nest.error.language') unless _can_maketext($self);
+        my  $key    =   shift;
+        my  $result =   $self->maketext($key)
+                        // $self->maketext('nest.error.key');
+        my  $string =   reftype($result) && (reftype($result) eq 'SCALAR')? ${  $result }:
+                        $result;
+        return $string;
+    }
+
+    sub _can_maketext {
+        my  $self   =   shift;
+        return          defined($self)
+                        && blessed($self)
+                        && $self->isa('ChangeName::Languages')
+                        && $self->can('maketext');
     }
 
     1;
