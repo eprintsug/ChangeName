@@ -3452,17 +3452,19 @@ warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...con
                                         (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
-warn 'Self dump...'.Dumper($self); die 'enough2';
+warn 'Self dump2...'.Dumper($self); #die 'enough2';
         #warn 'About to use the logger...';
 
         $self
         ->log_debug                     ('Set initial instance attributes using params or defaults.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
-        ->_set_replace                  ($params->{replace}, 'no_prompt')   # Optional on object instantiation, so no prompt for value needed if not set.
+#warn 'Self dump...'.Dumper($self); die 'enough3';        
+        ->_set_replace                  ($params->{replace}, 'no_prompt')
+#        warn 'Self dump...'.Dumper($self); die 'enough4';           # Optional on object instantiation, so no prompt for value needed if not set.
         ->_set_part                     ($params->{part},    'no_prompt')   # Also optional on initialisation.
         ->dumper;
-    
+#warn 'Self dump...'.Dumper($self); die 'enough5';        
         %{
             $self->log_debug('Setting self-referential instance attributes...')
         }                       =   (
@@ -3493,7 +3495,7 @@ warn 'Self dump...'.Dumper($self); die 'enough2';
                                     'ANY',
 
         );
-    
+#warn 'Self dump...'.Dumper($self); die 'enough6';        
         %{
             $self->log_debug('Set YAML configurations.')->dumper
         }                       =   (
