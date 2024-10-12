@@ -1770,7 +1770,7 @@ package ChangeName::Languages v1.0.0 {
     );
 
     sub priority_language_class {
-        return 'en_gb'; # Will be first in ordered_language_handles and thus also first in any multi-language translations.
+        return 'en_gb'; # Will be prioritised in ordered_language_handles method and thus also prioritised in any multi-language translations.
     }
 
     sub fallback_language_classes {
@@ -1829,7 +1829,9 @@ package ChangeName::Languages v1.0.0 {
                                                         
         my  $sort_alphabetically                    =   sub {
                                                             sort { $a cmp $b } @ARG
-                                                        }; 
+                                                        };
+        
+        my  $reverse_order_of_final_result          =   1; # Boolean
 
         # Processing:
         my  @language_handles                       =   $language_handle_only_filter->(@full_class_names);
@@ -1849,7 +1851,8 @@ package ChangeName::Languages v1.0.0 {
         push @ordered_language_handles              ,   $sort_alphabetically->(@non_priority_handles);
 
         # Output:
-        return  @ordered_language_handles;
+        return  $reverse_order_of_final_result? reverse @ordered_language_handles:
+                @ordered_language_handles;
 
     } # technically, these are ordered classes rather than language handle objects.
 
