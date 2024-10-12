@@ -539,6 +539,63 @@ package ChangeName::Utilities v1.0.0 {
 
     }
 
+    sub _is_populated_ref {
+        my  $self       =   shift;
+        my  $value      =   shift;
+        my  $type       =   shift;
+        return              $value
+                            && reftype($value)
+                            && (reftype($value) eq $type)
+                            && (
+                                $type eq 'ARRAY'?   scalar @{$value}:
+                                $type eq 'HASH'?    scalar %{$value}:
+                                $type eq 'SCALAR'?  _is_true_or_zero(${$value})
+                            );
+    }
+
+    sub is_populated_array_ref {
+        _is_populated_ref(shift, shift, 'ARRAY');
+    }
+
+    sub is_populated_hash_ref {
+        _is_populated_ref(shift, shift, 'HASH');
+    }
+
+    sub is_populated_scalar_ref {
+        _is_populated_ref(shift, shift, 'SCALAR');
+    }
+
+    sub is_true_or_zero {
+        my  $self   =   shift;
+        my  $value  =   shift;
+        return          defined $value
+                        && (
+                            $value || $value eq '0'
+                        );
+    }
+
+    sub chunkify {
+
+        # Initial Values:
+        my  ($self, $list, $chunk_size) =   @ARG;
+        $chunk_size                     //= 100;
+        $list                           //= $self->{list_of_results}; # validate it is a list object?
+        my  @list_of_arrayrefs          =   ();
+
+        # Processing:
+        for (my $offset = 0; $offset < $list->count; $offset += $chunk_size) {
+            push @list_of_arrayrefs     ,   [$list->slice($offset, $chunk_size)];
+        };
+
+        # Output:    
+        return @list_of_arrayrefs;
+
+    }
+
+    sub stringify_arrayref {
+        return join shift->language->localise('separator.stringify_arrayref'), @{ (shift) };
+    }
+
     1;
 
 } # ChangeName::Utilities Package.
@@ -2623,24 +2680,24 @@ package ChangeName::Operation v1.0.0 {
                                     # on Perl v5.18 or lower.
 
     # Specific:
+    LOAD_UTILITIES_FIRST: BEGIN {
 
+            ChangeName::Utilities->import(qw(
+                validate_class
+            ));
+
+    }
     use     lib ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data->{'EPrints Perl Library Path'};
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
-    use     File::Basename; # Will use this to get the directory name that this file is in, when looking for yaml file.
-    use     Getopt::Long;
 
     use     Scalar::Util qw(
                 blessed
                 reftype
             );
-    use     Data::Dumper;
-    LOAD_UTILITIES_FIRST: BEGIN {
-        ChangeName::Utilities->import(qw(
-            validate_class
-        )); # Unsure why this won't work at start of package, as it does in Log class.
-    }
+    #use     Data::Dumper;
+
 =pod Name, Version
 
 =encoding utf8
@@ -2749,14 +2806,14 @@ and proceding to finish (L</finish>).
 =cut
 
     # Start Method:
-    
+
     sub start {
         my  $class          =   shift;
         my  @object_params  =   @ARG;
-    
+
         $class->new(@object_params)->search->part_specific->display->confirm->change->finish;
     }
-    
+
     # Program Flow Methods:
 
 
@@ -2781,12 +2838,12 @@ can be called.
 
         my  $class      =   shift;
         my  $params     =   {@ARG};
-        
+
         my  $self       =   {};
-        bless $self, $class;
+        bless $self     ,   $class;
 
         $self->_set_attributes($params)->log_debug('Constructed New Object Instance.')->dumper;
-    
+
         return $self;
     }
 
@@ -2803,7 +2860,7 @@ according to values set during ChangeName::Operation object construction.
 Returns the initial ChangeName::Operation object, now with list_of_results and records_found object attributes set.
 
 =cut
-    
+
     sub search {
         my  $self                   =   shift;
 
@@ -3077,12 +3134,10 @@ To do.
         say $self->language->localise('finish.thank_you');
         return $self;
     }
-    
+
     # Setters and Getters:
 
     sub _set_archive {
-    #warn 'set archive Args are...'.Dumper(@ARG);
-    #die 'enough';
         return shift->_set_or_prompt_for('archive' => shift, @ARG);
     }
 
@@ -3096,6 +3151,22 @@ To do.
 
     sub _set_search_normal {
         return shift->_set_or_prompt_for('search' => shift, @ARG);
+    }
+
+    sub get_archive {
+        return shift->{archive};
+    }
+
+    sub get_repository {
+        return shift->{repository};
+    }
+
+    sub get_dataset_to_use {
+        return shift->{dataset_to_use};
+    }
+
+    sub get_fields_to_search {
+        return shift->{fields_to_search};
     }
 
     sub _set_search_exact {
@@ -3112,146 +3183,119 @@ To do.
     sub _set_search {
         my  $self   =   shift;
         my  $value  =   shift;
-        return          $value && $self->{exact}?   $self
-                                                    ->log_verbose('Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.', $value)
-                                                    ->_set_search_exact($value, @ARG):
+        return          $self->is_true_or_zero($value) && $self->{exact}?   $self
+                                                                            ->log_verbose('Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.', $value)
+                                                                            ->_set_search_exact($value, @ARG):
                         $self
                         ->log_debug('Set search normally, as no --exact flag provided.')
                         ->_set_search_normal($value, @ARG);
     }
-    
+
     sub _set_replace {
         return shift->_set_or_prompt_for('replace' => shift, @ARG);
     }
-    
+
     sub set_name_parts {
 
         my  $self               =   shift;
+        my  @skip               =   ();
 
         $self->log_debug('Entering method.')->log_debug('Name parts before we begin:')->dumper($self->{name_parts});
-        
-        my  $already_set        =   $self->{name_parts}
-                                    && reftype($self->{name_parts})
-                                    && (reftype($self->{name_parts}) eq 'ARRAY')
-                                    && @{$self->{name_parts}};
-    
+
+        my  $already_set        =   $self->is_populated_array_ref($self->{name_parts});
+
         return                      $self->log_debug('Premature exit - name parts already populated.')
                                     if $already_set;
-    
-        my  $valid_name_parts   =   join(
-    
-                                        # Join by regex OR character:
-                                        '|',                    
-    
-                                        # Make name parts regex safe:
-                                        map {quotemeta $ARG}    
-    
+
+        my  $valid_name_parts   =   $self->list_to_regex_logical_or_grouping(
+
                                         # Name Parts for Each Field:
                                         map {
                                             keys %{
-                                                $self->{repository}->dataset($self->{dataset_to_use})->field($ARG)->property('input_name_cols')
+                                                $self->get_repository->dataset($self->get_dataset_to_use)->field($ARG)->property('input_name_cols')
                                             }
                                         }
-    
+
                                         # Fields:
-                                        @{$self->{fields_to_search}}
-    
+                                        @{$self->get_fields_to_search}
+
                                     );
-    
+
         my  $not_a_name_part    =   qr/[^($valid_name_parts)]/i;
-     
-        $self->{name_parts}     =   [   map
+
+        $self->{name_parts}     =   [
+                                        map
                                         {
-                                                $ARG || $ARG eq '0'? ($ARG):    # True or zero - use.
-                                                ();                             # Else filter out.
+                                                $self->is_true_or_zero($ARG)? ($ARG):
+                                                @skip;
                                         } 
                                         split $not_a_name_part, $self->language->localise('name_parts.display_order')
                                     ]; # Array ref, so order preserved.
-    
+
         $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
 
         return $self->log_debug('Leaving method.');
-    
+
     }
-    
+
     # Private Setters:
 
     sub _set_repository {
         my  $self           =   shift;
         my  $archive_id     =   shift;
         $self->{repository} =   EPrints::Repository->new(
-                                    ($self->_set_archive($archive_id))->{archive}
+                                    $self->_set_archive($archive_id)->get_archive
                                 );
-#warn 'Archive value is class [_1].'.$self->{archive};
-#warn 'Repository value is of class [_1].'.blessed($self->{repository});#.'...containing:
-#die 'enough';
-#'.Dumper($self->{repository});
+        $self                   ->log_debug('Archive value is now class "[_1]".', $self->get_archive)
+                                ->log_debug('Repository value is of class "[_1]".', blessed($self->{repository}));
+
         return $self;
     }
-    
+
     # Function-esque subroutines:
-    
+
     sub format_single_line_for_display {
-    
+
         # Initial Values:
         my  ($self, $result, $field)    =   @ARG;
-    
+
         $self->log_debug('Entered method.');
-    
+
+        # Premature death:
         die                                 $self->language->localise('format_single_line_for_display.error.no_params')
-                                            unless ($result && $field);
-    
+                                            unless ($result && $field); # Should we check they're the relevant classes too?
+
+        # Processing:
         $self->log_debug('Found params, and about to process them...');
-    
+
         my  $names                      =   join(
                                                 $self->language->localise('separator.name_values'),
                                                 map {$self->_stringify_name($ARG) // ()}
                                                 @{$result->get_value("$field")}
                                             );
-    
+
         $self->log_debug('Stringified names for use in a localised display line.');
-    
-    
+
+        # Output:
         return                              $self->log_debug('Returning localised display line as we leave the method.')
                                             ->language->localise('display_line', $result->id, $names);
-    
+
     }
-    
-    sub chunkify {
-    
-        # Initial Values:
-        my  ($self, $list, $chunk_size) =   @ARG;
-        $chunk_size                     //= 100;
-        $list                           //= $self->{list_of_results}; # validate it is a list object?
-        my  @list_of_arrayrefs          =   ();
-    
-        # Processing:
-        for (my $offset = 0; $offset < $list->count; $offset += $chunk_size) {
-            push @list_of_arrayrefs     ,   [$list->slice($offset, $chunk_size)];
-        };
-    
-        # Output:    
-        return @list_of_arrayrefs; # Could improve with a wantarray check.
-    
-    }
-    
-    sub stringify_arrayref {
-        my $self    =   shift;
-        return join $self->language->localise('separator.stringify_arrayref'), @{ (shift) };
-    }
-    
+
     sub prompt_for {
-    
+
+        # Initial Values:
         my  $self                   =   shift;
         my  $prompt_type            =   shift;
+
         die                             $self->language->localise('prompt_for.error.no_prompt_type')
                                         unless $prompt_type;
-                                
+
         my  $prompt                 =   'prompt_for.'.$prompt_type;
         my  @prompt_arguments       =   ();
-    
+
         my  $input                  =   undef;
-    
+
         # Definitions:
         my  $part_prompt            =   ($prompt_type eq 'part');
         my  $replace_prompt         =   ($prompt_type eq 'replace');
@@ -3261,114 +3305,114 @@ To do.
         my  @prompt_on_blank_for    =   qw(
                                             replace
                                         );
-        my  $prompt_on_blank_for    =   join '|',
-                                        map {quotemeta($ARG)}
-                                        @prompt_on_blank_for;
-        my  $matches_prompt_on_blank=   qr/^($prompt_on_blank_for)$/;   # This list to join to regex is done so often, it should be a subroutine or method.
-    
+        my  $prompt_on_blank_for    =   $self->list_to_regex_logical_or_grouping(@prompt_on_blank_for);
+        my  $matches_prompt_on_blank=   qr/^($prompt_on_blank_for)$/;
+
         if  ($find_prompt) {
+
             die                         $self->language->localise('prompt_for.find.error.no_part')
                                         unless $self->{part};
+
             @prompt_arguments       =   (
                                             'name.'.$self->{part},
                                         );
+
         };
-    
+
         if ($part_prompt) {
-        
+
             my  $number;
             @prompt_arguments               =   (
                                                     $self->stringify_arrayref($self->{'given_names'}),
                                                     $self->stringify_arrayref($self->{'family_names'}),
                                                 );
-            my  $acceptable_input           =   join '|',
-                                                (
+            my  $acceptable_input           =   $self->list_to_regex_logical_or_grouping(
                                                     'given',
                                                     'family',
                                                 );
             my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
-    
+
             say $self->language->localise($prompt, @prompt_arguments);
-    
+
             until ( $input && ($input =~ $matches_acceptable_input) ) {
-    
+
                 say $self->language->localise('prompt_for.1or2');
                 chomp($number   =   <STDIN>);
 
-                $input          =   $number?    $self->language->matches_case_sensitively($number, 'input.1')?  'given':    # should mapping occur to variables set centrally?
-                                                $self->language->matches_case_sensitively($number, 'input.2')?  'family':   # should mapping occur to variables set centrally?
+                $input          =   $number?    $self->language->matches_case_sensitively($number, 'input.1')?  'given':
+                                                $self->language->matches_case_sensitively($number, 'input.2')?  'family':
                                                 undef:
                                     undef;
-    
+
             };
-        
-        }    
-    
+
+        }
+
         elsif  ($confirm_prompt) {
-        
+
             my  $confirmation;
-            @prompt_arguments               =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
-            my  @acceptable_input           =   (
-                                                    ['input.yes_letter'],
-                                                    ['input.no_letter'],
-                                                    ['input.all'],
-                                                    ['input.none'],
-                                                );
-    
+            @prompt_arguments                   =   @{$self->{confirm_prompt_arguments}}; # A hack. Maybe refactor to be passed in.
+            my  @acceptable_input               =   (
+                                                        ['input.yes_letter'],
+                                                        ['input.no_letter'],
+                                                        ['input.all'],
+                                                        ['input.none'],
+                                                    );
+
             say $self->language->localise($prompt, @prompt_arguments);
             say $self->language->localise('horizontal.rule');
-    
+
             until ( $confirmation && $self->language->matches_case_insensitively($confirmation, @acceptable_input) ) {
                 say $self->language->localise('prompt_for.confirm.acceptable_input');
                 chomp($confirmation   =   <STDIN>)
             };
-    
+
             $input = $confirmation;
         }
-    
+
         elsif ($continue_prompt) {
-    
+
             say $self->language->localise($prompt);
             say $self->language->localise('horizontal.rule');
             chomp($input   =   <STDIN>);
-    
+
         }
-    
+
         else {
-        
+
             until ($input) {
-        
+
                 say $self->language->localise($prompt, @prompt_arguments);
                 chomp(my $typed_input           =   <STDIN>);
                 ($input)                        =   $self->_validate( ($typed_input) );
-                
+
                 last if $input;
                 if ($prompt_type =~ $matches_prompt_on_blank) {
-        
+
                     say $self->language->localise($prompt.'.prompt_on_blank');
-                    chomp(my $typed_input2      =  <STDIN>); # Not validated and should be okay as we only ever use it in an equality test in the line below...
-                    
+                    chomp(my $typed_input2      =  <STDIN>); # Not validated and should be okay as we only ever use in a match in the line below...
+
                     # Definition:
                     my  $blank_input_desired    =   $self->language->matches_case_insensitively($typed_input2, 'input.yes_letter');
-    
+
                     if ($blank_input_desired) {
                         $input = q{};
                         last;
                     };
-                    
+
                 };
-    
+
             };
-            
+
         };
-        
+
         return $input;
-    
+
     }
-    
+
 
     # Private subs:
-    
+
     sub _set_attributes {
 
         # Initial Values:
@@ -3387,7 +3431,7 @@ To do.
                                             'Repository',
                                             'repository',
                                             'list_of_results',
-                                            'dumper_default', # typically $self - except the Log self unless set_dumper_default submits another self. Probably ought to change that.
+                                            'dumper_default', # The Log's $self instance unless set_dumper_default submits another $self object instance.
                                             'logger',
                                             'language',
                                         ];
@@ -3430,13 +3474,9 @@ To do.
         ->log_debug         ('About to set Repository.'           )
         ->_set_repository   ($params->{archive_id}                );
 
-        #warn 'What is this then? '.blessed($self->{repository});
-
         $self->logger->set_repository(
-            $self->{repository}
+            $self->get_repository
         );
-        
-        #die 'That is enough';
 
         $self->log_debug    ('Set Repository. About to add attributes from params...'             );
 
