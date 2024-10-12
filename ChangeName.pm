@@ -214,6 +214,12 @@ package ChangeName::Utilities v1.0.0 {
             process_commandline_arguments
             get_options
             list_to_regex_logical_or_grouping
+            is_populated_array_ref
+            is_populated_hash_ref
+            is_populated_scalar_ref
+            is_true_or_zero
+            chunkify
+            stringify_array_ref            
         );
     }
 
@@ -545,12 +551,16 @@ package ChangeName::Utilities v1.0.0 {
         my  $type       =   shift;
         return              $value
                             && reftype($value)
-                            && (reftype($value) eq $type)
+                            && (
+                                reftype($value) eq $type
+                            )
                             && (
                                 $type eq 'ARRAY'?   scalar @{$value}:
                                 $type eq 'HASH'?    scalar %{$value}:
-                                $type eq 'SCALAR'?  _is_true_or_zero(${$value})
-                            );
+                                $type eq 'SCALAR'?  is_true_or_zero($self, ${$value}):
+                                undef
+                            )? $value:
+                            undef;
     }
 
     sub is_populated_array_ref {
@@ -579,21 +589,34 @@ package ChangeName::Utilities v1.0.0 {
         # Initial Values:
         my  ($self, $list, $chunk_size) =   @ARG;
         $chunk_size                     //= 100;
-        $list                           //= $self->{list_of_results}; # validate it is a list object?
+        my  $valid_list                 =   $self->validate_class(
+                                                ($list // $self->get_list_of_results) => 'EPrints::List',
+                                            );
         my  @list_of_arrayrefs          =   ();
 
         # Processing:
-        for (my $offset = 0; $offset < $list->count; $offset += $chunk_size) {
-            push @list_of_arrayrefs     ,   [$list->slice($offset, $chunk_size)];
-        };
+        if ($valid_list) {
+            $self->logger->debug('Valid list object. Proceeding to chunkify using chunk size [_1]...', $chunk_size) if _can_log($self);
+
+            for (my $offset = 0; $offset < $valid_list->count; $offset += $chunk_size) {
+
+                $self->logger->debug('Adding a chunk, from a list offset of [_1].', $offset) if _can_log($self);
+
+                push @list_of_arrayrefs     ,   [$valid_list->slice($offset, $chunk_size)];
+
+            };
+        }
+        else {
+            $self->logger->debug('Invalid list object. Returning the default result - an empty list that will return false in scalar context.') if _can_log($self);
+        };  
 
         # Output:    
         return @list_of_arrayrefs;
 
     }
 
-    sub stringify_arrayref {
-        return join shift->language->localise('separator.stringify_arrayref'), @{ (shift) };
+    sub stringify_array_ref {
+        return join shift->language->localise('separator.stringify_array_ref'), @{ (shift) };
     }
 
     1;
@@ -1260,6 +1283,13 @@ my  @phrases = (
     'Params have been as follows...'=>'Params have been as follows...',
     'Options we will use are as follows...'=>'Options we will use are as follows...',
     'Arguments we will use are as follows...'=>'Arguments we will use are as follows...',
+    'Archive attribute of [_1] instance is now "[_2]".'=>'Archive attribute of [_1] instance is now "[_2]".',
+    'Repository attribute of [_1] instance is now of class "[_2]".'=>'Repository attribute of [_1] instance is now of class "[_2]".',
+    'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'=>'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
+    'Valid list object. Proceeding to chunkify using chunk size [_1]...'=>'Valid list object. Proceeding to chunkify using chunk size [_1]...',
+    'Adding a chunk, from a list offset of [_1].'=>'Adding a chunk, from a list offset of [_1].',
+    'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'=>'Invalid list object. Returning the default result - an empty list that will return false in scalar context.',
+    'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'=>'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
 );
 
 our %Lexicon = (
@@ -1708,6 +1738,13 @@ my  @phrases = (
     'Params have been as follows...'=>'Die Parameter, mit denen wir gearbeitet haben und weiterhin arbeiten werden, sind die folgenden...',
     'Options we will use are as follows...'=>'Die von uns verwendeten Optionen sind die folgenden...',
     'Arguments we will use are as follows...'=>'Wir werden die folgenden Argumente verwenden...',
+    'Archive attribute of [_1] instance is now "[_2]".'=>'Das Archivattribut der [_1] Instanz ist jetzt "[_2]".',
+    'Repository attribute of [_1] instance is now of class "[_2]".'=>'Das Repository-Attribut der [_1] Instanz ist jetzt von der Klasse "[_2]".',
+    'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'=>'Das Repository-Attribut der [_1]-Instanz ist kein gesegnetes Objekt. Der DataDump des Inhalts ist wie folgt...',
+    'Valid list object. Proceeding to chunkify using chunk size [_1]...'=>'Gültiges Listenobjekt. Mit der Chunkifizierung wird mit der Chunkgröße [_1] fortgefahren...',
+    'Adding a chunk, from a list offset of [_1].'=>'Jetzt wird ein „Chunk“ aus einem Listenoffset von [_1] hinzugefügt.',
+    'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'=>'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
+    'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'=>'Habe festgelegt, dass die Bestätigung nicht automatisch auf ja oder nein gesetzt werden soll. Stattdessen fordern wir den Benutzer nun zur Eingabe eines Bestätigungswertes auf.',
 );
 
 our %Lexicon = (
@@ -1752,7 +1789,7 @@ package ChangeName::Languages v1.0.0 {
         'separator.name_values'         =>  ', ',           # comma, space
         'separator.new_line'            =>  "\n",           # new line
         'separator.search_fields'       =>  ', ',           # comma, space
-        'separator.stringify_arrayref'  =>  ', ',           # comma, space
+        'separator.stringify_array_ref' =>  ', ',           # comma, space
         'horizontal.rule'               =>  "\n-------\n",  # new line, horizontal line made of dashes, new line.
     );
     
@@ -1973,6 +2010,7 @@ package ChangeName::Log v1.0.0 {
         ChangeName::Utilities->import(qw(
             validate_class
             list_to_regex_logical_or_grouping
+            is_populated_array_ref
         ));
 
     }
@@ -1984,14 +2022,6 @@ package ChangeName::Log v1.0.0 {
                 reftype
             );
     use     Data::Dumper;
-
-    # Data Dumper Settings:
-    $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
-    $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
-    $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
-    no warnings 'redefine';
-    local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
-    use warnings 'redefine';
 
 =pod Name, Version
 
@@ -2135,15 +2165,35 @@ See L</new> method for info on acceptable object parameters.
     sub set_dumper_class_name_only {
         my  $self                       =   shift;
         my  $value                      =   shift;
-        my  $valid_value                =   $value
-                                            && reftype($value)
-                                            && (reftype($value) eq 'ARRAY')?  $value:
-                                            undef;
+        my  $valid_value                =   $self->is_populated_array_ref($value);
 
         $self->{dumper_class_name_only} =   $valid_value?   $valid_value:
                                             $self->{dumper_class_name_only};
 
         return $self;
+    }
+
+    sub get_dumper_class_name_only {
+        shift->{dumper_class_name_only};
+    }
+
+    sub add_dumper_class_name_only {
+
+        my  $self   =   shift;
+
+        $self->set_dumper_class_name_only(
+            [
+                (
+                    $self->is_populated_array_ref($self->get_dumper_class_name_only)?   @{ $self->get_dumper_class_name_only }:
+                    ()
+                ),
+
+                @ARG,
+
+            ]
+        ); 
+
+        return $self;        
     }
 
     sub set_dumper_exclude {
@@ -2163,7 +2213,7 @@ See L</new> method for info on acceptable object parameters.
     sub replace_language_object {
         my  $self                   =   shift;
 
-        $self->debug('Entering method.')->debug('Current language object is as follows...')->dumper($self->{language});
+        $self->debug('Entering method.')->debug('Current language object is as follows...')->add_dumper_class_name_only('language_handle')->dumper($self->{language});
 
          # Initial values:
         my  $new_language_object    =   shift;
@@ -2172,7 +2222,7 @@ See L</new> method for info on acceptable object parameters.
         return                          $self->debug('Leaving method prematurely due to no replacement provided.')
                                         unless $new_language_object;
 
-        $self->debug('Proposed replacement language object is as follows...')->dumper($new_language_object);
+        $self->debug('Proposed replacement language object is as follows...')->add_dumper_class_name_only('language_handle')->dumper($new_language_object);
 
         # Initial values:
         my  $valid_language_object  =   $self->validate_class($new_language_object => $self->{acceptable_language_class});
@@ -2254,13 +2304,17 @@ See L</new> method for info on acceptable object parameters.
                                 )
                             );
 
+        #warn 'dumper_class_name_only currently set as follows
+        #
+        #'.Dumper($self->get_dumper_class_name_only);
+
         my  $class_only =   $self->list_to_regex_logical_or_grouping(
                                 # List of attributes
                                 # that are objects
                                 # we wish to dump only
                                 # the class names of:
                                 (
-                                    @{ $self->{dumper_class_name_only} },
+                                    @{ $self->get_dumper_class_name_only },
                                 )
                             );
 
@@ -2295,6 +2349,14 @@ See L</new> method for info on acceptable object parameters.
         my  $trace_prefixes         =   $blank;
         my  $loop_count             =   0;
         my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
+        
+        # Data Dumper Settings:
+        $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
+        $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
+        $Data::Dumper::Useperl      =   1;  # Perl implementation will see Data Dumper adhere to our binmode settings.
+        no warnings 'redefine';
+        local *Data::Dumper::qquote =   sub { qq["${\(shift)}"] };  # For UTF-8 friendly dumping - see: https://stackoverflow.com/questions/50489062/
+        use warnings 'redefine';
 
         # Content:
 
@@ -2315,7 +2377,8 @@ See L</new> method for info on acceptable object parameters.
             my  $prefix             =   $use_prefix?    $self->_generate_log_prefix(uc($type)):
                                         $blank;
 
-            my  $lang_prefix        =   sprintf($format, uc $current_language);
+            my  $lang_prefix        =   $number_of_languages == 1?  $blank:
+                                        sprintf($format, uc $current_language); # Shouldn't the lang prefix be part of generate_log_prefix?
 
             my  $message            =   $type eq 'dumper'?  $blank:
                                         $self->language->localise(@ARG);
@@ -2687,6 +2750,11 @@ package ChangeName::Operation v1.0.0 {
 
             ChangeName::Utilities->import(qw(
                 validate_class
+                list_to_regex_logical_or_grouping
+                is_populated_array_ref
+                is_true_or_zero
+                chunkify
+                stringify_array_ref
             ));
 
     }
@@ -2872,7 +2940,7 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
         ->log_debug('Using search settings...')->dumper($self->{search_settings})
         ->log_verbose(
             'Searching fields [_1] ...',
-            $self->stringify_arrayref($self->{fields_to_search}),
+            $self->stringify_array_ref($self->{fields_to_search}),
         );
         
         # Search:
@@ -3171,6 +3239,10 @@ To do.
     sub get_fields_to_search {
         return shift->{fields_to_search};
     }
+    
+    sub get_list_of_results {
+        shift->{list_of_results};
+    }
 
     sub _set_search_exact {
         my  $self   =   shift;
@@ -3244,14 +3316,26 @@ To do.
     # Private Setters:
 
     sub _set_repository {
+        # Initial Values:
         my  $self           =   shift;
         my  $archive_id     =   shift;
+        
+        # Processing:
         $self->{repository} =   EPrints::Repository->new(
                                     $self->_set_archive($archive_id)->get_archive
                                 );
-        $self                   ->log_debug('Archive value is now class "[_1]".', $self->get_archive)
-                                ->log_debug('Repository value is of class "[_1]".', blessed($self->{repository}));
 
+        # Debugging:
+        $self->log_debug('Archive attribute of [_1] instance is now "[_2]".', scalar __PACKAGE__, $self->get_archive);
+
+        if (blessed($self->get_repository)) {
+            $self->log_debug('Repository attribute of [_1] instance is now of class "[_2]".', scalar __PACKAGE__, blessed($self->get_repository));
+        }
+        else {
+            $self->log_debug('Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...', scalar __PACKAGE__)->dumper($self->get_repository);
+        };
+        
+        # Output:
         return $self;
     }
 
@@ -3326,8 +3410,8 @@ To do.
 
             my  $number;
             @prompt_arguments               =   (
-                                                    $self->stringify_arrayref($self->{'given_names'}),
-                                                    $self->stringify_arrayref($self->{'family_names'}),
+                                                    $self->stringify_array_ref($self->{'given_names'}),
+                                                    $self->stringify_array_ref($self->{'family_names'}),
                                                 );
             my  $acceptable_input           =   $self->list_to_regex_logical_or_grouping(
                                                     'given',
@@ -3712,12 +3796,6 @@ To do.
         return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                             unless $result;
     
-#        my  ($yes,$all,$no,$none)       =   (
-#                                                $self->language->localise('input.yes_letter'),
-#                                                $self->language->localise('input.all'),
-#                                                $self->language->localise('input.no_letter'),
-#                                                $self->language->localise('input.none'),
-#                                            );
         my  ($yes, $no)                 =   (
                                                 $self->language->get_first_localisation_for('input.yes_letter'),
                                                 $self->language->get_first_localisation_for('input.no_letter'),
@@ -3771,7 +3849,8 @@ To do.
                 
                 my  $confirmation       =   $self->{matches_auto_no}?   $no:    # Match determined in _match method and could be refactored out.
                                             $self->{matches_auto_yes}?  $yes:   # Match determined in _match method and could be refactored out.
-                                            $self->prompt_for('confirm');
+                                            $self->log_debug('Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.')
+                                            ->prompt_for('confirm');
     
                 # Process confirmation:
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
@@ -4084,9 +4163,9 @@ package ChangeName::Language v1.0.0 {
     use     Scalar::Util qw(
                 reftype
             );
-    use Data::Dumper;
-    use lib '/opt/eprints3/perl_lib/';
-    use EPrints;
+    #use Data::Dumper;
+    #use lib '/opt/eprints3/perl_lib/';
+    #use EPrints;
 
     # Construct Object:
     sub new {
@@ -4128,10 +4207,10 @@ package ChangeName::Language v1.0.0 {
     sub get_first_localisation_for {
         #EPrints->trace;
         #say Dumper(@ARG);
-        [(shift->localise_no_formatting(@ARG))]->[0]; # Uses localise to obtain
-                                        # the current language translation,
-                                        # or all language translations,
-                                        # and takes the first result of either situation, delivering only one test string back.
+        [(shift->localise_no_formatting(@ARG))]->[0];   # Uses localise to obtain
+                                                        # the current language translation,
+                                                        # or all language translations,
+                                                        # and takes the first result of either situation, delivering only one string back.
 
     }
 
