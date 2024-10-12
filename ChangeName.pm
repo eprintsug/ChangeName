@@ -1197,7 +1197,7 @@ my  @phrases = (
     'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE mode - changes will be made at the end after confirmation.',
     'Run again with the --live flag when ready to implement your changes.' => 'Run again with the --live flag when ready to implement your changes.',
     'Processing search field: [_1]'=>'Processing search field: [_1]',
-    'Leaving part_specific method.'=>'Leaving part_specific method.',
+    'Leaving prepare method.'=>'Leaving prepare method.',
     'Called display method.' => 'Called display method.',
     'Processing Unique name: [_1]'=>'Processing Unique name: [_1]',
     'Entered method. Attribute display_lines is...'=>'Entered method. Attribute display_lines is...',
@@ -1652,7 +1652,7 @@ my  @phrases = (
     'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
     'Run again with the --live flag when ready to implement your changes.' => 'Führen Sie den Vorgang erneut mit dem Flag --live aus, wenn Sie bereit sind, Ihre Änderungen umzusetzen.',
     'Processing search field: [_1]'=>'Suchfeld wird verarbeitet: [_1]',
-    'Leaving part_specific method.'=>'Verlassen der „part_specific“-Methode.',
+    'Leaving prepare method.'=>'Verlassen der „prepare“-Methode.',
     'Called display method.' => 'Wird als Anzeige Objektmethode bezeichnet.',
     'Processing Unique name: [_1]'=>'Eindeutiger Name für die Verarbeitung: [_1]',
     'Entered method. Attribute display_lines is...'=>'Eingegebene Methode. Das Attribut display_lines ist...',
@@ -2762,7 +2762,6 @@ package ChangeName::Operation v1.0.0 {
     use     EPrints;
     use     EPrints::Repository;
     use     EPrints::Search;
-
     use     Scalar::Util qw(
                 blessed
                 reftype
@@ -2882,7 +2881,7 @@ and proceding to finish (L</finish>).
         my  $class          =   shift;
         my  @object_params  =   @ARG;
 
-        $class->new(@object_params)->search->part_specific->display->confirm->change->finish;
+        $class->new(@object_params)->search->prepare->display->confirm->change->finish;
     }
 
     # Program Flow Methods:
@@ -2937,16 +2936,16 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
 
         $self
         ->log_debug('Entered method.')->dumper
-        ->log_debug('Using search settings...')->dumper($self->{search_settings})
+        ->log_debug('Using search settings...')->dumper($self->get_search_settings)
         ->log_verbose(
             'Searching fields [_1] ...',
-            $self->stringify_array_ref($self->{fields_to_search}),
+            $self->stringify_array_ref($self->get_fields_to_search),
         );
-        
+
         # Search:
-        $self->{list_of_results}    =   $self->{repository}
-                                        ->dataset($self->{dataset_to_use})
-                                        ->prepare_search(%{$self->{search_settings}})
+        $self->{list_of_results}    =   $self->get_repository
+                                        ->dataset($self->get_dataset_to_use)
+                                        ->prepare_search(%{$self->get_search_settings})
                                         ->perform_search;
                                         # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
                                         # This is an EPrints API behaviour.
@@ -2954,14 +2953,14 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
                                         # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
                                         # - which is beneficial if someone doesn't have the correct keyboard.
                                         # So let's leave this in.
-    
+
         $self->{records_found}      =   scalar @{$self->{list_of_results}->{ids}};
-    
-        say $self->language->localise('No Results Found.') unless $self->{records_found};
-        $self->log_verbose('Found Results.') if $self->{records_found};
-    
+
+        say $self->language->localise('No Results Found.') unless $self->records_found;
+        $self->log_verbose('Found Results.') if $self->records_found;
+
         return $self->log_debug('Leaving method.')->dumper;
-    
+
     }
 
 =head4 $self->part_specific;
@@ -2977,87 +2976,87 @@ If find and replace values have not already been set,
 it will prompt the user for them too.
 
 =cut
-    
-    sub part_specific {
-    
-        my  $self   =   shift;
-    
-        return $self->log_debug('Premature exit - No search results to narrow down.') unless $self->{records_found};
-    
-        $self->log_debug('Entering method.')->dumper->log_verbose('Narrowing search to a specific part...');
-        
-        return $self->log_debug('Premature Exit - our operation is already specific to a name part.') if $self->{part_specified};
-            
-        $self->log_debug('Generating lists, and setting values.')->_tally_frequencies->_generate_name_lists->_set_part->_set_find->_set_replace;
-    
-        # Determine what was set...
-        $self->{unique_names_set}   =   $self->{'unique_names'}
-                                        && reftype($self->{'unique_names'})
-                                        && (reftype($self->{'unique_names'}) eq 'ARRAY');
-            
-        $self->{part_specified}     =   $self->{part} && $self->{find} && defined($self->{replace})? 1: 
-                                        undef;
-                                        # Replace can be a blank string - hence defined test instead of true test.
-    
-        $self->log_debug('Leaving part_specific method.')->dumper;
-    
-        return $self;
-    
-    }
 
-=head4 $self->part_specific;
+    sub prepare {
 
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
+        # Initial Values:
+        my  $self           =   shift->log_debug('Entering method.')->dumper;
 
-Should search results have been retrieved (will return prematurely if not),
-it will process the search results in order to generate useful lists,
-and then attempt to refine the search down by setting or prompting for a specific name part.
+        # Premature Exits:
+        return                  $self->log_debug('Premature exit - No search results to narrow down.')
+                                unless $self->records_found;
 
-If find and replace values have not already been set,
-it will prompt the user for them too.
+        return                  $self->log_debug('Premature Exit - our operation is already specific to a name part.')
+                                if $self->prepared;
 
-=cut
-    
-    sub display {
-    
-        my  $self               =   shift;
-        
-        $self->log_debug('Called display method.')->dumper;
-    
-        my  $prerequisites      =   $self->{records_found}
-                                    && $self->{part_specified}
-                                    && $self->{unique_names_set};
-    
-        return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
-        
-        # Initial values:
-        $self->{'matches_find'} =   qr/^\Q$self->{find}\E$/i;   # case insensitive.    
-    
         # Processing:
-        say $self->language->localise('Thank you for your patience. Your request is being processed...');
-        for my $unique_name (@{$self->{'unique_names'}}) {
-    
+        $self                   ->log_verbose('Narrowing search to a specific part...')
+                                ->log_debug('Generating lists, and setting values.')
+                                ->_tally_frequencies->_generate_name_lists
+                                ->_set_part->_set_find->_set_replace;
+
+        $self->{prepared}   =   $self->records_found
+                                && $self->is_populated_array_ref($self->{'unique_names'})
+                                && $self->get_part
+                                && $self->get_find
+                                && defined($self->get_replace);
+                                # Replace can be a blank string - hence defined test instead of true test.
+
+        return $self->log_debug('Leaving prepare method.')->dumper;
+
+    }
+
+=head4 $self->part_specific;
+
+    # Narrow search down to specific part... 
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
+
+Should search results have been retrieved (will return prematurely if not),
+it will process the search results in order to generate useful lists,
+and then attempt to refine the search down by setting or prompting for a specific name part.
+
+If find and replace values have not already been set,
+it will prompt the user for them too.
+
+=cut
+
+    sub display {
+
+        # Initial values:
+        my  $self                                       =   shift->log_debug('Called display method.')->dumper;
+
+        # Premature Exit:
+        return                                              $self->log_debug('Premature exit - Prerequisites not met.')
+                                                            unless $self->prepared;
+
+        # Further Initial Values:
+        $self->{'matches_find'}                         =   qr/^\Q$self->{find}\E$/i;   # case insensitive.
+
+        # Processing:
+        say                                                 $self->language->localise('Thank you for your patience. Your request is being processed...');
+
+        for my $unique_name (@{$self->get_unique_names}) {
+
             $self->log_debug('Processing Unique name: [_1]', $unique_name);
-    
+
             # Initial Values:
             $self->{'matches_unique_name'}              =   qr/^\Q$unique_name\E$/;
             $self->{'unique_name'}                      =   $unique_name;
             $self->{'display_lines'}->{"$unique_name"}  =   [];
             $self->{'display'}->{"$unique_name"}        =   undef;
-    
+
             # Processing;
             foreach my $chunk_of_results ($self->chunkify) {
                 $self->_add_relevant_display_lines($ARG) for @{$chunk_of_results};
             };
-            
+
         };
-    
-        say $self->language->localise('Nothing was found to match.') unless $self->{display_set};
-    
+
+        say $self->language->localise('Nothing was found to match.') unless $self->display_is_set;
+
         # Output:
         return $self->log_debug('Leaving display method.')->dumper;
-    
+
     }
 
 =head4 $self->confirm;
@@ -3068,45 +3067,40 @@ it will prompt the user for them too.
 To do.
 
 =cut
-  
+
     sub confirm {
-    
-        my  $self           =   shift;
-    
+
+        my  $self                           =   shift;
+
         $self->log_debug('Called confirm method.')->dumper;
-    
-        my  $prerequisites  =   $self->{records_found}
-                                && $self->{part_specified}
-                                && $self->{unique_names_set}
-                                && $self->{display_set};
-    
-        return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
-    
+
+        return $self->log_debug('Premature exit - Prerequisites not met.') unless $self->prepared && $self->display_is_set;
+
         # Initial values:
         $self->{what_to_change}             =   [];
-    
+
         # Processing:
         for my $unique_name (@{$self->{'unique_names'}}) {
-        
+
             $self->log_debug('Processing Unique name: [_1]', $unique_name);
-    
+
             # Initial Values:
             $self->{display_lines_shown}    =   undef;
             $self->{matches_unique_name}    =   qr/^\Q$unique_name\E$/;
             $self->{unique_name}            =   $unique_name;
             $self->{auto_yes}               =   undef;
             $self->{auto_no}                =   undef;
-    
-            # Processing:        
+
+            # Processing:
             foreach my $chunk_of_results ($self->chunkify) {
                 $self->_seeking_confirmation($ARG) for @{$chunk_of_results};
             };
-    
+
         };
-    
+
         # Output:
         return $self->log_debug('Leaving confirm method.')->dumper;
-    
+
     }
 
 =head4 $self->change;
@@ -3119,23 +3113,18 @@ To do.
 =cut
 
     sub change {
-    
+
         my  $self                               =   shift;
-        
+
         $self->log_debug('Called change method.')->dumper;
-    
-        my  $prerequisites                      =   $self->{what_to_change}
-                                                    && reftype($self->{what_to_change})
-                                                    && (reftype($self->{what_to_change}) eq 'ARRAY')
-                                                    && @{$self->{what_to_change}};
-        
+
         return                                      $self->log_debug('Premature exit - Nothing to change.')
-                                                    unless $prerequisites;
-    
+                                                    unless $self->is_populated_array_ref($self->get_what_to_change);
+
         $self->{changes_made}                   =   0;
-    
+
         for my $details (@{$self->{what_to_change}}) {
-    
+
             my  (
                     $result,
                     $search_field,
@@ -3143,31 +3132,31 @@ To do.
                     $name,
                     $current,
                 )                               =   @{$details};
-    
+
             my  $fresh_result                   =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
             my  $fresh_names                    =   $fresh_result->get_value($search_field);
             my  $fresh_name                     =   $fresh_names->[$current];
             my  $can_or_cannot                  =   $fresh_result->is_locked?   'cannot':
                                                     'can';
-    
+
             say $self->language->localise('horizontal.rule');
             say $self->language->localise('change.from.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field));
-    
+
             $name->{"$self->{'part'}"}          =   $self->{'replace'};
             $result->set_value($search_field, $names);
             $self->log_debug('Changed our working result - this will not be committed.')->dumper($result->get_value($search_field));
-    
+
             $fresh_name->{"$self->{'part'}"}    =   $self->{'replace'};
             $fresh_result->set_value($search_field, $fresh_names);
             $self->log_debug('Changed our fresh result - this will be committed.')->dumper($fresh_result->get_value($search_field));
-    
+
             # Is it ever possible, our working result, originally confirmed, could differ from our fresh result?
             # Should there be a comparison and warning at some point?
             # If not, then there's really no reason to be using the original working result we confirmed on
             # - we only need the id to get our fresh result.
-    
+
             say $self->language->localise('change.to.'.$can_or_cannot, $self->format_single_line_for_display($fresh_result, $search_field), $fresh_result->id);
-        
+
             if ($self->{live}) {
                 unless ($fresh_result->is_locked) {
                     $fresh_result->commit(@{$self->{force_or_not}});
@@ -3181,11 +3170,11 @@ To do.
             else {
                 say $self->language->localise('change.dry_run');
             };
-    
+
         };
-        
+
         return $self;
-    
+
     }
 
 =head4 $self->finish;
@@ -3216,6 +3205,18 @@ To do.
         return shift->_set_or_prompt_for('part' => shift, @ARG);
     }
 
+    sub get_part {
+        return shift->{part};
+    }
+
+    sub get_find {
+        return shift->{find};
+    }
+
+    sub get_replace {
+        return shift->{replace};
+    }
+
     sub _set_find {
         return shift->_set_or_prompt_for('find' => shift, @ARG);
     }
@@ -3232,6 +3233,10 @@ To do.
         return shift->{repository};
     }
 
+    sub get_search_settings {
+        return shift->{search_settings};
+    }
+
     sub get_dataset_to_use {
         return shift->{dataset_to_use};
     }
@@ -3239,9 +3244,29 @@ To do.
     sub get_fields_to_search {
         return shift->{fields_to_search};
     }
-    
+
     sub get_list_of_results {
         shift->{list_of_results};
+    }
+
+    sub records_found {
+        return shift->{records_found};
+    }
+
+    sub prepared {
+        return shift->{prepared}; # Boolean flag, and not a name part value.
+    }
+
+    sub get_unique_names {
+        return shift->{unique_names};
+    }
+
+    sub display_is_set {
+        return shift->{display_is_set};
+    }
+
+    sub get_what_to_change {
+        return shift->{what_to_change};
     }
 
     sub _set_search_exact {
@@ -3398,10 +3423,10 @@ To do.
         if  ($find_prompt) {
 
             die                         $self->language->localise('prompt_for.find.error.no_part')
-                                        unless $self->{part};
+                                        unless $self->get_part;
 
             @prompt_arguments       =   (
-                                            'name.'.$self->{part},
+                                            'name.'.$self->get_part,
                                         );
 
         };
@@ -3771,7 +3796,7 @@ To do.
     
                     $self->{'display'}->{"$self->{unique_name}"}                =   'Yes';
     
-                    $self->{'display_set'}                                      =   'Yes';
+                    $self->{'display_is_set'}                                   =   'Yes';
                     
                     $self->log_debug('Set display flags and added display line:')->dumper($line);
     
