@@ -1290,6 +1290,7 @@ my  @phrases = (
     'Adding a chunk, from a list offset of [_1].'=>'Adding a chunk, from a list offset of [_1].',
     'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'=>'Invalid list object. Returning the default result - an empty list that will return false in scalar context.',
     'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'=>'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
+    'Invalid name parts filter regex as follows...'=>'Invalid name parts filter regex as follows...',
 );
 
 our %Lexicon = (
@@ -1745,6 +1746,7 @@ my  @phrases = (
     'Adding a chunk, from a list offset of [_1].'=>'Jetzt wird ein „Chunk“ aus einem Listenoffset von [_1] hinzugefügt.',
     'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'=>'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
     'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'=>'Habe festgelegt, dass die Bestätigung nicht automatisch auf ja oder nein gesetzt werden soll. Stattdessen fordern wir den Benutzer nun zur Eingabe eines Bestätigungswertes auf.',
+    'Invalid name parts filter regex as follows...'=>'Ungültige Namensteile filtern reguläre Ausdrücke wie folgt...',
 );
 
 our %Lexicon = (
@@ -1771,10 +1773,10 @@ package ChangeName::Languages v1.0.0 {
     # Standard:
     use     English qw(
                 -no_match_vars
-            );                      # Use full english names for special perl variables,
-                                    # except the regex match variables
-                                    # due to a performance if they are invoked,
-                                    # on Perl v5.18 or lower.
+            );                  # Use full english names for special perl variables,
+                                # except the regex match variables
+                                # due to a performance if they are invoked,
+                                # on Perl v5.18 or lower.
 
     # Specific:
     use     parent qw(Locale::Maketext);
@@ -1785,15 +1787,22 @@ package ChangeName::Languages v1.0.0 {
             );
 
     my  @tokens = (
-        'separator.name_parts'          =>  ' ',            # space
-        'separator.name_values'         =>  ', ',           # comma, space
-        'separator.new_line'            =>  "\n",           # new line
-        'separator.search_fields'       =>  ', ',           # comma, space
-        'separator.stringify_array_ref' =>  ', ',           # comma, space
-        'horizontal.rule'               =>  "\n-------\n",  # new line, horizontal line made of dashes, new line.
+        'separator.name_parts'              =>  ' ',            # space
+        'separator.name_values'             =>  ', ',           # comma, space
+        'separator.new_line'                =>  "\n",           # new line
+        'separator.search_fields'           =>  ', ',           # comma, space
+        'separator.stringify_array_ref'     =>  ', ',           # comma, space
+        'horizontal.rule'                   =>  "\n-------\n",  # new line, horizontal line made of dashes, new line.
     );
-    
+
     my  @configurations = (
+        # Ignores formatting and case
+        # and focuses on desired order.
+        # Ignores characters or words 
+        # that are not an EPrints::MetaField::Name name part.
+        # This is a default version of name_parts.display_order for when no language has been set.
+        'name_parts.default_display_order'  =>  'honourific, given, family, lineage',
+
     );
 
     my  @phrases = (
@@ -2077,7 +2086,7 @@ See L</new> method for info on acceptable object parameters.
 
 =cut
  
-    
+
     sub new {
         my  $class      =   shift;
         my  $params     =   {@ARG};
@@ -3324,13 +3333,17 @@ To do.
 
         my  $not_a_name_part    =   qr/[^($valid_name_parts)]/i;
 
+        $self->log_debug('Invalid name parts filter regex as follows...')->dumper($not_a_name_part);
+
         $self->{name_parts}     =   [
                                         map
                                         {
                                                 $self->is_true_or_zero($ARG)? ($ARG):
                                                 @skip;
                                         } 
-                                        split $not_a_name_part, $self->language->localise('name_parts.display_order')
+                                        split $not_a_name_part,
+                                        $self->language->get_language_handle?   $self->language->localise('name_parts.display_order'):
+                                        $self->language->get_first_localisation_for('name_parts.default_display_order') # Avoids duplicate and lang-tag prefixed response if multiple languages.
                                     ]; # Array ref, so order preserved.
 
         $self->log_debug('Set name parts according to language localisation as follows...')->dumper($self->{name_parts});
