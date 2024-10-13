@@ -985,13 +985,16 @@ that each help in an operation,
 for changing the names associated with
 an EPrint, within an EPrints repository.
 
+Currently requires Perl 5.16 or higher,
+and designed with EPrints 3.4.x in mind.
+
 The main body of the file itself,
 sets global Perl settings,
 such as the Perl version feature bundle to use,
 and UTF-8 encoding globals,
 before any embedded packages begin.
 
-<BEGIN> blocks intervenes in load order,
+C<BEGIN> blocks intervene in load order,
 to ensure the encoding layer variable is loaded at compile time,
 and that the language classes are loaded
 before any packages that use them.
@@ -1008,22 +1011,22 @@ ChangeName.pm considers the first four arguments provided at the commandline to 
 
 =item 1
 
-...an EPrints archive ID (C<MyArchive> in the L<SYNOPSIS> example above),
+...an EPrints archive ID (C<MyArchive> in the L</SYNOPSIS> example above),
 
 =item 2
 
-...then a case insensitive search term (C<bob> in the L<SYNOPSIS> example above),
+...then a case insensitive search term (C<bob> in the L</SYNOPSIS> example above),
 
 =item 3
 
-...then a case sensitive replacement (C<Bobbi> in the L<SYNOPSIS> example above),
+...then a case sensitive replacement (C<Bobbi> in the L</SYNOPSIS> example above),
 
 =item 4
 
 ...and finally a name part
 - either "C<given>" name
 or "C<family>" name
-(C<given> in the L<SYNOPSIS> example above).
+(C<given> in the L</SYNOPSIS> example above).
 
 =back 
 
@@ -1035,16 +1038,20 @@ The flags and their usage are described under L</OPTIONS>.
 
 =over
 
-=item B<--lang>, I<language tag> B<--language>=I<language tag>
+=item B<--lang> I<language tag>
+
+=item B<--language>=I<language tag>
 
 Allows setting of language, by way of a language tag.
 i.e. en-GB, or de-DE.
 
     --lang en-GB
 
-See L</LANGUAGES> for list of current language packages.
+See L</Language Packages> for list of current language packages.
 
 =item B<--config> I</path/to/yaml_config.yml>
+
+=item B<--configuration>=I</path/to/yaml_config.yml>
 
 Allows setting the location of a YAML configuration file to use.
 i.e. ... 
@@ -1095,13 +1102,21 @@ this trace flag will ensure an EPrints->trace stack trace
 is displayed alongside every log message,
 unless this flag is supressed by a --no_trace flag.
 
-=item B<--no_trace>, B<--notrace>
+=item B<--no_trace>
+
+=item B<--notrace>
 
 Prevents the display of EPrints->trace stacktraces
 which would otherwise be shown when either the debug flag and verbose flag,
 or the debug flag and trace flag, are used together.
 
-=item B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
+=item B<--no_dump>
+
+=item B<--nodump>
+
+=item B<--no_dumper>
+
+=item B<--nodumper>
 
 Prevents the display of Data::Dumper derived log messages
 when the debug flag is in effect.
@@ -2263,60 +2278,6 @@ package ChangeName::Log v1.0.0 {
             );
     use     Data::Dumper;
 
-=pod Name, Version
-
-=encoding utf8
-
-=over
-
-=over
-
-=item MODULE NAME
-
-ChangeName
-
-=item VERSION
-
-v1.0.0
-
-=cut
-
-=pod Synopsis, Description
-
-=item SYNOPSIS
-
-    # Run at the command line:
-    perl -CAS ./ChangeName.pm
-    
-    # Use in a unit test or other Perl Script:
-    use ChangeName;
-    
-    my $object = ChangeName::Operation->new(@object_params);
-
-
-=item DESCRIPTION
-
-Calls a subroutine when ran from the commandline.
-Currently set to call L</start_from_commandline>.
-
-    # Run from the command line:
-    perl -CAS ./ChangeName.pm
-
-Loads the class when used in another script.
-
-    # Use in a unit test or other Perl Script:
-    use ChangeName;
-    
-    my $object = ChangeName::Operation->new(@object_params);
-
-See L</new> method for info on acceptable object parameters.
-
-=back
-
-=back
-
-=cut
- 
 
     sub new {
         my  $class      =   shift;
@@ -2717,7 +2678,6 @@ See L</new> method for info on acceptable object parameters.
 }; # ChangeName::Log Package.
 
 
-
 package ChangeName::Modulino v1.0.0 {
 
     # Standard:
@@ -3031,11 +2991,11 @@ package ChangeName::Operation v1.0.0 {
 =encoding utf8
 
 
-=head3 MODULE NAME
+=head4 MODULE NAME
 
 ChangeName::Operation
 
-=head3 VERSION
+=head4 VERSION
 
 v1.0.0
 
@@ -3043,7 +3003,7 @@ v1.0.0
 
 =pod Synopsis, Description
 
-=head3 SYNOPSIS
+=head4 SYNOPSIS
 
     # Run at the command line:
     perl -CAS ./ChangeName.pm
@@ -3054,7 +3014,7 @@ v1.0.0
     my $object = ChangeName::Operation->new(@object_params);
 
 
-=head3 DESCRIPTION
+=head4 DESCRIPTION
 
 Calls a subroutine when ran from the commandline.
 Currently set to call L</start_from_commandline>.
@@ -3084,9 +3044,9 @@ See L</new> method for info on acceptable object parameters.
 =cut
 
    
-=head3 CLASS METHODS
+=head4 CLASS METHODS
 
-=head4 $class->start_from_commandline(@ARGV);
+=head5 $class->start_from_commandline(@ARGV);
 
     # Run at the command line:
     perl -CAS ./ChangeName.pm
@@ -3145,11 +3105,11 @@ and proceding to finish (L</finish>).
     # Program Flow Methods:
 
 
-=head3 CONSTRUCTORS
+=head4 CONSTRUCTORS
 
 =cut
 
-=head4 ChangeName::Operation->new(@object_params);
+=head5 ChangeName::Operation->new(@object_params);
 
     # Construct new object, and begin program flow...
     my  $object =   ChangeName::Operation->new(@object_params);
@@ -3175,7 +3135,7 @@ can be called.
         return $self;
     }
 
-=head3 INSTANCE METHODS
+=head4 INSTANCE METHODS
 
 =head4 $self->search;
 
@@ -3221,7 +3181,7 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
 
     }
 
-=head4 $self->part_specific;
+=head5 $self->part_specific;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
@@ -3264,7 +3224,7 @@ it will prompt the user for them too.
 
     }
 
-=head4 $self->part_specific;
+=head5 $self->part_specific;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
@@ -3317,7 +3277,7 @@ it will prompt the user for them too.
 
     }
 
-=head4 $self->confirm;
+=head5 $self->confirm;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm;
@@ -3361,7 +3321,7 @@ To do.
 
     }
 
-=head4 $self->change;
+=head5 $self->change;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change;
@@ -3435,7 +3395,7 @@ To do.
 
     }
 
-=head4 $self->finish;
+=head5 $self->finish;
 
     # Narrow search down to specific part... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change->finish;
