@@ -1212,7 +1212,7 @@ package ChangeName::Utilities v1.0.0 {
         my  $self                                   =   shift;
         my  $commandline_arguments                  =   shift;
         my  $expectations                           =   shift;
-        my  $at_least_some_expectations             =   is_populated_hash_ref($self, $expectations) && is_populated;
+        my  $at_least_some_expectations             =   is_populated_hash_ref($self, $expectations);
         my  $option_types                           =   $at_least_some_expectations
                                                         && is_populated_hash_ref($self, $expectations->{expected_options})?     $expectations->{expected_options}:
                                                         _get_default_options($self);
@@ -1235,7 +1235,7 @@ package ChangeName::Utilities v1.0.0 {
 
         # Definition:
         my  $valid_destructable_copy_of_arguments   =   is_populated_array_ref($self, $commandline_arguments)?  [(@{ $commandline_arguments })]:
-                                                        undef;
+                                                        [];
 
         $self                                           ->logger
                                                         ->debug('Validated copy of arguments is as follows...')
@@ -2333,7 +2333,7 @@ See L</new> method for info on acceptable object parameters.
                                                 $params->{no_trace} < 1
                                                 &&
                                                 (
-                                                    || ($params->{debug} && $params->{verbose})
+                                                    ($params->{debug} && $params->{verbose})
                                                     || ($params->{debug} && $params->{trace})
                                                 )
                                             ),
