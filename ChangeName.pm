@@ -1976,7 +1976,7 @@ package ChangeName::Languages v1.0.0 {
         $in_all_languages_string                    =~  s/$remove_trailing_new_line//;
 
         #Output:
-        return  wantarray?  @in_all_languages: # key value pairs in a list
+        return  wantarray?  @in_all_languages:  # key value pairs in a list
                 $in_all_languages_string;       # Multi-line string
     }
 
@@ -1985,7 +1985,7 @@ package ChangeName::Languages v1.0.0 {
         die             ChangeName::Languages::maketext_in_all_languages('nest.error.language') unless _can_maketext($self);
         my  $key    =   shift;
         my  $result =   $self->maketext($key)
-                        // $self->maketext('nest.error.key');
+                        // $self->maketext('nest.error.key'); # This error will never get used, as a failed maketext will die unless you have a custom failure method denoted via fail_with method.
         my  $string =   reftype($result) && (reftype($result) eq 'SCALAR')? ${  $result }:
                         $result;
         return $string;
