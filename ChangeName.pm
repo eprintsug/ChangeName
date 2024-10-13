@@ -1212,18 +1212,12 @@ package ChangeName::Utilities v1.0.0 {
         my  $self                                   =   shift;
         my  $commandline_arguments                  =   shift;
         my  $expectations                           =   shift;
-        my  $at_least_some_expectations             =   reftype($expectations) && (reftype ($expectations) eq 'HASH') && scalar keys %{$expectations};
+        my  $at_least_some_expectations             =   is_populated_hash_ref($self, $expectations) && is_populated;
         my  $option_types                           =   $at_least_some_expectations
-                                                        && $expectations->{expected_options}
-                                                        && reftype($expectations->{expected_options})
-                                                        && (reftype($expectations->{expected_options}) eq 'HASH')
-                                                        && scalar %{$expectations->{expected_options}}?     $expectations->{expected_options}:
+                                                        && is_populated_hash_ref($self, $expectations->{expected_options})?     $expectations->{expected_options}:
                                                         _get_default_options($self);
         my  $expected_arguments                     =   $at_least_some_expectations
-                                                        && $expectations->{expected_arguments}
-                                                        && reftype($expectations->{expected_arguments})
-                                                        && (reftype($expectations->{expected_arguments}) eq 'ARRAY')
-                                                        && scalar @{$expectations->{expected_arguments}}?   $expectations->{expected_arguments}:
+                                                        && is_populated_array_ref($self, $expectations->{expected_arguments})?  $expectations->{expected_arguments}:
                                                         _get_default_expected_arguments($self);
         my  $arguments                              =   {};
         my  @options_specifications                 =   ();
@@ -1234,14 +1228,13 @@ package ChangeName::Utilities v1.0.0 {
             incremental_options                     =>  '+',
         };
 
-
         $self                                           ->logger
                                                         ->debug('Passed in commandline arguments from which to derive both options and arguments from are as follows...')
                                                         ->dumper($commandline_arguments)
                                                         if _can_log($self);
 
         # Definition:
-        my  $valid_destructable_copy_of_arguments   =   $commandline_arguments && reftype($commandline_arguments) && (reftype($commandline_arguments) eq 'ARRAY')?  [(@{ $commandline_arguments })]:
+        my  $valid_destructable_copy_of_arguments   =   is_populated_array_ref($self, $commandline_arguments)?  [(@{ $commandline_arguments })]:
                                                         undef;
 
         $self                                           ->logger
@@ -1258,6 +1251,7 @@ package ChangeName::Utilities v1.0.0 {
                                                         if _can_log($self);
 
         for my $option_type (keys %{ $option_types }) {
+
             push @options_specifications            ,   (
                                                             map {
                                                                 _multilingual_option_specification(
@@ -1268,6 +1262,7 @@ package ChangeName::Utilities v1.0.0 {
                                                                 $option_types->{$option_type}
                                                             }
                                                         );
+
         };
 
         $self                                           ->logger
@@ -1323,6 +1318,8 @@ package ChangeName::Utilities v1.0.0 {
                 # and then process them in your business logic.
             },
             incremental_options         =>  {
+                # Verbose has the potential to be incremental
+                # and presently additional increments make no difference.
                 verbose                 =>  0,
             },
         };
@@ -1471,7 +1468,7 @@ package ChangeName::Utilities v1.0.0 {
                             )
                             && (
                                 $type eq 'ARRAY'?   scalar @{$value}:
-                                $type eq 'HASH'?    scalar %{$value}:
+                                $type eq 'HASH'?    scalar keys %{$value}:
                                 $type eq 'SCALAR'?  is_true_or_zero($self, ${$value}):
                                 undef
                             )? $value:
@@ -2336,7 +2333,6 @@ See L</new> method for info on acceptable object parameters.
                                                 $params->{no_trace} < 1
                                                 &&
                                                 (
-                                                    ($params->{verbose} > 2)
                                                     || ($params->{debug} && $params->{verbose})
                                                     || ($params->{debug} && $params->{trace})
                                                 )
@@ -2515,7 +2511,7 @@ See L</new> method for info on acceptable object parameters.
                         if $self->{no_dumper};
 
         return          $self->debug('Premature exit - Prerequisites not met.')
-                        unless ($self->{debug} || $self->{verbose} > 1);
+                        unless ($self->{debug});
 
         # Default Params if no arguments passed in...
         my  $exclude    =   $self->list_to_regex_logical_or_grouping(
@@ -2561,7 +2557,7 @@ See L</new> method for info on acceptable object parameters.
         # Initial Values:
         my  $self                   =   shift;
         my  $type                   =   shift;
-        my  $use_prefix             =   $self->{verbose} > 1 || $self->{debug};
+        my  $use_prefix             =   $self->{debug};
 
         my  $valid_repository       =   $self->validate_class($self->{repository} => $self->get_acceptable_repository_class);
 
@@ -3780,6 +3776,7 @@ To do.
                                             'dumper_default', # The Log's $self instance unless set_dumper_default submits another $self object instance.
                                             'logger',
                                             'language',
+                                            'language_handle',
                                         ];
         my  $dumper_exclude         =   [
                                             #'repository',
