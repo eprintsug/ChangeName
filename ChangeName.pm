@@ -3133,7 +3133,7 @@ To do.
                     $current,
                 )                               =   @{$details};
 
-            my  $fresh_result                   =   $self->{repository}->dataset($self->{dataset_to_use})->dataobj($result->id);
+            my  $fresh_result                   =   $self->get_repository->dataset($self->get_dataset_to_use)->dataobj($result->id);
             my  $fresh_names                    =   $fresh_result->get_value($search_field);
             my  $fresh_name                     =   $fresh_names->[$current];
             my  $can_or_cannot                  =   $fresh_result->is_locked?   'cannot':
@@ -3719,58 +3719,58 @@ To do.
     };
 
     sub _tally_frequencies {
-    
+
         my  ($self)  =   @ARG;
-    
+
         # Processing:
         foreach my $results_chunk ($self->chunkify) {
             foreach my $result (@{$results_chunk}) {
                 foreach my $search_field (@{$self->{'fields_to_search'}}) {
-    
+
                     my  $names          =   $result->get_value($search_field);
                     my  @range_of_names =   (0..$#{$names});
-    
+
                     for my $current (@range_of_names) {
-    
+
                         my  $name           =   $names->[$current];
                         my  $unique_name    =   q{};
-    
+
                         for my $name_part (@{$self->{'name_parts'}}) { # Array, so in specific order that's the same each time.
-    
+
                             $unique_name    .=  $name_part.
                                                 ($name->{"$name_part"} // q{});
-    
+
                         }
-    
+
                         $self->{frequencies}->{'unique_names'   }->{"$unique_name"      }++;
                         $self->{frequencies}->{'given_names'    }->{"$name->{'given'}"  }++;
                         $self->{frequencies}->{'family_names'   }->{"$name->{'family'}" }++;
                     }
                 }
-    
+
             }
-            
+
         };
-    
+
         # Output:    
         return $self;
     }
-    
+
     sub _generate_name_lists {
-    
+
         my  $self                       =   shift;
-    
+
         for my $name_of_list (keys %{$self->{frequencies}}) {
-    
+
             $self->{"$name_of_list"}    =   [
                                                 sort {$a cmp $b} 
                                                 keys %{$self->{frequencies}->{"$name_of_list"}}    # Defined in _tally_frequencies method.
                                             ];
         };
-        
+
         return $self;
     }
-    
+
     sub _add_relevant_display_lines {
     
         my  $self                       =   shift;
@@ -3809,7 +3809,7 @@ To do.
         return $self->log_debug('Leaving method. Attribute display_lines is...')->dumper($self->{display_lines});
     
     }
-    
+
     sub _seeking_confirmation {
     
         my  $self                       =   shift;
@@ -3926,7 +3926,7 @@ To do.
         return $self->log_debug('Leaving method.')->dumper;
     
     }
-    
+
     sub _generate_confirmation_feedback {
     
         my  $self                                               =   shift;
@@ -3991,7 +3991,7 @@ To do.
         return $self->log_debug('Leaving method.')->dumper;
     
     }
-    
+
     sub _match {
     
         my  $self                   =   shift->log_debug('Entering method.');
@@ -4109,9 +4109,9 @@ To do.
                 $number_of_input_arguments == 1?    $input[0]:  # if only one value, return sole value...
                 \@input;                                        # ...otherwise return an array ref.
     }
-    
+
     # Log Stuff:
-    
+
     sub log_verbose {
         my  $self   =   shift;
 
@@ -4119,7 +4119,7 @@ To do.
 
         return $self;
     }
-    
+
     sub log_debug {
         my  $self   =   shift;
         
@@ -4127,7 +4127,7 @@ To do.
 
         return $self;
     }
-    
+
     sub dumper {
         my  $self   =   shift;
     
@@ -4135,15 +4135,14 @@ To do.
 
         return $self;
     }
-    
+
     1;
-    
+
 =pod End of methods.
 
 =back
 
 =cut
-
 
 =item AUTHOR
 
@@ -4165,8 +4164,6 @@ verbose, debug, trace, and data dumper output
 to the EPrints log.
 
 =cut
-
-
 
 =head2 ChangeName::Languages
 
