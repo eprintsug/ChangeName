@@ -32,9 +32,9 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 
 =over
 
-=item * L<"🇩🇪 Deutsch (Deutschland)"|/Deutsch (Deutschland)>
+=item * L<"🇩🇪 de-DE - Deutsch (Deutschland)"|/Deutsch (Deutschland)>
 
-=item * L<"🇬🇧 English (United Kingdom)"|/English (United Kingdom)>
+=item * L<"🇬🇧 en-GB - English (United Kingdom)"|/English (United Kingdom)>
 
 =back
 
@@ -507,6 +507,12 @@ package ChangeName::Languages::en_gb {
 =pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
 
 =head1 English (United Kingdom)
+
+    # At the commandline:
+    perl -CAS ChangeName.pm --lang en-GB
+
+    # Within YAML Config:
+    Language Tag: en-GB
 
 =cut
 
@@ -1071,30 +1077,34 @@ making this an exact search (albeit case insensitive).
 =item B<--verbose>
 
 Provides additional insightful output during the operation.
-If repeated, shows dumper and trace output,
-unless these are surpressed by --no_dumper or --no_trace flags.
 
 =item B<--debug>
 
-Shows debugging information during execution.
-This includes Data::Dumper and EPrints->trace output.
-Use --no_dumper and --no_trace flags to surpress this.
+Shows verbose and debugging messages during execution.
+Also shows Data::Dumper derived log output for debugging purposes.
+Use the --no_dumper flag to surpress this.
+
+When --verbose is used alongside --debug,
+EPrints->trace output will also be shown after each debug message.
+Use the --no_trace flag to surpress such stacktrace information.
 
 =item B<--trace>
 
-Should two verbose flags, or at least one debug flag be set,
+Should the debug flag be set,
 this trace flag will ensure an EPrints->trace stack trace
-is displayed alongside every log message.
+is displayed alongside every log message,
+unless this flag is supressed by a --no_trace flag.
 
-=item B<--notrace>, B<--no_trace>
+=item B<--no_trace>, B<--notrace>
 
-Prevents the display of EPrints->trace stack traces
-when the debug flag or two verbose flags are in effect.
+Prevents the display of EPrints->trace stacktraces
+which would otherwise be shown when either the debug flag and verbose flag,
+or the debug flag and trace flag, are used together.
 
-=item B<--nodump>, B<--no_dump>, B<--nodumper>, B<--no_dumper>
+=item B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
 
-Prevents the display of Data::Dumper output
-when the debug flag or two verbose flags are in effect.
+Prevents the display of Data::Dumper derived log messages
+when the debug flag is in effect.
 
 =back
 
@@ -1104,6 +1114,12 @@ when the debug flag or two verbose flags are in effect.
 
 =cut
 
+
+=head3 ChangeName::Utilities
+
+Package storing useful utilities and functions, used by other packages in this file.
+
+=cut
 package ChangeName::Utilities v1.0.0 {
 
     # Standard:
@@ -1536,7 +1552,7 @@ package ChangeName::Utilities v1.0.0 {
 } # ChangeName::Utilities Package.
 
 
-=head2 ChangeName::Config::YAML
+=head3 ChangeName::Config::YAML
 
 Package storing YAML formatted default configuration settings.
 Used if no external .yml file is provided.
@@ -2024,6 +2040,13 @@ package ChangeName::Languages v1.0.0 {
 
 }; # ChangeName::Languages Package.
 
+
+=head3 ChangeName::Language
+
+Our own language class for the language we will use.
+Its language handle attribute can be left undefined to use multiple languages.
+
+=cut
 package ChangeName::Language v1.0.0 {
 
     # Standard:
@@ -2203,13 +2226,12 @@ package ChangeName::Language v1.0.0 {
 } # ChangeName::Language Package.
 
 
-
 =head3 ChangeName::Log
 
 Allows for creating a logger object
 that has methods related to logging
 verbose, debug, trace, and data dumper output
-to the EPrints log.
+to the EPrints log, or STDERR.
 
 =cut
 package ChangeName::Log v1.0.0 {
@@ -2560,10 +2582,11 @@ See L</new> method for info on acceptable object parameters.
         my  $use_prefix             =   $self->{debug};
 
         my  $valid_repository       =   $self->validate_class($self->{repository} => $self->get_acceptable_repository_class);
-
+        my  $verbose_fallback       =   $type eq 'verbose';
         my  $language_handle        =   $self->language->get_language_handle;
         my  $blank                  =   q{};
         my  $messages               =   $blank;
+        my  $v_messages             =   $blank; # untidy hack. Improve later.
         my  $trace_prefixes         =   $blank;
         my  $loop_count             =   0;
         my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
@@ -2606,6 +2629,11 @@ See L</new> method for info on acceptable object parameters.
                                         $message.
                                         $suffix;
 
+            $v_messages             .=  $lang_prefix.
+                                        $message.
+                                        $suffix; # untidy quick hack. Improve later.
+
+
         }
 
         if (@languages && ($type eq 'dumper')) {
@@ -2616,8 +2644,11 @@ See L</new> method for info on acceptable object parameters.
         $self->language->unset_language_handle unless $language_handle;
 
         # Log:
-        $self->{repository}->log($messages)  if      $valid_repository;
-        say STDERR $messages                 unless  $valid_repository;
+        $self->{repository}->log($messages) if      $valid_repository;
+        say STDERR $messages                unless  $valid_repository;
+
+        # STDOUT:
+        say STDOUT $v_messages              if      $verbose_fallback; # In addition to repository log or STDERR. Untidy quick hack - improve later.
 
         # Premature log-only exit:
         return $self unless $self->{trace};
@@ -2635,7 +2666,8 @@ See L</new> method for info on acceptable object parameters.
 
             my  $trace_prefix       =   $self->_generate_log_prefix('trace');
 
-            my  $lang_prefix        =   sprintf($format, uc $current_language);
+            my  $lang_prefix        =   $number_of_languages == 1?  $blank:
+                                        sprintf($format, uc $current_language); # Shouldn't the lang prefix be part of generate_log_prefix?
 
             $trace_prefixes         .=  $lang_prefix.
                                         $trace_prefix.
