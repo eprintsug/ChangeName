@@ -2123,8 +2123,9 @@ See L</new> method for info on acceptable object parameters.
             no_dumper                   =>  $params->{no_dumper} // 0,
             no_trace                    =>  $params->{no_trace} // 0,
 
-            caller_depth                =>  3,
-            
+            caller_depth                =>  3,  # Three for logging this class, then after construction,
+                                                # the new method sets it to four for logging external calls.
+
             dumper_class_name_only      =>  $params->{dumper_class_name_only} // [],
 
             dumper_exclude              =>  $params->{dumper_exclude} // [],
@@ -2193,7 +2194,7 @@ See L</new> method for info on acceptable object parameters.
             ]
         ); 
 
-        return $self;        
+        return $self;
     }
 
     sub set_dumper_exclude {
