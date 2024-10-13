@@ -24,7 +24,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
 
-=pod LANGUAGES - List of Links to POD Languages
+=pod LANGUAGES - List of Links to POD Languages - Guidence - try to use symbols and language native terms.
 
 =encoding utf8
 
@@ -40,7 +40,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 
 =cut
 
-LOAD_LANGUAGE_CLASSES_FIRST: BEGIN {
+LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
 package ChangeName::Languages::de_de {
 
@@ -504,6 +504,12 @@ sub language_name {
 
 package ChangeName::Languages::en_gb { 
 
+=pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
+
+=head1 English (United Kingdom)
+
+=cut
+
 # Use --lang=en-GB at the commandline to use it.
 
 ChangeName::Languages->import;
@@ -948,12 +954,6 @@ sub language_name {
 
 }; # LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
 
-=pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
-
-=head1 English (United Kingdom)
-
-=cut
-
 =pod FILENAME
 
 =head2 FILENAME
@@ -985,18 +985,18 @@ such as the Perl version feature bundle to use,
 and UTF-8 encoding globals,
 before any embedded packages begin.
 
-A C<BEGIN> block intervenes in load order,
-to ensure language classes are loaded
-before any packages that use
-them.
-
-After such language class loading,
-the next package executed is then the first in the file
-- the L</ChangeName> package.
+<BEGIN> blocks intervenes in load order,
+to ensure the encoding layer variable is loaded at compile time,
+and that the language classes are loaded
+before any packages that use them.
+Language classes are also positioned at the top of the script,
+so they are loaded first during compile time also,
+as some packages will be called at compile time,
+and need them.
 
 =head2 ARGUMENTS
 
-Considers the first four arguments provided at the commandline to be...
+ChangeName.pm considers the first four arguments provided at the commandline to be...
 
 =over
 
@@ -1043,24 +1043,29 @@ See L</LANGUAGES> for list of current language packages.
 Allows setting the location of a YAML configuration file to use.
 i.e. ... 
 
+    # Absolute path:
     --config /path/to/yaml_config.yml
+
+    # Relative path (relative to the directory you run the command from):
+    --config yaml_config.yml
 
 =item B<--live>
 
 Ensures changes take effect.
 
-=item B<--nolive>
-
-Ensures dry run mode - changes do not take effect.
-The script already runs in dry run mode by default.
+Without this flag, the script will run in dry run mode by default,
+where changes do not take effect.
 
 =item B<--exact>
 
 Indicates the search term, if provided on the command line,
-should be interpreted as a case insensitive find value too.
-This means you will not be prompted for a find value,
-for the find and replace operation on the search results.
-Your search term is considered to be your find value too,
+should be interpreted as a case insensitive find value too
+(finding via full matches, and not partial matches).
+
+This means that when using this flag,
+you will not be prompted for a find value,
+in the find and replace operation on the search results.
+Your search term will be considered your find value too,
 making this an exact search (albeit case insensitive).
 
 =item B<--verbose>
