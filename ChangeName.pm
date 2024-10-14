@@ -24,6 +24,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
 
+
 =pod LANGUAGES - List of Links to POD Languages - Guidence - try to use symbols and language native terms.
 
 =encoding utf8
@@ -39,7 +40,6 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 =back
 
 =cut
-
 LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
 package ChangeName::Languages::de_de {
@@ -960,6 +960,11 @@ sub language_name {
 
 }; # LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
 
+
+=pod ENGLISH Pod began in ChangeName::Languages::en_gb class which should have been the last POD above, allowing English POD to continue now...
+
+=cut
+
 =pod FILENAME
 
 =head2 FILENAME
@@ -1120,6 +1125,27 @@ or the debug flag and trace flag, are used together.
 
 Prevents the display of Data::Dumper derived log messages
 when the debug flag is in effect.
+
+=back
+
+=cut
+
+=pod Language Packages - Found at the top of the file due to needing to be loaded first. Also containing foreign language POD, with English POD last, and continued now...
+
+=head2 LANGUAGE PACKAGES:
+
+These classes contain a language specific lexicon, containing localised configurations, tokens, and phrases.
+Additionally POD translations may also be included in these classes.
+
+=over
+
+=item ChangeName::Languages::en_gb
+
+English (United Kingdom).
+
+=item ChangeName::Languages::de_de
+
+German (Germany).
 
 =back
 
@@ -2678,6 +2704,12 @@ package ChangeName::Log v1.0.0 {
 }; # ChangeName::Log Package.
 
 
+=head3 ChangeName::Modulino
+
+Runs the script from the commandline,
+or starts the operation via a new Modulino class instance.
+
+=cut
 package ChangeName::Modulino v1.0.0 {
 
     # Standard:
@@ -4369,26 +4401,6 @@ To do.
 
 }; # ChangeName::Operation Package.
 
-=pod Language Packages (found at the top of the file due to needing to be loaded first)
-
-=head2 Language Packages:
-
-These classes contain a language specific lexicon, containing localised configurations, tokens, and phrases.
-Additionally POD translations may also be included in these classes.
-
-=over
-
-=item ChangeName::Languages::en_gb
-
-English (United Kingdom).
-
-=item ChangeName::Languages::de_de
-
-German (Germany).
-
-=back
-
-=cut
 
 =head2 AUTHOR
 
