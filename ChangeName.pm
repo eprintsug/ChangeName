@@ -31,6 +31,8 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 
 =head1 🌐 Language Links:
 
+=head2 Language Links:
+
 =over
 
 =item * L<"🇩🇪 de-DE - Deutsch (Deutschland)"|/Deutsch (Deutschland)>
@@ -961,7 +963,7 @@ sub language_name {
 }; # LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
 
 
-=pod ENGLISH Pod began in ChangeName::Languages::en_gb class which should have been the last POD above, allowing English POD to continue now...
+=pod ENGLISH Pod (continuing from ChangeName::Languages::en_gb POD above)
 
 =cut
 
@@ -1052,7 +1054,8 @@ i.e. en-GB, or de-DE.
 
     --lang en-GB
 
-See L</Language Packages> for list of current language packages.
+See L<"Language Packages"|/LANGUAGE PACKAGES> for list of current language packages.
+See L<"Language Links"|/Language Links:> for list of language tags.
 
 =item B<--config> I</path/to/yaml_config.yml>
 
@@ -1603,6 +1606,17 @@ package ChangeName::Config::YAML v1.0.0 {
 
 sub data {
 
+# The YAML below is quoted in single quotes, to preserve line breaks.
+
+# Should you need to use a single quote or apostrophe
+# within this Perl text string of a YAML config,
+# use the escaped form with a slash infront of it ( \' )
+# to prevent the single quote or apostrophe being mistaken
+# for the end of the text string.
+
+# Single quotes or apostrophes can be used normally
+# if the text is transferred to its own ChangeNameConfig.yml file.
+
 return
 '
 # This is a YAML Configuration File:
@@ -1612,8 +1626,8 @@ return
 
 EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
-'. #Language Tag: en-GB
-'
+Language Tag:
+
 Fields to search:
     -   creators_name
     -   contributors_name
@@ -1750,6 +1764,7 @@ package ChangeName::Config v1.0.0 {
         my  $self                               =   shift;
         my  $external_filepath                  =   shift // $self->get_external_yaml_filepath;
         my  $default_filepath                   =   $self->get_default_yaml_filepath;
+        my  $none                               =   {};
 
         # Definitions:    
         my  $external                           =   defined $external_filepath
@@ -1779,19 +1794,24 @@ package ChangeName::Config v1.0.0 {
                                                     1;
 
         # Processing:
-        $self->{data}                           =   # External YAML file:
-                                                    $external?  LoadFile($external_filepath):           # Will die on any load error.
-                                                    $default?   LoadFile($default_filepath):            # Will die on any load error.
-                                    
-                                                    # Internal YAML __DATA__:
-                                                    Load(ChangeName::Config::YAML::data);      # Will die on any load error.
-                
-            
-                                                        #do {                                            # 'do' returns last value of block.
-                                                        #    local $INPUT_RECORD_SEPARATOR = undef;      # Read until end of input.
-                                                        #    <ChangeName::Config::YAML::DATA>   # Input is __DATA__ at the bottom of this very file.
-                                                        #}
-                                                    #);
+        my  $default_configuration_values       =   # Internal YAML __DATA__
+                                                    Load(ChangeName::Config::YAML::data);       # Will die on any load error.
+
+        my  $user_configuration_values          =   # External YAML file:
+                                                    $external?  LoadFile($external_filepath):   # Will die on any load error.
+                                                    $default?   LoadFile($default_filepath):    # Will die on any load error.
+                                                    $none;
+        $self->{data}                           =   {
+
+                                                        # Use internal config for defaults:
+                                                        %{ $default_configuration_values },
+
+                                                        # Overwrite defaults with any external configs:
+                                                        %{ $user_configuration_values },
+
+                                                    };
+
+
 
         # Messages:                                    
         push @{ $self->{messages}->{error} }    ,   ['config.load.error.custom_external_not_found', $external_filepath]
@@ -2567,9 +2587,7 @@ package ChangeName::Log v1.0.0 {
         my  $self                   =   shift;
         my  $type                   =   shift;
         my  $use_prefix             =   $self->{debug};
-
         my  $valid_repository       =   $self->validate_class($self->{repository} => $self->get_acceptable_repository_class);
-        my  $verbose_fallback       =   $type eq 'verbose';
         my  $language_handle        =   $self->language->get_language_handle;
         my  $blank                  =   q{};
         my  $messages               =   $blank;
@@ -2631,11 +2649,13 @@ package ChangeName::Log v1.0.0 {
         $self->language->unset_language_handle unless $language_handle;
 
         # Log:
-        $self->{repository}->log($messages) if      $valid_repository;
-        say STDERR $messages                unless  $valid_repository;
-
-        # STDOUT:
-        say STDOUT $v_messages              if      $verbose_fallback; # In addition to repository log or STDERR. Untidy quick hack - improve later.
+        if ($valid_repository) {
+            $self->{repository}->log($messages)
+        }
+        else {
+            say STDERR $messages    if  $self->{debug};
+            say STDOUT $v_messages  if  $type eq 'verbose'; # In addition to a prefixed STDERR output if debug.
+        };
 
         # Premature log-only exit:
         return $self unless $self->{trace};
