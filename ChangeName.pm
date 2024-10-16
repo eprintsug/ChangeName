@@ -971,7 +971,7 @@ sub language_name {
 
 =head2 FILENAME
 
-ChangeName.pm
+ChangeName.pm - change people's names on dataset records.
 
 =cut
 
@@ -1040,14 +1040,13 @@ or "C<family>" name
 Can also accept a number of flags (preceded by two dashes 
 - such as the C<--exact> C<--verbose> and C<--live> examples shown above).
 The flags and their usage are described under L</OPTIONS>.
+Their positioning relative to the arguments shouldn't matter.
 
 =head2 OPTIONS
 
 =over
 
-=item B<--lang> I<language tag>
-
-=item B<--language>=I<language tag>
+=item B<-la> I<tag>, B<--lang> I<tag>, B<--language>=I<tag>
 
 Allows setting of language, by way of a language tag.
 i.e. en-GB, or de-DE.
@@ -1055,11 +1054,11 @@ i.e. en-GB, or de-DE.
     --lang en-GB
 
 See L<"Language Packages"|/LANGUAGE PACKAGES> for list of current language packages.
-See L<"Language Links"|/Language Links:> for list of language tags.
 
-=item B<--config> I</path/to/yaml_config.yml>
+See L<"Language Links"|/Language Links:> for list of supported languages
+and their language tags.
 
-=item B<--configuration>=I</path/to/yaml_config.yml>
+=item B<-c> I</path/to/yaml_config.yml>, B<--config> I</path/to/yaml_config.yml>, B<--configuration>=I</path/to/yaml_config.yml>
 
 Allows setting the location of a YAML configuration file to use.
 i.e. ... 
@@ -1070,14 +1069,16 @@ i.e. ...
     # Relative path (relative to the directory you run the command from):
     --config yaml_config.yml
 
-=item B<--live>
+See L<YAML CONFIGURATION>.
+
+=item B<-li>, B<--live>
 
 Ensures changes take effect.
 
 Without this flag, the script will run in dry run mode by default,
 where changes do not take effect.
 
-=item B<--exact>
+=item B<-e>, B<--exact>
 
 Indicates the search term, if provided on the command line,
 should be interpreted as a case insensitive find value too
@@ -1089,47 +1090,234 @@ in the find and replace operation on the search results.
 Your search term will be considered your find value too,
 making this an exact search (albeit case insensitive).
 
-=item B<--verbose>
+=item B<-v>, B<--verbose>
 
 Provides additional insightful output during the operation.
 
-=item B<--debug>
+=item B<-d>, B<--debug>
 
 Shows verbose and debugging messages during execution.
 Also shows Data::Dumper derived log output for debugging purposes.
 Use the --no_dumper flag to surpress this.
 
-When --verbose is used alongside --debug,
+When --verbose or --trace is used alongside --debug,
 EPrints->trace output will also be shown after each debug message.
 Use the --no_trace flag to surpress such stacktrace information.
 
-=item B<--trace>
+=item B<-t>, B<--trace>
 
 Should the debug flag be set,
 this trace flag will ensure an EPrints->trace stack trace
 is displayed alongside every log message,
 unless this flag is supressed by a --no_trace flag.
 
-=item B<--no_trace>
-
-=item B<--notrace>
+=item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
 
 Prevents the display of EPrints->trace stacktraces
 which would otherwise be shown when either the debug flag and verbose flag,
 or the debug flag and trace flag, are used together.
 
-=item B<--no_dump>
-
-=item B<--nodump>
-
-=item B<--no_dumper>
-
-=item B<--nodumper>
+=item B<--no_d>, B<--nod>, B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
 
 Prevents the display of Data::Dumper derived log messages
 when the debug flag is in effect.
 
 =back
+
+=cut
+
+=pod YAML Configuration
+
+=head2 YAML CONFIGURATION
+
+The file has internal configuration values set already, and these can be overwritten partially, or in full, by an external configuration file.
+
+An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the ChangeName.pm file.
+
+Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</OPTIONS>.
+
+=head3 Configuration Values
+
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+    Language Tag: en-GB
+
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+
+    Dataset to Use: eprint
+
+    Force Commit Changes to Database: yes
+
+    Search Field Match Type: IN
+
+    Search Field Merge Type: ANY
+
+
+Above are the currently supported configuration settings, with example values.
+You can include or omit as many of these as you wish, in your config.
+
+The names of the configuration settings are case sensitive.
+
+=over
+
+=item EPrints Perl Library Path:
+
+This is the path of your local EPrints Repository installation's Perl Library.
+It is typically a C<perl_lib> folder, within the folder you installed your EPrints Repository to.
+In almost all EPrints Repositories it will be: C</opt/eprints3/perl_lib/>.
+
+If you have installed your EPrints to an unusual folder, however, you may wish to alter this setting to:
+C</unusual_folder/eprints3/perl_lib/>.
+
+Note that both the E and the P in EPrints are capitalised here in the name of the setting.
+
+=item Language Tag:
+
+This is the language the script is to use, expressed as a language tag.
+See L</Language Links:> section for a list of supported languages, including their language tags.
+
+The language, should be a single language tag, or nothing.
+
+If the field is not set, missing, or left blank, the script will run multilingually, using all supported languages.
+
+=item Fields to Search:
+
+These are the dataset fields you wish to search. Currently, the default fields to search are C<creators_name>, C<contributors_name> and C<editors_name> and you are free to customise these how you wish,
+or restrict the fields searched to only one of these.
+
+=item Dataset to Use:
+
+Defaults to C<eprint> - can be set to any dataset you wish to perform a search on, and change names in. This script has only been tested with the eprints dataset.
+
+=item Force Commit Changes to Database:
+
+Takes a yes or y (case insensitive) to force commit,
+or anything else (such as no) to not force commit.
+
+Force-committing is sometimes necessary to have your changes take effect.
+
+=item Search Field Match Type:
+
+This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item IN
+
+(Short for index).
+Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
+In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
+
+
+=item EQ
+
+(Short for equal).
+Treat the value as a single string. Match only fields which have this value.
+    
+=item EX
+
+(Short for exact).
+If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+In the case of subjects, match the specified subjects, but not their decendants.
+    
+=item SET
+
+If the value is non-empty.
+    
+=item NO
+
+This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+=back
+
+=item Search Field Merge Type:
+
+This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item ALL
+
+Match an item if any of the space-separated words in the value match.
+
+=item ANY
+
+Match an item only if all of the space-separated words in the value match.
+
+=back
+
+Note that this setting has no affect on EX matches, which always match the entire value.
+
+
+=back
+
+=head3 Example YAML Configuration
+
+You can use the following example as a template, and alter it as you need.
+
+    # This is a YAML Configuration File:
+    %YAML 1.2
+    # Three dashes to start new YAML document.
+    ---
+    
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+    
+    Language Tag:
+    
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+    
+    Dataset to Use: eprint
+    
+    Force Commit Changes to Database: yes
+    
+    # For the above, provide a yes or y (case insensitive) to force commit,
+    # or anything else (such as no) to not force commit.
+    
+    Search Field Match Type: IN
+    
+    Search Field Merge Type: ANY
+    
+    # The "Search Field Match Type" parameter which can be one of:
+    
+    # IN
+    # (short for index)
+    # Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
+    # In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
+    
+    # EQ
+    # (short for equal)
+    # Treat the value as a single string. Match only fields which have this value.
+    
+    # EX
+    # (short for exact)
+    # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+    # In the case of subjects, match the specified subjects, but not their decendants.
+    
+    # SET
+    # If the value is non-empty.
+    
+    # NO
+    # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+    # The "Search Field Merge Type" parameter can be one of:
+
+    # ALL
+    # Match an item only if all of the space-separated words in the value match.
+
+    # ANY
+    # Match an item if any of the space-separated words in the value match.
+
+    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+    
+    ...
+    # Three dots to end current YAML document.
+
 
 =cut
 
@@ -1164,7 +1352,7 @@ German (Germany).
 Package storing useful utilities and functions, used by other packages in this file.
 
 =cut
-package ChangeName::Utilities v1.0.0 {
+package ChangeName::Utilities v2.0.0 {
 
     # Standard:
     use English qw(
@@ -1194,7 +1382,7 @@ package ChangeName::Utilities v1.0.0 {
             is_populated_scalar_ref
             is_true_or_zero
             chunkify
-            stringify_array_ref            
+            stringify_array_ref
         );
     }
 
@@ -1364,6 +1552,7 @@ package ChangeName::Utilities v1.0.0 {
                 debug                   =>  0,
                 exact                   =>  0,
                 no_dumper               =>  0,
+                help                    =>  0,
             },
             optional_strings            =>  {
                 language                =>  undef,
@@ -1599,10 +1788,10 @@ package ChangeName::Utilities v1.0.0 {
 =head3 ChangeName::Config::YAML
 
 Package storing YAML formatted default configuration settings.
-Used if no external .yml file is provided.
+Used if no external .yml file is provided, or for default values should any external file omit a setting.
 
 =cut
-package ChangeName::Config::YAML v1.0.0 {
+package ChangeName::Config::YAML v2.0.0 {
 
 sub data {
 
@@ -1628,14 +1817,14 @@ EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
 Language Tag:
 
-Fields to search:
+Fields to Search:
     -   creators_name
     -   contributors_name
     -   editors_name
 
-Dataset to use: eprint
+Dataset to Use: eprint
 
-Force commit changes to database: yes
+Force Commit Changes to Database: yes
 
 # For the above, provide a yes or y (case insensitive) to force commit,
 # or anything else (such as no) to not force commit.
@@ -1649,7 +1838,7 @@ Search Field Merge Type: ANY
 # IN
 # (short for index)
 # Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
-# In the case of subjects, match these subject ids or the those of any of their decendants in the subject tree.
+# In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
 
 # EQ
 # (short for equal)
@@ -1668,11 +1857,11 @@ Search Field Merge Type: ANY
 
 # The "Search Field Merge Type" parameter can be one of:
 
-# ANY
-# Match an item if any of the space-separated words in the value match.
-
 # ALL
 # Match an item only if all of the space-separated words in the value match.
+
+# ANY
+# Match an item if any of the space-separated words in the value match.
 
 # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
 
@@ -1691,7 +1880,7 @@ Search Field Merge Type: ANY
 Package that loads configuration.
 
 =cut
-package ChangeName::Config v1.0.0 {
+package ChangeName::Config v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -1811,8 +2000,6 @@ package ChangeName::Config v1.0.0 {
 
                                                     };
 
-
-
         # Messages:                                    
         push @{ $self->{messages}->{error} }    ,   ['config.load.error.custom_external_not_found', $external_filepath]
                                                     if $external_not_found;
@@ -1827,7 +2014,7 @@ package ChangeName::Config v1.0.0 {
                                                         ()
                                                     );
 
-        # Output:             
+        # Output:
         return $self;
         
     };
@@ -1866,7 +2053,7 @@ package ChangeName::Config v1.0.0 {
 MakeText project class for loading language classes.
 
 =cut
-package ChangeName::Languages v1.0.0 {
+package ChangeName::Languages v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -2105,10 +2292,10 @@ package ChangeName::Languages v1.0.0 {
 =head3 ChangeName::Language
 
 Our own language class for the language we will use.
-Its language handle attribute can be left undefined to use multiple languages.
+Its C<language_handle> attribute can be left undefined to use multiple languages.
 
 =cut
-package ChangeName::Language v1.0.0 {
+package ChangeName::Language v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -2295,7 +2482,7 @@ verbose, debug, trace, and data dumper output
 to the EPrints log, or STDERR.
 
 =cut
-package ChangeName::Log v1.0.0 {
+package ChangeName::Log v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -2730,7 +2917,7 @@ Runs the script from the commandline,
 or starts the operation via a new Modulino class instance.
 
 =cut
-package ChangeName::Modulino v1.0.0 {
+package ChangeName::Modulino v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -3005,7 +3192,7 @@ package ChangeName::Modulino v1.0.0 {
 Performs the change name operation.
 
 =cut
-package ChangeName::Operation v1.0.0 {
+package ChangeName::Operation v2.0.0 {
 
     # Standard:
     use     English qw(
@@ -3042,14 +3229,13 @@ package ChangeName::Operation v1.0.0 {
 
 =encoding utf8
 
-
 =head4 MODULE NAME
 
-ChangeName::Operation
+ChangeName::Operation - changes the name of a dataset record.
 
 =head4 VERSION
 
-v1.0.0
+v2.0.0
 
 =cut
 
@@ -3057,32 +3243,13 @@ v1.0.0
 
 =head4 SYNOPSIS
 
-    # Run at the command line:
-    perl -CAS ./ChangeName.pm
-    
-    # Use in a unit test or other Perl Script:
     use ChangeName;
-    
-    my $object = ChangeName::Operation->new(@object_params);
 
+    my $object = ChangeName::Operation->new(@object_params);
 
 =head4 DESCRIPTION
 
-Calls a subroutine when ran from the commandline.
-Currently set to call L</start_from_commandline>.
-
-    # Run from the command line:
-    perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exact --verbose --live
-
-Considers the first four arguments provided at the commandline to be 
-an EPrints archive ID (C<MyArchive> in the example above),
-then a case insensitive search term (C<bob> in the example above),
-then a case sensitive replacement (C<Bobbi> in the example above),
-and finally a name part - either C<given> or C<family> (C<given> in the example above).
-
-Can accept a number of flags (preceded by two dashes 
-- such as the C<--exact> C<--verbose> and C<--live> examples shown above).
-The flags and their usage are described under L</OPTIONS>.
+Contains methods that are part of the process of changing a name of a dataset record.
 
 Loads the class when used in another script.
 
@@ -3098,22 +3265,16 @@ See L</new> method for info on acceptable object parameters.
    
 =head4 CLASS METHODS
 
-=head5 $class->start_from_commandline(@ARGV);
+=head5 $class->start(@object_params);
 
-    # Run at the command line:
-    perl -CAS ./ChangeName.pm
+Serves as an example of how to use the object.
 
-Class method auto-ran when
-L<ChangeName.pm> is ran from the commandline.
-
-Considers arguments passed in to have come from the commandline,
-processes them to obtain object construction parameters,
-checks those parameters,
-then uses them to construct a new ChangeName::Operation object,
-upon which the program flow is called...
+Constructs a new ChangeName::Operation object instance
+from the class (using the object parameters passed in),
+upon which the program flow methods are then called...
 
     # Construct new object, and begin program flow...
-    ChangeName::Operation->new(@object_params)->search->part_specific->display->confirm->change->finish;
+    ChangeName::Operation->new(@object_params)->search->prepare->display->confirm->change->finish;
 
 =over
 
@@ -3123,15 +3284,16 @@ Beginning with a search (L</search>),
 
 =item *
 
-then refining down to a specific part of a name (L</part_specific>),
+then preparing to find and replace (L</prepare>),
+
 
 =item *
 
-then displaying the findings to the user (L</display>),
+then generating what will be displayed to the user (L</display>),
 
 =item *
 
-confirming any changes (L</confirm>),
+confirming any changes to be made (L</confirm>),
 
 =item *
 
@@ -3903,14 +4065,14 @@ To do.
     
             # From YAML Configuration:
             force_or_not        =>  [
-                                        ($self->{yaml}->{'Force commit changes to database'} =~ $matches_yes)?  [1]:
+                                        ($self->{yaml}->{'Force Commit Changes to Database'} =~ $matches_yes)?  [1]:
                                         ()
                                     ],
-            dataset_to_use      =>  $self->_validate($self->{yaml}->{'Dataset to use'}),
+            dataset_to_use      =>  $self->_validate($self->{yaml}->{'Dataset to Use'}),
             fields_to_search    =>  [
                                         $self->_validate(
                                             @{
-                                                $self->{yaml}->{'Fields to search'}
+                                                $self->{yaml}->{'Fields to Search'}
                                             }
                                         )
                                     ],
