@@ -977,7 +977,7 @@ ChangeName.pm - change people's names on dataset records.
 
 =pod Synopsis, Description, Options
 
-=head2 en-GB SYNOPSIS
+=head2 SYNOPSIS (en-GB)
 
     # Run file at the command line:
     perl -CAS ./ChangeName.pm
@@ -1018,31 +1018,31 @@ ChangeName.pm considers the first four arguments provided at the commandline to 
 
 =item 1
 
-...an EPrints archive ID (C<MyArchive> in the L</en-GB SYNOPSIS> example above),
+...an EPrints archive ID (C<MyArchive> in the L</SYNOPSIS (en-GB)> example above),
 
 =item 2
 
-...then a case insensitive search term (C<bob> in the L</en-GB SYNOPSIS> example above),
+...then a case insensitive search term (C<bob> in the L</SYNOPSIS (en-GB)> example above),
 
 =item 3
 
-...then a case sensitive replacement (C<Bobbi> in the L</en-GB SYNOPSIS> example above),
+...then a case sensitive replacement (C<Bobbi> in the L</SYNOPSIS (en-GB)> example above),
 
 =item 4
 
 ...and finally a name part
 - either "C<given>" name
 or "C<family>" name
-(C<given> in the L</en-GB SYNOPSIS> example above).
+(C<given> in the L</SYNOPSIS (en-GB)> example above).
 
 =back 
 
 Can also accept a number of flags (preceded by two dashes 
 - such as the C<--exact> C<--verbose> and C<--live> examples shown above).
-The flags and their usage are described under L</en-GB OPTIONS>.
+The flags and their usage are described under L</OPTIONS (en-GB)>.
 Their positioning relative to the arguments shouldn't matter.
 
-=head2 en-GB OPTIONS
+=head2 OPTIONS (en-GB)
 
 =over
 
@@ -1053,9 +1053,9 @@ i.e. en-GB, or de-DE.
 
     --lang en-GB
 
-See L<"Language Packages"|/en-GB LANGUAGE PACKAGES> for list of current language packages.
+See L<"Language Packages"|/LANGUAGE PACKAGES (en-GB)> for list of current language packages.
 
-See L<"Language Links"|/en-GB Language Links:> for list of supported languages
+See L<"Language Links"|/Language Links:> for list of supported languages
 and their language tags.
 
 =item B<-c> I</path/to/yaml_config.yml>, B<--config> I</path/to/yaml_config.yml>, B<--configuration>=I</path/to/yaml_config.yml>
@@ -1069,7 +1069,7 @@ i.e. ...
     # Relative path (relative to the directory you run the command from):
     --config yaml_config.yml
 
-See L<en-GB YAML CONFIGURATION>.
+See L</YAML CONFIGURATION (en-GB)>.
 
 =item B<-li>, B<--live>
 
@@ -1128,13 +1128,13 @@ when the debug flag is in effect.
 
 =pod YAML Configuration
 
-=head2 en-GB YAML CONFIGURATION
+=head2 YAML CONFIGURATION (en-GB)
 
 The file has internal configuration values set already, and these can be overwritten partially, or in full, by an external configuration file.
 
 An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the ChangeName.pm file.
 
-Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</en-GB OPTIONS>.
+Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</OPTIONS (en-GB)>.
 
 =head3 Configuration Values
 
@@ -1323,7 +1323,7 @@ You can use the following example as a template, and alter it as you need.
 
 =pod Language Packages - Found at the top of the file due to needing to be loaded first. Also containing foreign language POD, with English POD last, and continued now...
 
-=head2 en-GB LANGUAGE PACKAGES:
+=head2 LANGUAGE PACKAGES (en-GB):
 
 These classes contain a language specific lexicon, containing localised configurations, tokens, and phrases.
 Additionally POD translations may also be included in these classes.
@@ -1347,7 +1347,7 @@ German (Germany).
 =cut
 
 
-=head3 en-GB ChangeName::Utilities
+=head3 ChangeName::Utilities (en-GB)
 
 Package storing useful utilities and functions, used by other packages in this ChangeName.pm file.
 
@@ -1438,7 +1438,7 @@ Designed to be used with object instances. So...
     # ...or...
     validate_class($self, $thing => 'Desired::Class::Name');
 
-Supports L</en-GB ChangeName::Log> if $self has a logger method that returns a Log instance to work with.
+Supports L</ChangeName::Log (en-GB)> if $self has a logger method that returns a Log instance to work with.
 
 =cut
     sub validate_class {
@@ -1524,15 +1524,15 @@ Supports ChangeName::Log if $self has a logger method that returns a Log instanc
 
 =head4 $self->get_options(@arguments);
 
-Passes arguments on to L</en-GB process_commandline_arguments> and returns the first result - i.e. just the options, and not the arguments or input flag.
-See L</en-GB process_commandline_arguments> for more information.
+Passes arguments on to L<< "process_commandline_arguments"|/$self->process_commandline_arguments(%hash); (en-GB) >> and returns the first result - i.e. just the options, and not the arguments or input flag.
+See L<< "process_commandline_arguments"|/$self->process_commandline_arguments(%hash); (en-GB) >> for more information.
 
 =cut
     sub get_options {
         return [process_commandline_arguments(@ARG)]->[0];
     }
 
-=head4 $self->process_commandline_arguments(%hash);
+=head4 $self->process_commandline_arguments(%hash); (en-GB)
 
 Takes a hash of arguments, as follows...
 
@@ -1926,7 +1926,7 @@ and before arguments have been processed.
 } # ChangeName::Utilities Package.
 
 
-=head3 en-GB ChangeName::Config::YAML
+=head3 ChangeName::Config::YAML (en-GB)
 
 Package storing YAML formatted default configuration settings.
 Used if no external .yml file is provided, or for default values should any external file omit a setting.
@@ -2016,7 +2016,7 @@ Search Field Merge Type: ANY
 } # ChangeName::Config::YAML Package.
 
 
-=head3 en-GB ChangeName::Config
+=head3 ChangeName::Config (en-GB)
 
 Package that loads configuration.
 
@@ -2191,7 +2191,7 @@ package ChangeName::Config v2.0.0 {
 }; # ChangeName::Config Package.
 
 
-=head3 en-GB ChangeName::Languages
+=head3 ChangeName::Languages (en-GB)
 
 MakeText project class for loading language classes.
 
@@ -2432,7 +2432,7 @@ package ChangeName::Languages v2.0.0 {
 }; # ChangeName::Languages Package.
 
 
-=head3 en-GB ChangeName::Language
+=head3 ChangeName::Language (en-GB)
 
 Our own language class for the language we will use.
 Its C<language_handle> attribute can be left undefined to use multiple languages.
@@ -2617,7 +2617,7 @@ package ChangeName::Language v2.0.0 {
 } # ChangeName::Language Package.
 
 
-=head3 en-GB ChangeName::Log
+=head3 ChangeName::Log (en-GB)
 
 Allows for creating a logger object
 that has methods related to logging
@@ -3054,7 +3054,7 @@ package ChangeName::Log v2.0.0 {
 }; # ChangeName::Log Package.
 
 
-=head3 en-GB ChangeName::Modulino
+=head3 ChangeName::Modulino (en-GB)
 
 Runs the script from the commandline,
 or starts the operation via a new Modulino class instance.
@@ -3329,7 +3329,7 @@ package ChangeName::Modulino v2.0.0 {
 } # ChangeName::Modulino Package.
 
 
-=head3 en-GB ChangeName::Operation
+=head3 ChangeName::Operation (en-GB)
 
 Performs the change name operation.
 
@@ -3400,7 +3400,7 @@ Loads the class when used in another script.
     
     my $object = ChangeName::Operation->new(@object_params);
 
-See L</en-GB new> method for info on acceptable object parameters.
+See L</new (ChangeName::Operation en-GB)> method for info on acceptable object parameters.
 
 =cut
 
@@ -3422,28 +3422,28 @@ upon which the program flow methods are then called...
 
 =item *
 
-Beginning with a search (L</en-GB search>),
+Beginning with a search (L</search (ChangeName::Operation en-GB)>),
 
 =item *
 
-then preparing to find and replace (L</en-GB prepare>),
+then preparing to find and replace (L</prepare (ChangeName::Operation en-GB)>),
 
 
 =item *
 
-then generating what will be displayed to the user (L</en-GB display>),
+then generating what will be displayed to the user (L</display (ChangeName::Operation en-GB)>),
 
 =item *
 
-confirming any changes to be made (L</en-GB confirm>),
+confirming any changes to be made (L</confirm (ChangeName::Operation en-GB)>),
 
 =item *
 
-making changes (L</en-GB change>),
+making changes (L</change (ChangeName::Operation en-GB)>),
 
 =item *
 
-and proceding to finish (L</en-GB finish>).
+and proceding to finish (L</finish (ChangeName::Operation en-GB)>).
 
 =back
 
