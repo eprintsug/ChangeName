@@ -1349,7 +1349,7 @@ German (Germany).
 
 =head3 ChangeName::Utilities
 
-Package storing useful utilities and functions, used by other packages in this file.
+Package storing useful utilities and functions, used by other packages in this ChangeName.pm file.
 
 =cut
 package ChangeName::Utilities v2.0.0 {
@@ -1386,6 +1386,61 @@ package ChangeName::Utilities v2.0.0 {
         );
     }
 
+=pod Name, Version
+
+=encoding utf8
+
+=head4 MODULE NAME
+
+ChangeName::Utilities - a collection of useful utilities and functions.
+
+=head4 VERSION
+
+v2.0.0
+
+=cut
+
+=pod Synopsis, Description
+
+=head4 SYNOPSIS
+
+    # Name the utilities you wish to use...
+    use ChangeName::Utilities qw(
+        I<[ method_name1 ]>
+        I<[ method_name2 ]>
+    );
+
+    # Then use them...
+    my  $result =   I<method_name1>($values);
+
+=head4 DESCRIPTION
+
+Contains exportable subroutines that are useful utilities and functions for other packages in the C<ChangeName::> namespace.
+
+=cut
+
+   
+=head4 CLASS METHODS
+
+=cut
+
+=head4 $self->validate_class($thing => 'Desired::Class::Name');
+
+Takes an object, and a class name, as arguments - separated by a comma or fat comma as you wish.
+
+Returns C<undef> if the C<$thing> is not of the desired class name.
+Returns C<$thing> is the C<$thing> is a valid class name.
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    $self->validate_class($thing => 'Desired::Class::Name');
+    # ...or...
+    validate_class($self, $thing => 'Desired::Class::Name');
+
+Supports ChangeName::Log if $self has a logger method that returns a Log instance to work with.
+
+=cut
     sub validate_class {
         my  ($self, $value, $acceptable_class)  =   @ARG;
 
@@ -1411,6 +1466,27 @@ package ChangeName::Utilities v2.0.0 {
         return                                      $valid_object_of_acceptable_class;
     }
 
+=head4 $self->valid_object($thing);
+
+Takes a variable, and checks it is defined, and blessed into a class.
+
+Returns C<undef> if not defined, or not blessed into a class;
+otherwise, returns C<$thing>.
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    $self->valid_object($thing);
+    # ...or...
+    valid_object($self, $thing);
+
+Supports ChangeName::Log if $self has a logger method that returns a Log instance to work with.
+
+=cut
+    sub valid_object {
+        _valid_object(@ARG);
+    }
+
     sub _valid_object {
 
         my  ($self, $value) =   @ARG;
@@ -1430,10 +1506,6 @@ package ChangeName::Utilities v2.0.0 {
 
     }
 
-    sub valid_object {
-        _valid_object(@ARG);
-    }
-
     sub _can_log {
         my  $object =   shift;
 
@@ -1450,22 +1522,53 @@ package ChangeName::Utilities v2.0.0 {
                 && blessed($object->logger->language);
     }
 
+=head4 $self->get_options(@arguments);
+
+Passes arguments on to L</process_commandline_arguments> and returns the first result - i.e. just the options, and not the arguments or input flag.
+See L</process_commandline_arguments> for more information.
+
+=cut
     sub get_options {
         return [process_commandline_arguments(@ARG)]->[0];
     }
+
+=head4 $self->process_commandline_arguments(%hash);
+
+Takes a hash of arguments, as follows...
+
+    $self->process_commandline_arguments(
+        commandline_arguments   =>  $array_reference,
+        expected_options        =>  $hash_reference,
+        expected_arguments      =>  $array_reference,
+    ); 
+
+Returns a list containing
+an options hash reference,
+an arguments hash reference,
+and a no_input flag.
+
+    my ($options, $arguments, $no_input)    =   $self->process_commandline_arguments(%hash);
+
+The no_input flag should be considered a boolean,
+as it returns a true value
+if there are no arguments after options have been processed,
+and it returns a false value
+if there actually are arguments left,
+after options have been processed,
+and before arguments have been processed.
+
+=cut
 
     sub process_commandline_arguments {
 
         # Intial Values:
         my  $self                                   =   shift;
-        my  $commandline_arguments                  =   shift;
-        my  $expectations                           =   shift;
-        my  $at_least_some_expectations             =   is_populated_hash_ref($self, $expectations);
-        my  $option_types                           =   $at_least_some_expectations
-                                                        && is_populated_hash_ref($self, $expectations->{expected_options})?     $expectations->{expected_options}:
+        my  $params                                 =   is_populated_hash_ref($self, {@ARG});
+        my  $option_types                           =   $params
+                                                        && is_populated_hash_ref($self, $params->{expected_options})?       $params->{expected_options}:
                                                         _get_default_options($self);
-        my  $expected_arguments                     =   $at_least_some_expectations
-                                                        && is_populated_array_ref($self, $expectations->{expected_arguments})?  $expectations->{expected_arguments}:
+        my  $expected_arguments                     =   $params
+                                                        && is_populated_array_ref($self, $params->{expected_arguments})?    $params->{expected_arguments}:
                                                         _get_default_expected_arguments($self);
         my  $arguments                              =   {};
         my  @options_specifications                 =   ();
@@ -1478,11 +1581,11 @@ package ChangeName::Utilities v2.0.0 {
 
         $self                                           ->logger
                                                         ->debug('Passed in commandline arguments from which to derive both options and arguments from are as follows...')
-                                                        ->dumper($commandline_arguments)
+                                                        ->dumper($params->{commandline_arguments})
                                                         if _can_log($self);
 
         # Definition:
-        my  $valid_destructable_copy_of_arguments   =   is_populated_array_ref($self, $commandline_arguments)?  [(@{ $commandline_arguments })]:
+        my  $valid_destructable_copy_of_arguments   =   is_populated_array_ref($self, $params->{commandline_arguments})?  [(@{ $params->{commandline_arguments} })]:
                                                         [];
 
         $self                                           ->logger
@@ -1919,7 +2022,9 @@ package ChangeName::Config v2.0.0 {
                                                     undef;
 
         $self->{options}                        =   $valid_options_param?   $valid_options_param:
-                                                    $self->get_options($params->{commandline_arguments}); # No validation that get_options returns okay.
+                                                    $self->get_options(
+                                                        commandline_arguments   =>  $params->{commandline_arguments},
+                                                    ); # No validation that get_options returns okay.
 
         my  $valid_external_filepath_string     =   exists $self->{options}->{config} && $self->{options}->{config}?                $self->{options}->{config}:
                                                     exists $params->{external_yaml_filepath} && $params->{external_yaml_filepath}?  $params->{external_yaml_filepath}:
@@ -2971,20 +3076,19 @@ package ChangeName::Modulino v2.0.0 {
                                                 language    =>  $self->language,
                                             )->set_caller_depth(3);
 
-        my  $expecting                  =   {
-            expected_arguments          =>  [qw(
-                                                archive_id
-                                                search
-                                                replace
-                                                part
-                                            )],
-        };
-
         (
             $self->{options},
             $self->{arguments},
             $self->{no_input},
-        )                               =   $self->process_commandline_arguments($params->{commandline_arguments},$expecting);
+        )                               =   $self->process_commandline_arguments(
+                                                commandline_arguments   =>  $params->{commandline_arguments},
+                                                expected_arguments      =>  [qw(
+                                                                                archive_id
+                                                                                search
+                                                                                replace
+                                                                                part
+                                                                            )],
+                                            );
 
         # Update language with options processed:
         $self->language->set_language_handle($self->{options}->{language}); # set_language_handle contains validation of language option.
