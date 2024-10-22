@@ -1376,7 +1376,7 @@ package ChangeName::Utilities v2.0.0 {
             valid_object
             process_commandline_arguments
             get_options
-            list_to_regex_logical_or_grouping
+            list_to_regex_logical_or_string
             is_populated_array_ref
             is_populated_hash_ref
             is_populated_scalar_ref
@@ -1390,11 +1390,11 @@ package ChangeName::Utilities v2.0.0 {
 
 =encoding utf8
 
-=head4 MODULE NAME
+=head4 MODULE NAME (ChangeName::Utilities en-GB)
 
 ChangeName::Utilities - a collection of useful utilities and functions.
 
-=head4 VERSION
+=head4 VERSION (ChangeName::Utilities en-GB)
 
 v2.0.0
 
@@ -1402,7 +1402,7 @@ v2.0.0
 
 =pod Synopsis, Description
 
-=head4 SYNOPSIS
+=head4 SYNOPSIS (ChangeName::Utilities en-GB)
 
     # Name the utilities you wish to use...
     use ChangeName::Utilities qw(
@@ -1411,25 +1411,22 @@ v2.0.0
     );
 
     # Then use them...
-    my  $result =  method_1($values);
+    my  $result =  method_1($required_values);
 
-=head4 DESCRIPTION
+=head4 DESCRIPTION (ChangeName::Utilities en-GB)
 
 Contains exportable subroutines that are useful utilities and functions for other packages in the C<ChangeName::> namespace.
 
 =cut
 
    
-=head4 METHODS
+=head4 METHODS (ChangeName::Utilities en-GB)
+
+
 
 =cut
 
-=head4 $self->validate_class($thing => 'Desired::Class::Name');
-
-Takes an object, and a class name, as arguments - separated by a comma or fat comma as you wish.
-
-Returns C<undef> if the C<$thing> is not of the desired class name.
-Returns C<$thing> if the C<$thing> is a valid class name.
+=head4 validate_class (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -1438,7 +1435,12 @@ Designed to be used with object instances. So...
     # ...or...
     validate_class($self, $thing => 'Desired::Class::Name');
 
-Supports L</ChangeName::Log (en-GB)> if $self has a logger method that returns a Log instance to work with.
+Takes an object, and a class name, as arguments - separated by a comma or fat comma as you wish.
+
+Returns C<undef> if the C<$thing> is not of the desired class name.
+Returns C<$thing> if the C<$thing> is a valid class name.
+
+Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that returns a C<ChangeName::Log> instance to work with.
 
 =cut
     sub validate_class {
@@ -1466,12 +1468,7 @@ Supports L</ChangeName::Log (en-GB)> if $self has a logger method that returns a
         return                                      $valid_object_of_acceptable_class;
     }
 
-=head4 $self->valid_object($thing);
-
-Takes a variable, and checks it is defined, and blessed into a class.
-
-Returns C<undef> if not defined, or not blessed into a class;
-otherwise, returns C<$thing>.
+=head4 valid_object (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -1480,7 +1477,12 @@ Designed to be used with object instances. So...
     # ...or...
     valid_object($self, $thing);
 
-Supports ChangeName::Log if $self has a logger method that returns a Log instance to work with.
+Takes a variable, and checks it is defined, and blessed into a class.
+
+Returns C<undef> if not defined, or not blessed into a class;
+otherwise, returns C<$thing>.
+
+Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that returns a C<ChangeName::Log> instance to work with.
 
 =cut
     sub valid_object {
@@ -1509,59 +1511,117 @@ Supports ChangeName::Log if $self has a logger method that returns a Log instanc
     sub _can_log {
         my  $object =   shift;
 
-        return
-                defined $object
-                && blessed($object)
-                
-                && $object->can('logger')
-                && defined $object->logger
-                && blessed($object->logger)
-                
-                && $object->logger->can('language')
-                && defined $object->logger->language
+        return  # Boolean:
+                _has_method($object, 'logger');
+                && _has_method($object->logger, 'language');
+                && defined($object->logger->language)
                 && blessed($object->logger->language);
     }
 
-=head4 $self->get_options(@arguments);
+    # Check we can call the method, and it returns a true value.
+    sub _can_get_list_of_results {
+        my  $self   =   shift;
+        return  # Boolean:
+                _has_method($self, 'get_list_of_results')
+                && $self->get_list_of_results;
+    }
 
-Passes arguments on to L<< "process_commandline_arguments"|/$self->process_commandline_arguments(%hash); (en-GB) >> and returns the first result - i.e. just the options, and not the arguments or input flag.
-See L<< "process_commandline_arguments"|/$self->process_commandline_arguments(%hash); (en-GB) >> for more information.
+    sub _has_method {
+        my  ($object, $method_name) =   @ARG;
+
+        return  # Boolean:
+                defined $object
+                && blessed($object)
+                && $object->can($method_name)
+    }
+
+
+=head4 get_options (en-GB)
+
+Example:
+
+    $self->get_options(
+        commandline_arguments   =>  $array_reference_1,
+        expected_options        =>  $hash_reference_of_hash_references_1,
+    );
+
+Convenience method. Takes a hash and passes it on
+to L<< "process_commandline_arguments"|/process_commandline_arguments (en-GB) >>
+and returns the first result
+- i.e. just an options hash reference,
+and not an arguments hash reference
+nor a C<no_input> boolean flag.
+
+See L<< "process_commandline_arguments"|/process_commandline_arguments (en-GB) >>
+for more information.
 
 =cut
     sub get_options {
         return [process_commandline_arguments(@ARG)]->[0];
     }
 
-=head4 $self->process_commandline_arguments(%hash); (en-GB)
+=head4 get_arguments (en-GB)
+
+Example:
+
+    $self->get_arguments(
+        commandline_arguments   =>  $array_reference_1,
+        expected_arguments      =>  $array_reference_2,
+    );
+
+Convenience method.
+Takes a hash and passes it on
+to L<< "process_commandline_arguments"|/process_commandline_arguments (en-GB) >>
+and returns only the second result
+- i.e. just an arguments hash reference,
+and not an options hash reference
+nor a C<no_input> boolean flag.
+
+See L<< "process_commandline_arguments"|/process_commandline_arguments (en-GB) >>
+for more information.
+
+=cut
+    sub get_arguments {
+        return [process_commandline_arguments(@ARG)]->[1];
+    }
+
+=head4 process_commandline_arguments (en-GB)
 
 Takes a hash of arguments, as follows...
 
     $self->process_commandline_arguments(
         commandline_arguments   =>  $array_reference_1,
-        expected_options        =>  $hash_reference_1,
+        expected_options        =>  $hash_reference_of_hash_references_1,
         expected_arguments      =>  $array_reference_2,
     );
 
 Example values are:
 
-    my  $array_reference_1   =   \@ARGV;  # Special global variable containing commandline arguments.
+    my  $array_reference_1      =   \@ARGV; # Special global variable containing commandline arguments.
 
-    my  $hash_reference_1    =   {
-            simple_options              =>  {
-                help                    =>  0,
+    my  $hash_reference_of_hash_references_1 = {
+            simple_options      =>  {
+                help            =>  0,
             },
-            optional_strings            =>  {
-                language                =>  undef,
+            optional_strings    =>  {
+                language        =>  undef,
             },
-            negatable_options           =>  {
-                verbose                 =>  0,
+            negatable_options   =>  {
+                verbose         =>  0,
             },
-            incremental_options         =>  {
-                trace                   =>  0,
+            incremental_options =>  {
+                trace           =>  0,
             },
     };
 
-    my  $array_reference_2   =   ('archive_id','search','replace','part'); # Names for your arguments in order they appear.
+    my  $array_reference_2      =   # Names for your arguments 
+                                    # in order they appear:
+                                    [
+                                        'archive_id',
+                                        'search',
+                                        'replace',
+                                        'part',
+                                    ];
 
 You can see that the hash reference is expected to contain separate nested hash references, for each type of supported option.
 Presently supported are...
@@ -1572,11 +1632,17 @@ Presently supported are...
 
 Akin to normal options. See L<Getopt::Long/Simple-options>.
 
-=item * optional_strings ('=s' equivalent - see L<Getopt::Long/Options-with-values>)
+=item * optional_strings
 
-=item * negatable_options ('!' equivalent - see L<Getopt::Long/A-little-bit-less-simple-options>)
+Akin to '=s' - see L<Getopt::Long/Options-with-values>.
 
-=item * incremental_options ('+' equivalent - see L<Getopt::Long/A-little-bit-less-simple-options>)
+=item * negatable_options
+
+Akin to '!' - see L<Getopt::Long/A-little-bit-less-simple-options>.
+
+=item * incremental_options
+
+Akin to '+' - see L<Getopt::Long/A-little-bit-less-simple-options>.
 
 =back
 
@@ -1594,6 +1660,18 @@ and it returns a false value
 if there actually are arguments left,
 after options have been processed,
 and before arguments have been processed.
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    $self->process_commandline_arguments(%hash);
+    # ...or...
+    process_commandline_arguments($self, %hash);
+
+Supports L</ChangeName::Log (en-GB)>
+if C<$self> has a C<logger> method
+that returns a C<ChangeName::Log> instance
+to work with.
 
 =cut
 
@@ -1681,6 +1759,7 @@ and before arguments have been processed.
 
     }
 
+    # Stores default options
     sub _get_default_options {
 
         my  $self                       =   shift;
@@ -1719,6 +1798,12 @@ and before arguments have been processed.
         return $default_options;
 
     }
+
+    # Stores default argument names.
+    # When an empty array ref, 
+    # it means values will need to be
+    # passed in to get_options 
+    # or process_commandline_options.
 
     sub _get_default_expected_arguments {
 
@@ -1828,24 +1913,155 @@ and before arguments have been processed.
 
     }
 
-    sub list_to_regex_logical_or_grouping {
+=head4 list_to_regex_logical_or_string (en-GB)
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    $self->list_to_regex_logical_or_string(@list);
+    # ...or...
+    list_to_regex_logical_or_string($self, @list);
+
+Takes a list, makes each defined element regex safe, and joins it by the pipe character "C<|>".
+
+Returns the joined string.
+This is of use within a regex logical or grouping,
+and to allow for easier appending to the string with further alternatives,
+grouping brackets are not included in the output, and will need to be added.
+
+For example:
+
+    my  $acceptable_input           =   $self->list_to_regex_logical_or_string(
+                                            'given',
+                                            'family',
+                                        );
+    my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
+
+As you see in the above example, the result is encased within brackets,
+to form a "logical or" grouping.
+
+=cut
+
+    sub list_to_regex_logical_or_string {
 
         my  $self   =   shift;
+        my  @skip   =   ();
 
         return  join(
 
-            # Join by regex OR...
-            '|',
+                    # Join by regex OR...
+                    '|',
 
-            # Regex safe:
-            map {quotemeta($ARG)}
+                    # Regex safe:
+                    map {
+                        defined $ARG?   quotemeta($ARG):
+                        @skip
+                    }
 
-            # List:
-            (@ARG)
+                    # List:
+                    (@ARG)
 
-        );
+                );
 
     }
+
+=head4 is_populated_array_ref (en-GB)
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    my  $valid_value    =   $self->is_populated_array_ref($value);
+    # ...or...
+    my  $valid_value    =   is_populated_array_ref($self, $value);
+
+    # Allowing for...
+    if ($valid_value) {
+        # do stuff - confident we have a populated array reference.
+    };
+
+Takes a value.
+If the value is found to be an array reference
+populated with one or more values
+(warning - these values can be C<undef>)
+then it will return the original value passed in.
+
+If the value is found to not be an array reference,
+or to be an array reference that is empty,
+this method will return an C<undef> value.
+
+=cut
+    sub is_populated_array_ref {
+        _is_populated_ref(shift, shift, 'ARRAY');
+    }
+
+=head4 is_populated_hash_ref (en-GB)
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    my  $valid_value    =   $self->is_populated_hash_ref($value);
+    # ...or...
+    my  $valid_value    =   is_populated_hash_ref($self, $value);
+
+    # Allowing for...
+    if ($valid_value) {
+        # do stuff - confident we have a hash reference with at least one hash key.
+    };
+
+Takes a value.
+If the value is found to be a hash reference
+populated with at least one key
+(warning - does not check
+for a hash value paired with the hash key)
+then it will return the original value passed in.
+
+If the value is found to not be a hash reference,
+or to be a hash reference without any hash keys,
+this method will return an C<undef> value.
+
+=cut
+    sub is_populated_hash_ref {
+        _is_populated_ref(shift, shift, 'HASH');
+    }
+
+=head4 is_populated_scalar_ref (en-GB)
+
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    my  $valid_value    =   $self->is_populated_scalar_ref($value);
+    # ...or...
+    my  $valid_value    =   is_populated_scalar_ref($self, $value);
+
+    # Allowing for...
+    if ($valid_value) {
+        # do stuff - confident we have a scalar
+        # that dereferences to a true or zero value
+        # - i.e. not an empty string, nor undef.
+    };
+
+Takes a value.
+If the value is found to be a scalar reference
+populated with either a true value,
+or the number/character zero (i.e 'C<0>')
+then it will return the original value passed in.
+
+If the value is found to not be a scalar reference,
+or to be a scalar reference that
+is not the number/character zero ('C<0>')
+and still returns false,
+then this method will return an C<undef> value.
+
+=cut
+    sub is_populated_scalar_ref {
+        _is_populated_ref(shift, shift, 'SCALAR');
+    }
+
+# _is_populated_ref does the heavy lifting
+# for the following three methods:
+# is_populated_array_ref
+# is_populated_hash_ref
+# is_populated_scalar_ref
 
     sub _is_populated_ref {
         my  $self       =   shift;
@@ -1865,18 +2081,37 @@ and before arguments have been processed.
                             undef;
     }
 
-    sub is_populated_array_ref {
-        _is_populated_ref(shift, shift, 'ARRAY');
-    }
 
-    sub is_populated_hash_ref {
-        _is_populated_ref(shift, shift, 'HASH');
-    }
+=head4 is_true_or_zero (en-GB)
 
-    sub is_populated_scalar_ref {
-        _is_populated_ref(shift, shift, 'SCALAR');
-    }
+Designed to be used with object instances. So...
 
+    # Can be written as either...
+    my  $validated_value    =   $self->is_true_or_zero($value)? $value:
+                                undef;
+    # ...or...
+    my  $validated_value    =   is_true_or_zero($self, $value)? $value:
+                                undef;
+
+    # Allowing for...
+    if ($validated_value) {
+        # do stuff - confident we have a string
+        # that contains either a true value
+        # or the number/character zero (0).
+    };
+
+Takes a value.
+Checks it is defined and true,
+or defined and the number/character zero ('C<0>').
+
+Returns a boolean value evaluating to true or false,
+depending on if these conditions have been met or not.
+
+Warning - does not currently return the original value.
+This behaviour may change in a future update,
+to be more in keeping with other C<ChangeName::Utilities> methods.
+
+=cut
     sub is_true_or_zero {
         my  $self   =   shift;
         my  $value  =   shift;
@@ -1885,15 +2120,48 @@ and before arguments have been processed.
                             $value || $value eq '0'
                         );
     }
+=head4 chunkify (en-GB)
 
+Designed to be used with object instances. So...
+
+    # Can be written as either...
+    my  @array_of_array_refs    =   $self->chunkify($eprints_list);
+    # ...or...
+    my  @array_of_array_refs    =   chunkify($self, $eprints_list);
+
+You can also omit the expected C<$eprints_list>
+if $self has a get_list_of_results method that retrieved an C<EPrints::List>.
+
+AM REALISING NOW WE NEED TO CHECK WE CAN THAT METHOD...
+
+    my  @array_of_array_refs    =   $self->chunkify
+
+    # Allowing for...
+    foreach my $current_chunk ($self->chunkify) {
+        # do stuff
+    };
+
+Takes a value.
+If the value is found to be a scalar reference
+populated with either a true value,
+or the number/character zero (i.e 'C<0>')
+then it will return the original value passed in.
+
+If the value is found to not be a scalar reference,
+or to be a scalar reference that
+is not the number/character zero ('C<0>')
+and still returns false,
+then this method will return an C<undef> value.
+
+=cut
     sub chunkify {
 
         # Initial Values:
         my  ($self, $list, $chunk_size) =   @ARG;
         $chunk_size                     //= 100;
-        my  $valid_list                 =   $self->validate_class(
-                                                ($list // $self->get_list_of_results) => 'EPrints::List',
-                                            );
+        $list                           //= _can_get_list_of_results($self)?    $self->get_list_of_result:
+                                            undef;
+        my  $valid_list                 =   $self->validate_class($list => 'EPrints::List');
         my  @list_of_arrayrefs          =   ();
 
         # Processing:
@@ -2639,8 +2907,9 @@ package ChangeName::Log v2.0.0 {
     LOAD_UTILITIES_FIRST: BEGIN {
 
         ChangeName::Utilities->import(qw(
+            valid_object
             validate_class
-            list_to_regex_logical_or_grouping
+            list_to_regex_logical_or_string
             is_populated_array_ref
         ));
 
@@ -2728,6 +2997,16 @@ package ChangeName::Log v2.0.0 {
         $self->{dumper_default}         =  $self; # Isn't this frozen in time?
 
         return  $self;
+    }
+
+=head4 ready (en-GB)
+
+Checks if the Log object is ready for use in logging. Presently the readiness checks include checking that the instance has a valid ChangeName::Language object for its language attribute. The definition of readiness may change in future, and what will be constant is that readiness is intended to mean the object instance is ready for use - i.e. for having debug, verbose or dumper method calls.
+
+=cut
+    sub ready {
+        my  $self   =   shift;
+        return $self->validate_class($self->language => 'ChangeName::Language');
     }
 
     sub get_acceptable_repository_class {
@@ -2873,7 +3152,7 @@ package ChangeName::Log v2.0.0 {
                         unless ($self->{debug});
 
         # Default Params if no arguments passed in...
-        my  $exclude    =   $self->list_to_regex_logical_or_grouping(
+        my  $exclude    =   $self->list_to_regex_logical_or_string(
                                 # List of attributes to exclude from dump...
                                 (
                                     #    'repository',
@@ -2885,7 +3164,7 @@ package ChangeName::Log v2.0.0 {
         #
         #'.Dumper($self->get_dumper_class_name_only);
 
-        my  $class_only =   $self->list_to_regex_logical_or_grouping(
+        my  $class_only =   $self->list_to_regex_logical_or_string(
                                 # List of attributes
                                 # that are objects
                                 # we wish to dump only
@@ -3349,7 +3628,7 @@ package ChangeName::Operation v2.0.0 {
 
             ChangeName::Utilities->import(qw(
                 validate_class
-                list_to_regex_logical_or_grouping
+                list_to_regex_logical_or_string
                 is_populated_array_ref
                 is_true_or_zero
                 chunkify
@@ -3881,7 +4160,7 @@ To do.
         return                      $self->log_debug('Premature exit - name parts already populated.')
                                     if $already_set;
 
-        my  $valid_name_parts   =   $self->list_to_regex_logical_or_grouping(
+        my  $valid_name_parts   =   $self->list_to_regex_logical_or_string(
 
                                         # Name Parts for Each Field:
                                         map {
@@ -3995,7 +4274,7 @@ To do.
         my  @prompt_on_blank_for    =   qw(
                                             replace
                                         );
-        my  $prompt_on_blank_for    =   $self->list_to_regex_logical_or_grouping(@prompt_on_blank_for);
+        my  $prompt_on_blank_for    =   $self->list_to_regex_logical_or_string(@prompt_on_blank_for);
         my  $matches_prompt_on_blank=   qr/^($prompt_on_blank_for)$/;
 
         if  ($find_prompt) {
@@ -4016,7 +4295,7 @@ To do.
                                                     $self->stringify_array_ref($self->{'given_names'}),
                                                     $self->stringify_array_ref($self->{'family_names'}),
                                                 );
-            my  $acceptable_input           =   $self->list_to_regex_logical_or_grouping(
+            my  $acceptable_input           =   $self->list_to_regex_logical_or_string(
                                                     'given',
                                                     'family',
                                                 );
