@@ -519,8 +519,15 @@ Example declaring English (United Kingdom) within supported L<"YAML configuratio
 
     Language Tag: en-GB
 
-Example declaring no set language within supported ...
+Example declaring no set language at the commandline...
 
+    perl -CAS ChangeName.pm --lang
+
+Example declaring no set language within supported L<"YAML configuration"|/YAML CONFIGURATION (en-GB)>...
+
+    Language Tag:
+
+Commandline L<"options"|/OPTIONS (en-GB)> take precedence over YAML configurations.
 
 =cut
 
