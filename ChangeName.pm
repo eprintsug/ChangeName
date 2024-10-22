@@ -527,7 +527,7 @@ Example declaring no set language within supported L<"YAML configuration"|/YAML 
 
     Language Tag:
 
-Commandline L<"options"|/OPTIONS (en-GB)> take precedence over YAML configurations.
+Commandline L<"options"|/OPTIONS (en-GB)> take precedence over L<"YAML configurations"|/YAML CONFIGURATION (en-GB)>.
 
 =cut
 
@@ -994,7 +994,7 @@ ChangeName.pm - change people's names on dataset records.
 =head2 SYNOPSIS (en-GB)
 
     # Run file at the command line:
-    perl -CAS ./ChangeName.pm
+    perl ./ChangeName.pm
 
     # Run at the command line with arguments and flags:
     perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exact --verbose --live
@@ -1063,7 +1063,7 @@ Their positioning relative to the arguments shouldn't matter.
 =item B<-la> I<tag>, B<--lang> I<tag>, B<--language>=I<tag>
 
 Allows setting of language, by way of a language tag.
-i.e. en-GB, or de-DE.
+i.e. C<en-GB>, or C<de-DE>.
 
     --lang en-GB
 
@@ -1111,29 +1111,30 @@ Provides additional insightful output during the operation.
 =item B<-d>, B<--debug>
 
 Shows verbose and debugging messages during execution.
-Also shows Data::Dumper derived log output for debugging purposes.
-Use the --no_dumper flag to surpress this.
+Also shows L<Data::Dumper> derived log output for debugging purposes.
+Use the C<--no_dumper> flag to surpress this.
 
-When --verbose or --trace is used alongside --debug,
-EPrints->trace output will also be shown after each debug message.
-Use the --no_trace flag to surpress such stacktrace information.
+When C<--verbose> or C<--trace> is used alongside C<--debug>,
+C<< EPrints->trace >> output will also be shown after each debug message.
+Use the C<--no_trace> flag to surpress such stacktrace information.
 
 =item B<-t>, B<--trace>
 
 Should the debug flag be set,
-this trace flag will ensure an EPrints->trace stack trace
+this trace flag will ensure an C<< EPrints->trace >> stack trace
 is displayed alongside every log message,
-unless this flag is supressed by a --no_trace flag.
+unless this flag is supressed by a C<--no_trace> flag.
 
 =item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
 
-Prevents the display of EPrints->trace stacktraces
-which would otherwise be shown when either the debug flag and verbose flag,
-or the debug flag and trace flag, are used together.
+Prevents the display of C<< EPrints->trace >> stacktraces
+which would otherwise be shown when
+either the C<--debug> flag and C<--verbose> flag,
+or the C<--debug> flag and C<--trace> flag, are used together.
 
 =item B<--no_d>, B<--nod>, B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
 
-Prevents the display of Data::Dumper derived log messages
+Prevents the display of L<Data::Dumper> derived log messages
 when the debug flag is in effect.
 
 =back
@@ -1146,7 +1147,7 @@ when the debug flag is in effect.
 
 The file has internal configuration values set already, and these can be overwritten partially, or in full, by an external configuration file.
 
-An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the ChangeName.pm file.
+An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the C<ChangeName.pm> file.
 
 Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</OPTIONS (en-GB)>.
 
@@ -1186,7 +1187,7 @@ In almost all EPrints Repositories it will be: C</opt/eprints3/perl_lib/>.
 If you have installed your EPrints to an unusual folder, however, you may wish to alter this setting to:
 C</unusual_folder/eprints3/perl_lib/>.
 
-Note that both the E and the P in EPrints are capitalised here in the name of the setting.
+Note that both the E and the P in EPrints are capitalised here in the name of the setting (EPrints Perl Library Path).
 
 =item Language Tag:
 
@@ -1208,8 +1209,8 @@ Defaults to C<eprint> - can be set to any dataset you wish to perform a search o
 
 =item Force Commit Changes to Database:
 
-Takes a yes or y (case insensitive) to force commit,
-or anything else (such as no) to not force commit.
+Takes a C<yes> or C<y> (case insensitive) to force commit,
+or anything else (such as C<no>) to not force commit.
 
 Force-committing is sometimes necessary to have your changes take effect.
 
@@ -1270,52 +1271,54 @@ Note that this setting has no affect on EX matches, which always match the entir
 
 =head3 Example YAML Configuration
 
-You can use the following example as a template, and alter it as you need.
+You can use the following example YAML as a template
+for your own external C<ChangeNameConfig.yml> file (or custom named C<.yml> config file),
+and then customise it as required:
 
     # This is a YAML Configuration File:
     %YAML 1.2
     # Three dashes to start new YAML document.
     ---
-    
+
     EPrints Perl Library Path: /opt/eprints3/perl_lib/
-    
+
     Language Tag:
-    
+
     Fields to Search:
         -   creators_name
         -   contributors_name
         -   editors_name
-    
+
     Dataset to Use: eprint
-    
+
     Force Commit Changes to Database: yes
-    
+
     # For the above, provide a yes or y (case insensitive) to force commit,
     # or anything else (such as no) to not force commit.
-    
+
     Search Field Match Type: IN
-    
+
     Search Field Merge Type: ANY
-    
+
     # The "Search Field Match Type" parameter which can be one of:
-    
+
     # IN
     # (short for index)
     # Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
     # In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
-    
+
     # EQ
     # (short for equal)
     # Treat the value as a single string. Match only fields which have this value.
-    
+
     # EX
     # (short for exact)
     # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
     # In the case of subjects, match the specified subjects, but not their decendants.
-    
+
     # SET
     # If the value is non-empty.
-    
+
     # NO
     # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
 
@@ -1328,7 +1331,7 @@ You can use the following example as a template, and alter it as you need.
     # Match an item if any of the space-separated words in the value match.
 
     # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
-    
+
     ...
     # Three dots to end current YAML document.
 
@@ -1337,7 +1340,7 @@ You can use the following example as a template, and alter it as you need.
 
 =pod Language Packages - Found at the top of the file due to needing to be loaded first. Also containing foreign language POD, with English POD last, and continued now...
 
-=head2 LANGUAGE PACKAGES (en-GB):
+=head2 LANGUAGE PACKAGES (en-GB)
 
 These classes contain a language specific lexicon, containing localised configurations, tokens, and phrases.
 Additionally POD translations may also be included in these classes.
@@ -1527,9 +1530,8 @@ Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that ret
 
         return  # Boolean:
                 _has_method($object, 'logger')
-                && _has_method($object->logger, 'language')
-                && defined($object->logger->language)
-                && blessed($object->logger->language);
+                && _has_method($object->logger, 'ready')
+                && $object->logger->ready;
     }
 
     # Check we can call the method, and it returns a true value.
@@ -3080,6 +3082,7 @@ Checks if the Log object is ready for use in logging. Presently the readiness ch
 =cut
     sub ready {
         my  $self   =   shift;
+        return undef unless $self;
         return $self->validate_class($self->language => 'ChangeName::Language');
     }
 
