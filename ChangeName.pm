@@ -93,6 +93,7 @@ my  @tokens = (
 'options.no_dumper'             =>  'kein_dumper kein_dump keindumper keindump',
 'options.no_trace'              =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
 'options.exact'                 =>  'exakt genau genaue',
+'options.help'                  =>  'hilfe',
 
 'input.yes_letter'              =>  'J',
 'input.no_letter'               =>  'N',
@@ -510,11 +511,16 @@ package ChangeName::Languages::en_gb {
 
 =head1 English (United Kingdom)
 
-    # At the commandline:
+Example declaring English (United Kingdom) at the commandline...
+
     perl -CAS ChangeName.pm --lang en-GB
 
-    # Within YAML Config:
+Example declaring English (United Kingdom) within supported L<"YAML configuration"|/YAML CONFIGURATION (en-GB)>...
+
     Language Tag: en-GB
+
+Example declaring no set language within supported ...
+
 
 =cut
 
@@ -554,6 +560,7 @@ my  @tokens = (
 'options.no_dumper'             =>  'no_dumper no_dump nodumper nodump',
 'options.no_trace'              =>  'no_trace notrace no_stacktrace nostacktrace',
 'options.exact'                 =>  'exact',
+'options.help'                  =>  'help',
 
 'input.yes_letter'              =>  'Y',
 'input.no_letter'               =>  'N',
@@ -969,7 +976,7 @@ sub language_name {
 
 =pod FILENAME
 
-=head2 FILENAME
+=head2 FILENAME (en-GB)
 
 ChangeName.pm - change people's names on dataset records.
 
@@ -985,7 +992,7 @@ ChangeName.pm - change people's names on dataset records.
     # Run at the command line with arguments and flags:
     perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exact --verbose --live
 
-=head2 FILE DESCRIPTION
+=head2 FILE DESCRIPTION (en-GB)
 
 A file containing multiple Perl packages,
 that each help in an operation,
@@ -1010,7 +1017,7 @@ so they are loaded first during compile time also,
 as some packages will be called at compile time,
 and need them.
 
-=head2 ARGUMENTS
+=head2 ARGUMENTS (en-GB)
 
 ChangeName.pm considers the first four arguments provided at the commandline to be...
 
@@ -1342,7 +1349,7 @@ German (Germany).
 
 =cut
 
-=head2 PERL PACKAGES
+=head2 PERL PACKAGES (en-GB)
 
 =cut
 
@@ -1512,8 +1519,8 @@ Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that ret
         my  $object =   shift;
 
         return  # Boolean:
-                _has_method($object, 'logger');
-                && _has_method($object->logger, 'language');
+                _has_method($object, 'logger')
+                && _has_method($object->logger, 'language')
                 && defined($object->logger->language)
                 && blessed($object->logger->language);
     }
@@ -2159,7 +2166,7 @@ then this method will return an C<undef> value.
         # Initial Values:
         my  ($self, $list, $chunk_size) =   @ARG;
         $chunk_size                     //= 100;
-        $list                           //= _can_get_list_of_results($self)?    $self->get_list_of_result:
+        $list                           //= _can_get_list_of_results($self)?    $self->get_list_of_results:
                                             undef;
         my  $valid_list                 =   $self->validate_class($list => 'EPrints::List');
         my  @list_of_arrayrefs          =   ();
@@ -2201,6 +2208,67 @@ Used if no external .yml file is provided, or for default values should any exte
 
 =cut
 package ChangeName::Config::YAML v2.0.0 {
+
+=pod Name, Version
+
+=encoding utf8
+
+=head4 MODULE NAME (ChangeName::Config::YAML en-GB)
+
+ChangeName::Config::YAML - Class containing default configuration settings for ChangeName.pm in YAML format.
+
+=head4 VERSION (ChangeName::Config::YAML en-GB)
+
+v2.0.0
+
+=cut
+
+=pod Synopsis, Description
+
+=head4 SYNOPSIS (ChangeName::Config::YAML en-GB)
+
+    use YAML::Tiny;
+    use ChangeName::Config::YAML;
+
+    my  $config =    Load(ChangeName::Config::YAML::data);
+
+=head4 DESCRIPTION (ChangeName::Config::YAML en-GB)
+
+Class containing default configuration settings for ChangeName.pm in YAML format.
+Consists of a single L<"data"|/data (en-GB)> method that returns a string.
+
+=cut
+
+=head4 METHODS (ChangeName::Config::YAML en-GB)
+
+=cut
+
+=head4 data (en-GB)
+
+Use the data method to return the yaml as a string:
+
+    my $yaml_string =   ChangeName::Config::YAML::data;
+
+This can then be loaded using L<YAML::Tiny>'s L<"Load"|YAML::Tiny/Load> Function:
+
+    use YAML::Tiny;
+    my  $perl_data_structure    =   Load($yaml_string);
+
+You can use L<CPAN::Meta::YAML> in Perl's Core, that is based on L<YAML::Tiny>,
+when external modules like L<YAML::Tiny> are not available.
+Bear in mind, it may not support the full YAML standard.
+
+Settings can easily be customised with external YAML files.
+See L</YAML CONFIGURATION (en-GB)>.
+
+This method contains the default fallback configuration settings
+for the ChangeName.pm modulino file,
+so should not be edited to customise settings,
+and instead only be edited to change the fallback defaults the file uses,
+when external customisations are lacking, or commandline options are not specified.
+
+=cut
+    
 
 sub data {
 
@@ -2841,7 +2909,6 @@ package ChangeName::Language v2.0.0 {
 
     }
 
-
     sub set_language_handle {
         my  $self                       =   shift;
 
@@ -2852,9 +2919,9 @@ package ChangeName::Language v2.0.0 {
 
         my  @nothing                    =   ();
 
-        my  @defined_values             =   (
+        my  @valid_values               =   (
                                                 map {
-                                                    (defined $ARG)?   $ARG:
+                                                    (defined $ARG && length $ARG)?   $ARG:
                                                     @nothing
                                                 }
                                                 @ARG
@@ -2862,8 +2929,8 @@ package ChangeName::Language v2.0.0 {
 
    #     warn "Def values:\n".Dumper(@defined_values);
 
-        if (@defined_values) {
-            $self->{language_handle}    =   ChangeName::Languages->get_handle(@defined_values) 
+        if (@valid_values) {
+            $self->{language_handle}    =   ChangeName::Languages->get_handle(@valid_values) 
                                             || die scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language_handle');
         };
 
@@ -2875,7 +2942,7 @@ package ChangeName::Language v2.0.0 {
         $self->{language_handle}   =   undef;
         return $self;
     }
-    
+
     sub get_language_handle {
         shift->{language_handle};
     }
@@ -3370,6 +3437,14 @@ package ChangeName::Modulino v2.0.0 {
     }
 
     # Constructor:
+
+# This constructor contains hardcoded early logging values.
+# To obtain the effects of a commandline option on logging
+# before commandline options are processed,
+# you may wish to alter these hardcoded logger options.
+# This can be useful for commandline option processing debugging.
+# If changing hardcoded logger options temporarily for debugging,
+# do remember to put them back as they were, afterwards.
 
     sub new {
 
