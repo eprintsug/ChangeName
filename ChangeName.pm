@@ -1457,7 +1457,10 @@ Takes an object, and a class name, as arguments - separated by a comma or fat co
 Returns C<undef> if the C<$thing> is not of the desired class name.
 Returns C<$thing> if the C<$thing> is a valid class name.
 
-Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that returns a C<ChangeName::Log> instance to work with.
+Supports L</ChangeName::Log (en-GB)> if C<$self> has
+a C<logger> method that returns a C<ChangeName::Log>
+instance whose C<ready> method returns true,
+indicating it is ready to begin being used to log with.
 
 =cut
     sub validate_class {
@@ -1499,7 +1502,10 @@ Takes a variable, and checks it is defined, and blessed into a class.
 Returns C<undef> if not defined, or not blessed into a class;
 otherwise, returns C<$thing>.
 
-Supports L</ChangeName::Log (en-GB)> if C<$self> has a C<logger> method that returns a C<ChangeName::Log> instance to work with.
+Supports L</ChangeName::Log (en-GB)> if C<$self> has
+a C<logger> method that returns a C<ChangeName::Log>
+instance whose C<ready> method returns true,
+indicating it is ready to begin being used to log with.
 
 =cut
     sub valid_object {
@@ -1650,7 +1656,7 @@ Akin to normal options. See L<Getopt::Long/Simple-options>.
 
 =item * optional_strings
 
-Akin to '=s' - see L<Getopt::Long/Options-with-values>.
+Akin to ':s' - see L<Getopt::Long/Options-with-values>.
 
 =item * negatable_options
 
@@ -1684,10 +1690,10 @@ Designed to be used with object instances. So...
     # ...or...
     process_commandline_arguments($self, %hash);
 
-Supports L</ChangeName::Log (en-GB)>
-if C<$self> has a C<logger> method
-that returns a C<ChangeName::Log> instance
-to work with.
+Supports L</ChangeName::Log (en-GB)> if C<$self> has
+a C<logger> method that returns a C<ChangeName::Log>
+instance whose C<ready> method returns true,
+indicating it is ready to begin being used to log with.
 
 =cut
 
