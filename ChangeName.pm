@@ -1947,9 +1947,10 @@ Designed to be used with object instances. So...
 Takes a list, makes each defined element regex safe, and joins it by the pipe character "C<|>".
 
 Returns the joined string.
-This is of use within a regex logical or grouping,
-and to allow for easier appending to the string with further alternatives,
-grouping brackets are not included in the output, and will need to be added.
+This is of use within a regex "Logical Or" grouping,
+and so as to allow for easier appending to the string with further alternatives,
+grouping brackets are not included in the output, and will need to be added,
+to form a grouping.
 
 For example:
 
@@ -1960,7 +1961,7 @@ For example:
     my  $matches_acceptable_input   =   qr/^($acceptable_input)$/;
 
 As you see in the above example, the result is encased within brackets,
-to form a "logical or" grouping.
+to form a "Logical Or" grouping from the string.
 
 =cut
 
