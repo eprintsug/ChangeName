@@ -118,6 +118,36 @@ zuerst geladen werden,
 da einige Pakete zur Kompilierzeit
 aufgerufen werden und sie benötigen.
 
+
+=head2 ARGUMENTE (de-DE)
+
+ChangeName.pm betrachtet die ersten vier in der Befehlszeile angegebenen Argumente als...
+
+=over
+
+=item 1
+
+...eine EPrints-Archiv-ID (MyArchive im obigen Beispiel L</SYNOPSE (de-DE)>),
+
+=item 2
+
+...dann einen Suchbegriff ohne Berücksichtigung der Groß-/Kleinschreibung (bob im obigen Beispiel L</SYNOPSE (de-DE)>),
+
+=item 3
+
+...dann einen Ersatz mit Berücksichtigung der Groß-/Kleinschreibung (Bobbi im obigen Beispiel L</SYNOPSE (de-DE)>),
+
+=item 4
+
+...und schließlich einen Namensteil – entweder den „C<Vorname>“ oder den „C<Familienname>“ (angegeben im obigen Beispiel L</SYNOPSE (de-DE)>).
+
+=back
+
+Kann auch eine Reihe von Flags akzeptieren (vorangestellt durch zwei Bindestriche
+– wie die oben gezeigten Beispiele C<–-exakt> C<–-ausführlich> und C<–-live>).
+Die Flags und ihre Verwendung werden unter L</OPTIONEN (de-DE)> beschrieben.
+Ihre Positionierung relativ zu den Argumenten sollte keine Rolle spielen.
+
 =head2 ARGUMENTS (en-GB)
 
 ChangeName.pm considers the first four arguments provided at the commandline to be...
@@ -281,6 +311,8 @@ my  @tokens = (
 'input.no_letter'               =>  'N',
 'input.all'                     =>  'ALLE',
 'input.none'                    =>  'KEINER',
+'input.given'                   =>  'vorname',
+'input.family'                  =>  'familienname',
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 
@@ -755,6 +787,8 @@ my  @tokens = (
 'input.no_letter'               =>  'N',
 'input.all'                     =>  'ALL',
 'input.none'                    =>  'NONE',
+'input.given'                   =>  'given',
+'input.family'                  =>  'family',
 'input.1'                       =>  '1',
 'input.2'                       =>  '2',
 
@@ -4523,7 +4557,16 @@ To do.
     }
 
     sub _set_part {
-        return shift->_set_or_prompt_for('part' => shift, @ARG);
+        my  $self   =   shift;
+        
+        # Mulitlingual Input Validation and Translation:
+        my  $input  =   $self->language->matches_case_insensitively($input => 'given')?     'given':
+                        $self->language->matches_case_insensitively($input => 'family')?    'family':
+                        undef;
+        # This should be changed to be dynamic rather than hard coded. I.e. run through all name parts in array index order.
+        # However, that would require updating the prompt_for logic too, so is a bigger job for another day.
+
+        return $self->_set_or_prompt_for('part' => $input, @ARG);
     }
 
     sub get_part {
