@@ -4557,16 +4557,17 @@ To do.
     }
 
     sub _set_part {
-        my  $self   =   shift;
+        my  $self               =   shift;
+        my  $input              =   shift;
         
         # Mulitlingual Input Validation and Translation:
-        my  $input  =   $self->language->matches_case_insensitively($input => 'given')?     'given':
-                        $self->language->matches_case_insensitively($input => 'family')?    'family':
-                        undef;
+        my  $validated_input    =   $self->language->matches_case_insensitively($input => 'input.given')?   'given':
+                                    $self->language->matches_case_insensitively($input => 'input.family')?  'family':
+                                    undef;
         # This should be changed to be dynamic rather than hard coded. I.e. run through all name parts in array index order.
         # However, that would require updating the prompt_for logic too, so is a bigger job for another day.
 
-        return $self->_set_or_prompt_for('part' => $input, @ARG);
+        return $self->_set_or_prompt_for('part' => $validated_input, @ARG);
     }
 
     sub get_part {
