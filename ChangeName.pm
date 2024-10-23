@@ -167,7 +167,7 @@ finden Sie unter L<"Sprachpakete"|/SPRACHPAKETE (de-DE)>.
 
 Eine Liste der unterstützten Sprachen
 und ihrer Sprachtags finden Sie
-unter L<"Language Links (Sprachlinks)"|/Language Links:>.
+unter L<"Language Links"|/Language Links:> (Sprachlinks).
 
 =item B<-k> I</pfad/zu/yaml_konfig.yml>, B<--konfig> I</pfad/zu/yaml_konfig.yml>, B<--konfiguration>=I</pfad/zu/yaml_konfig.yml>
 
@@ -184,60 +184,546 @@ Siehe L</YAML KONFIGURATION (de-DE)>.
 
 =item B<-li>, B<--live>
 
-Ensures changes take effect.
+Stellt sicher, dass Änderungen wirksam werden.
 
-Without this flag, the script will run in dry run mode by default,
-where changes do not take effect.
+Ohne dieses Flag wird das Skript standardmäßig im Probelaufmodus ausgeführt,
+in dem Änderungen nicht wirksam werden.
 
-=item B<-e>, B<--exact>
+=item B<-e>, B<-g>, B<--exakt>, B<--genau>, B<--genaue>
 
-Indicates the search term, if provided on the command line,
-should be interpreted as a case insensitive find value too
-(finding via full matches, and not partial matches).
+Gibt an, dass der Suchbegriff für die Suche,
+wenn er in der Befehlszeile angegeben wird,
+auch für nachfolgendes Suchen und Ersetzen
+als Groß-/Kleinschreibung-unabhängiger Suchwert
+interpretiert werden soll
+(Suchen innerhalb der Suchergebnisse
+über vollständige Übereinstimmungen,
+nicht über teilweise Übereinstimmungen).
 
-This means that when using this flag,
-you will not be prompted for a find value,
-in the find and replace operation on the search results.
-Your search term will be considered your find value too,
-making this an exact search (albeit case insensitive).
+Das bedeutet, dass Sie bei Verwendung dieses Flags
+bei der Such- und Ersetzungsoperation,
+die für die Suchergebnisse ausgeführt wird,
+nicht nach einem Suchwert gefragt werden.
 
-=item B<-v>, B<--verbose>
+Ihr allgemeiner anfänglicher Suchbegriff
+zum Abrufen von Suchergebnissen wird
+auch als Ihr nachfolgender spezifischer
+Suchwert für die Suche innerhalb
+Ihrer Suchergebnisse betrachtet,
+sodass dies eine exakte Suche ist
+(wenn auch ohne Berücksichtigung
+der Groß-/Kleinschreibung).
 
-Provides additional insightful output during the operation.
+=item B<-a>, B<--ausführl>, B<--ausführlich>
+
+Bietet während der Operation zusätzliche aufschlussreiche Ausgaben.
 
 =item B<-d>, B<--debug>
 
-Shows verbose and debugging messages during execution.
-Also shows L<Data::Dumper> derived log output for debugging purposes.
-Use the C<--no_dumper> flag to suppress this.
+Zeigt während der Ausführung ausführliche
+und Debugmeldungen an. Zeigt außerdem
+zu Debugzwecken die von L<Data::Dumper>
+abgeleitete Protokollausgabe an.
+Verwenden Sie das Flag C<--kein_dumper>,
+um dies zu unterdrücken.
 
-When C<--verbose> or C<--trace> is used alongside C<--debug>,
-C<< EPrints->trace >> output will also be shown after each debug message.
-Use the C<--no_trace> flag to suppress such stacktrace information.
+Wenn C<--ausführlich> oder C<--stacktrace> zusammen
+mit C<--debug> verwendet wird,
+wird nach jeder Debug-Meldung auch
+die C<< EPrints->trace >>-Ausgabe angezeigt.
+Verwenden Sie das Flag C<--kein_stacktrace>,
+um solche Stacktrace-Informationen zu unterdrücken.
 
-=item B<-t>, B<--trace>
+=item B<-t>, B<-st>, B<--trace>, B<--stacktrace>
 
-Should the debug flag be set,
-this trace flag will ensure an C<< EPrints->trace >> stack trace
-is displayed alongside every log message,
-unless this flag is suppressed by a C<--no_trace> flag.
+Sollte das C<--debug>-Flag gesetzt sein,
+stellt dieses C<--stacktrace>-Flag sicher,
+dass neben jeder Protokollmeldung
+ein C<< EPrints->trace >>-Stacktrace
+angezeigt wird, es sei denn,
+dieses Flag wird durch ein Flag
+C<--kein_stacktrace> unterdrückt.
 
-=item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
+=item B<-keint>, B<-kein_t>, B<--keintrace>, B<--kein_trace>, B<--keinstacktrace>, B<--kein_stacktrace>
 
-Prevents the display of C<< EPrints->trace >> stacktraces
-which would otherwise be shown when
-either the C<--debug> flag and C<--verbose> flag,
-or the C<--debug> flag and C<--trace> flag, are used together.
+Verhindert die Anzeige
+von C<< EPrints->trace >>-Stacktraces,
+die andernfalls angezeigt würden,
+wenn entweder das Flag C<--debug> und das Flag C<--ausführlich>
+oder das Flag C<--debug> und das Flag C<--stacktrace>
+zusammen verwendet werden.
 
-=item B<--no_d>, B<--nod>, B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
+=item B<-keind>, B<-kein_d>, B<--keindump>, B<--kein_dump>, B<--keindumper>, B<--kein_dumper>
 
-Prevents the display of L<Data::Dumper> derived log messages
-when the debug flag is in effect.
+Verhindert die Anzeige von
+aus L<Data::Dumper> abgeleiteten Protokollmeldungen,
+wenn das C<--debug>-Flag aktiviert ist.
 
 =back
 
 =cut
 
+=pod YAML-Konfiguration
+
+=head2 YAML-KONFIGURATION (de-DE)
+
+Die Datei C<ChangeName.pm>
+hat bereits interne
+Konfigurationswerte festgelegt,
+die teilweise oder vollständig
+durch eine
+externe Konfigurationsdatei
+überschrieben werden können.
+
+Eine externe Konfiguration wird
+automatisch aus jeder
+C<ChangeNameConfig.yml>-Datei
+(Groß-/Kleinschreibung beachten) geladen,
+die sich im selben Verzeichnis
+wie die Datei C<ChangeName.pm> befindet.
+
+Alternativ können Sie eine benutzerdefinierte Konfigurationsdatei mit einem beliebigen Pfad und Dateinamen über die Option C<--konfig> verwenden, die in L</OPTIONEN (de-DE)> beschrieben wird.
+
+=head3 Konfigurationswerte
+
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+    Language Tag: de-DE
+
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+
+    Dataset to Use: eprint
+
+    Force Commit Changes to Database: yes
+
+    Search Field Match Type: IN
+
+    Search Field Merge Type: ANY
+
+Oben sind die derzeit
+unterstützten Konfigurationseinstellungen
+mit Beispielwerten aufgeführt.
+Sie können in Ihrer Konfiguration
+beliebig viele davon einschließen
+oder weglassen.
+
+Bei den Namen
+der Konfigurationseinstellungen
+wird zwischen
+Groß- und Kleinschreibung
+unterschieden.
+
+=over
+
+=item EPrints Perl Library Path:
+
+Dies ist der Pfad der Perl-Bibliothek
+Ihrer lokalen EPrints-Repository-Installation.
+Normalerweise handelt es
+sich um einen Ordner C<perl_lib>
+innerhalb des Ordners,
+in dem Sie Ihr EPrints-Repository
+installiert haben.
+In fast allen EPrints-Repositorys
+lautet er: C</opt/eprints3/perl_lib/>.
+
+Wenn Sie Ihre EPrints jedoch
+in einem ungewöhnlichen Ordner
+installiert haben,
+möchten Sie diese Einstellung
+möglicherweise in
+C</ungewöhnlichen_ordner/eprints3/perl_lib/>
+ändern.
+
+
+Beachten Sie,
+dass sowohl das E als auch das P
+in EPrints hier im Namen
+der Einstellung („EPrints Perl Library Path“)
+groß geschrieben werden.
+
+Bei den Namen
+der Konfigurationseinstellungen
+wird zwischen
+Groß- und Kleinschreibung
+unterschieden.
+
+=item Language Tag:
+
+
+Dies ist die Sprache,
+die das Skript verwenden soll,
+ausgedrückt als Sprachtag.
+Eine Liste der unterstützten Sprachen,
+einschließlich ihrer Sprachtags,
+finden Sie im Abschnitt
+L<"Language Links"|/Language Links:>
+(Sprachlinks).
+
+Die Sprache sollte ein einzelnes Sprach-Tag oder nichts sein.
+
+Wenn das Feld nicht festgelegt ist,
+fehlt oder leer gelassen wird,
+wird das Skript mehrsprachig ausgeführt
+und verwendet alle unterstützten Sprachen.
+
+=item Fields to Search:
+
+Dies sind die Felder,
+die Sie innerhalb des
+von Ihnen gewählten
+Datensatztyps
+durchsuchen möchten.
+Derzeit sind die Standardsuchfelder
+C<creators_name>, C<contributors_name>
+und C<editors_name>.
+Sie können diese nach Belieben
+anpassen oder die Suchfelder
+auf nur eines dieser
+Felder beschränken.
+
+=item Dataset to Use:
+
+Standardmäßig auf C<eprint> eingestellt
+– kann auf jeden Datensatz eingestellt
+werden, in dem Sie eine Suche
+durchführen und Namen ändern möchten.
+Dieses Skript wurde nur
+mit dem Datensatz C<eprint> getestet.
+
+=item Force Commit Changes to Database:
+
+Takes a C<yes> or C<y> (case insensitive) to force commit,
+or anything else (such as C<no>) to not force commit.
+
+Force-committing is sometimes necessary to have your changes take effect.
+
+=item Search Field Match Type:
+
+This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item IN
+
+(Short for index).
+Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
+
+
+=item EQ
+
+(Short for equal).
+Treat the value as a single string. Match only fields which have this value.
+    
+=item EX
+
+(Short for exact).
+If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+In the case of subjects, match the specified subjects, but not their descendants.
+    
+=item SET
+
+If the value is non-empty.
+    
+=item NO
+
+This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+=back
+
+=item Search Field Merge Type:
+
+This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item ALL
+
+Match an item if any of the space-separated words in the value match.
+
+=item ANY
+
+Match an item only if all of the space-separated words in the value match.
+
+=back
+
+Note that this setting has no affect on EX matches, which always match the entire value.
+
+
+=back
+
+=head3 Example YAML Configuration
+
+You can use the following example YAML as a template
+for your own external C<ChangeNameConfig.yml> file (or custom named C<.yml> config file),
+and then customise it as required:
+
+    # This is a YAML Configuration File:
+    %YAML 1.2
+    # Three dashes to start new YAML document.
+    ---
+
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+    Language Tag:
+
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+
+    Dataset to Use: eprint
+
+    Force Commit Changes to Database: yes
+
+    # For the above, provide a yes or y (case insensitive) to force commit,
+    # or anything else (such as no) to not force commit.
+
+    Search Field Match Type: IN
+
+    Search Field Merge Type: ANY
+
+    # The "Search Field Match Type" parameter which can be one of:
+
+    # IN
+    # (short for index)
+    # Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+    # In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
+
+    # EQ
+    # (short for equal)
+    # Treat the value as a single string. Match only fields which have this value.
+
+    # EX
+    # (short for exact)
+    # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+    # In the case of subjects, match the specified subjects, but not their descendants.
+
+    # SET
+    # If the value is non-empty.
+
+    # NO
+    # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+    # The "Search Field Merge Type" parameter can be one of:
+
+    # ALL
+    # Match an item only if all of the space-separated words in the value match.
+
+    # ANY
+    # Match an item if any of the space-separated words in the value match.
+
+    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+
+    ...
+    # Three dots to end current YAML document.
+
+
+=cut
+
+
+
+
+=pod YAML Configuration
+
+=head2 YAML CONFIGURATION (en-GB)
+
+The file has internal configuration values set already, and these can be overwritten partially, or in full, by an external configuration file.
+
+An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the C<ChangeName.pm> file.
+
+Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</OPTIONS (en-GB)>.
+
+=head3 Configuration Values
+
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+    Language Tag: en-GB
+
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+
+    Dataset to Use: eprint
+
+    Force Commit Changes to Database: yes
+
+    Search Field Match Type: IN
+
+    Search Field Merge Type: ANY
+
+
+Above are the currently supported configuration settings, with example values.
+You can include or omit as many of these as you wish, in your config.
+
+The names of the configuration settings are case sensitive.
+
+=over
+
+=item EPrints Perl Library Path:
+
+This is the path of your local EPrints Repository installation's Perl Library.
+It is typically a C<perl_lib> folder, within the folder you installed your EPrints Repository to.
+In almost all EPrints Repositories it will be: C</opt/eprints3/perl_lib/>.
+
+If you have installed your EPrints to an unusual folder, however, you may wish to alter this setting to:
+C</unusual_folder/eprints3/perl_lib/>.
+
+Note that both the E and the P in EPrints are capitalised here in the name of the setting (EPrints Perl Library Path).
+
+=item Language Tag:
+
+This is the language the script is to use, expressed as a language tag.
+See L</Language Links:> section for a list of supported languages, including their language tags.
+
+The language, should be a single language tag, or nothing.
+
+If the field is not set, missing, or left blank, the script will run multilingually, using all supported languages.
+
+=item Fields to Search:
+
+These are the dataset fields you wish to search. Currently, the default fields to search are C<creators_name>, C<contributors_name> and C<editors_name> and you are free to customise these how you wish,
+or restrict the fields searched to only one of these.
+
+=item Dataset to Use:
+
+Defaults to C<eprint> - can be set to any dataset you wish to perform a search on, and change names in. This script has only been tested with the eprints dataset.
+
+=item Force Commit Changes to Database:
+
+Takes a C<yes> or C<y> (case insensitive) to force commit,
+or anything else (such as C<no>) to not force commit.
+
+Force-committing is sometimes necessary to have your changes take effect.
+
+=item Search Field Match Type:
+
+This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item IN
+
+(Short for index).
+Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
+
+
+=item EQ
+
+(Short for equal).
+Treat the value as a single string. Match only fields which have this value.
+    
+=item EX
+
+(Short for exact).
+If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+In the case of subjects, match the specified subjects, but not their descendants.
+    
+=item SET
+
+If the value is non-empty.
+    
+=item NO
+
+This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+=back
+
+=item Search Field Merge Type:
+
+This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+
+=over
+
+=item ALL
+
+Match an item if any of the space-separated words in the value match.
+
+=item ANY
+
+Match an item only if all of the space-separated words in the value match.
+
+=back
+
+Note that this setting has no affect on EX matches, which always match the entire value.
+
+
+=back
+
+=head3 Example YAML Configuration
+
+You can use the following example YAML as a template
+for your own external C<ChangeNameConfig.yml> file (or custom named C<.yml> config file),
+and then customise it as required:
+
+    # This is a YAML Configuration File:
+    %YAML 1.2
+    # Three dashes to start new YAML document.
+    ---
+
+    EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+    Language Tag:
+
+    Fields to Search:
+        -   creators_name
+        -   contributors_name
+        -   editors_name
+
+    Dataset to Use: eprint
+
+    Force Commit Changes to Database: yes
+
+    # For the above, provide a yes or y (case insensitive) to force commit,
+    # or anything else (such as no) to not force commit.
+
+    Search Field Match Type: IN
+
+    Search Field Merge Type: ANY
+
+    # The "Search Field Match Type" parameter which can be one of:
+
+    # IN
+    # (short for index)
+    # Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+    # In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
+
+    # EQ
+    # (short for equal)
+    # Treat the value as a single string. Match only fields which have this value.
+
+    # EX
+    # (short for exact)
+    # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+    # In the case of subjects, match the specified subjects, but not their descendants.
+
+    # SET
+    # If the value is non-empty.
+
+    # NO
+    # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+    # The "Search Field Merge Type" parameter can be one of:
+
+    # ALL
+    # Match an item only if all of the space-separated words in the value match.
+
+    # ANY
+    # Match an item if any of the space-separated words in the value match.
+
+    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+
+    ...
+    # Three dots to end current YAML document.
+
+
+=cut
 
 
 
@@ -1314,14 +1800,14 @@ this trace flag will ensure an C<< EPrints->trace >> stack trace
 is displayed alongside every log message,
 unless this flag is suppressed by a C<--no_trace> flag.
 
-=item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
+=item B<-not>, B<-no_t>, B<--notrace>, B<--no_trace>
 
 Prevents the display of C<< EPrints->trace >> stacktraces
 which would otherwise be shown when
 either the C<--debug> flag and C<--verbose> flag,
 or the C<--debug> flag and C<--trace> flag, are used together.
 
-=item B<--no_d>, B<--nod>, B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
+=item B<-nod>, B<-no_d>, B<--nodump>, B<--no_dump>, B<--nodumper>, B<--no_dumper>
 
 Prevents the display of L<Data::Dumper> derived log messages
 when the debug flag is in effect.
@@ -1394,7 +1880,7 @@ or restrict the fields searched to only one of these.
 
 =item Dataset to Use:
 
-Defaults to C<eprint> - can be set to any dataset you wish to perform a search on, and change names in. This script has only been tested with the eprints dataset.
+Defaults to C<eprint> - can be set to any dataset you wish to perform a search on, and change names in. This script has only been tested with the C<eprint> dataset.
 
 =item Force Commit Changes to Database:
 
