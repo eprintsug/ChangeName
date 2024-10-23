@@ -396,58 +396,91 @@ mit dem Datensatz C<eprint> getestet.
 
 =item Force Commit Changes to Database:
 
-Takes a C<yes> or C<y> (case insensitive) to force commit,
-or anything else (such as C<no>) to not force commit.
+Nimmt ein C<yes> oder C<y>
+(ohne Berücksichtigung
+der Groß-/Kleinschreibung) an,
+um ein Commit zu erzwingen,
+oder etwas anderes
+(wie z. B. C<no>),
+um ein Commit nicht zu erzwingen.
 
-Force-committing is sometimes necessary to have your changes take effect.
+Manchmal ist ein erzwungenes
+Commit erforderlich,
+damit Ihre Änderungen
+wirksam werden.
 
 =item Search Field Match Type:
 
-This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+Dies ist hier online dokumentiert:
+L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION>
+und kann einen der folgenden Werte haben:
 
 =over
 
 =item IN
 
-(Short for index).
-Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
-In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
-
+(Abkürzung für Index).
+Behandeln Sie den Wert als eine Liste von durch Leerzeichen getrennten Wörtern.
+Suchen Sie im Volltextindex nach jedem einzelnen.
+Bei Betreffzeilen müssen Sie diese Betreffzeilen-IDs
+oder die ihrer Nachkommen im Betreffbaum abgleichen.
 
 =item EQ
 
-(Short for equal).
-Treat the value as a single string. Match only fields which have this value.
-    
+(Abkürzung für „equal“ [gleich]).
+Behandeln Sie den Wert als einzelne Zeichenfolge.
+Passen Sie nur die Felder an, die diesen Wert haben.
+
 =item EX
 
-(Short for exact).
-If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-In the case of subjects, match the specified subjects, but not their descendants.
-    
+(Abkürzung für „exakt“).
+Wenn der Wert eine leere Zeichenfolge ist,
+wird nach leeren Feldern gesucht,
+anstatt dieses Suchfeld zu überspringen.
+Bei Betreffzeilen werden
+die angegebenen Betreffzeilen abgeglichen,
+nicht jedoch deren Nachkommen.
+
 =item SET
 
-If the value is non-empty.
-    
+Wenn der Wert nicht leer ist.
+
 =item NO
 
-This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+Dies wird normalerweise
+nur intern verwendet
+und führt dazu,
+dass das betreffende
+Suchfeld keine Treffer
+liefert.
+Dies geschieht,
+ohne dass Verarbeitungsaufwand
+für eine gründliche
+Suche betrieben wird.
 
 =back
 
 =item Search Field Merge Type:
 
-This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
+Dies ist auch hier online dokumentiert:
+L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION>
+und kann einen der folgenden Werte haben:
 
 =over
 
 =item ALL
 
-Match an item if any of the space-separated words in the value match.
+Ordnen Sie ein Element nur dann zu,
+wenn alle durch Leerzeichen 
+etrennten Wörter
+mit dem Element übereinstimmen.
 
 =item ANY
 
-Match an item only if all of the space-separated words in the value match.
+Stimmt mit einem Element überein,
+wenn eines der durch Leerzeichen
+getrennten Wörter innerhalb des
+Werts mit dem Element übereinstimmt.
 
 =back
 
@@ -643,11 +676,11 @@ This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Se
 
 =item ALL
 
-Match an item if any of the space-separated words in the value match.
+Match an item only if all of the space-separated words in the value match.
 
 =item ANY
 
-Match an item only if all of the space-separated words in the value match.
+Match an item if any of the space-separated words in the value match.
 
 =back
 
@@ -1931,11 +1964,11 @@ This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Se
 
 =item ALL
 
-Match an item if any of the space-separated words in the value match.
+Match an item only if all of the space-separated words in the value match.
 
 =item ANY
 
-Match an item only if all of the space-separated words in the value match.
+Match an item if any of the space-separated words in the value match.
 
 =back
 
