@@ -1112,18 +1112,18 @@ Provides additional insightful output during the operation.
 
 Shows verbose and debugging messages during execution.
 Also shows L<Data::Dumper> derived log output for debugging purposes.
-Use the C<--no_dumper> flag to surpress this.
+Use the C<--no_dumper> flag to suppress this.
 
 When C<--verbose> or C<--trace> is used alongside C<--debug>,
 C<< EPrints->trace >> output will also be shown after each debug message.
-Use the C<--no_trace> flag to surpress such stacktrace information.
+Use the C<--no_trace> flag to suppress such stacktrace information.
 
 =item B<-t>, B<--trace>
 
 Should the debug flag be set,
 this trace flag will ensure an C<< EPrints->trace >> stack trace
 is displayed alongside every log message,
-unless this flag is supressed by a C<--no_trace> flag.
+unless this flag is suppressed by a C<--no_trace> flag.
 
 =item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
 
@@ -1223,8 +1223,8 @@ This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/
 =item IN
 
 (Short for index).
-Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
-In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
+Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
 
 
 =item EQ
@@ -1236,7 +1236,7 @@ Treat the value as a single string. Match only fields which have this value.
 
 (Short for exact).
 If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-In the case of subjects, match the specified subjects, but not their decendants.
+In the case of subjects, match the specified subjects, but not their descendants.
     
 =item SET
 
@@ -1304,8 +1304,8 @@ and then customise it as required:
 
     # IN
     # (short for index)
-    # Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
-    # In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
+    # Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+    # In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
 
     # EQ
     # (short for equal)
@@ -1314,7 +1314,7 @@ and then customise it as required:
     # EX
     # (short for exact)
     # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-    # In the case of subjects, match the specified subjects, but not their decendants.
+    # In the case of subjects, match the specified subjects, but not their descendants.
 
     # SET
     # If the value is non-empty.
@@ -1443,7 +1443,7 @@ Contains exportable subroutines that are useful utilities and functions for othe
 
 =cut
 
-=head4 validate_class (en-GB)
+=head5 validate_class (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -1488,7 +1488,7 @@ indicating it is ready to begin being used to log with.
         return                                      $valid_object_of_acceptable_class;
     }
 
-=head4 valid_object (en-GB)
+=head5 valid_object (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -1558,7 +1558,7 @@ indicating it is ready to begin being used to log with.
     }
 
 
-=head4 get_options (en-GB)
+=head5 get_options (en-GB)
 
 Example:
 
@@ -1582,7 +1582,7 @@ for more information.
         return [process_commandline_arguments(@ARG)]->[0];
     }
 
-=head4 get_arguments (en-GB)
+=head5 get_arguments (en-GB)
 
 Example:
 
@@ -1607,7 +1607,7 @@ for more information.
         return [process_commandline_arguments(@ARG)]->[1];
     }
 
-=head4 process_commandline_arguments (en-GB)
+=head5 process_commandline_arguments (en-GB)
 
 Takes a hash of arguments, as follows...
 
@@ -1935,7 +1935,7 @@ indicating it is ready to begin being used to log with.
 
     }
 
-=head4 list_to_regex_logical_or_string (en-GB)
+=head5 list_to_regex_logical_or_string (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -1988,7 +1988,7 @@ to form a "Logical Or" grouping from the string.
 
     }
 
-=head4 is_populated_array_ref (en-GB)
+=head5 is_populated_array_ref (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -2017,7 +2017,7 @@ this method will return an C<undef> value.
         _is_populated_ref(shift, shift, 'ARRAY');
     }
 
-=head4 is_populated_hash_ref (en-GB)
+=head5 is_populated_hash_ref (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -2047,7 +2047,7 @@ this method will return an C<undef> value.
         _is_populated_ref(shift, shift, 'HASH');
     }
 
-=head4 is_populated_scalar_ref (en-GB)
+=head5 is_populated_scalar_ref (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -2105,7 +2105,7 @@ then this method will return an C<undef> value.
     }
 
 
-=head4 is_true_or_zero (en-GB)
+=head5 is_true_or_zero (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -2143,7 +2143,7 @@ to be more in keeping with other methods in this class.
                             $value || $value eq '0'
                         );
     }
-=head4 chunkify (en-GB)
+=head5 chunkify (en-GB)
 
 Designed to be used with object instances. So...
 
@@ -2208,7 +2208,7 @@ Returns an array of array references.
 
     }
 
-=head4 stringify_array_ref (en-GB)
+=head5 stringify_array_ref (en-GB)
 
 Convert an array reference to a text string, consisting of the items separated by a universal C<separator.stringify_array_ref> localisation value.
 
@@ -2222,7 +2222,7 @@ a L<"ChangeName::Language"|/ChangeName::Language (en-GB)> instance
 with a C<localise> method.
 
 Also expects a (considered to be universal to all languages)
-C<seperator.stringify_array_ref> Lexicon key to be set in the
+C<separator.stringify_array_ref> Lexicon key to be set in the
 L<"ChangeName::Languages"|/ChangeName::Languages (en-GB)>
 base class for language classes.
 
@@ -2278,7 +2278,7 @@ Consists of a single L<"data"|/data (en-GB)> method that returns a string.
 
 =cut
 
-=head4 data (en-GB)
+=head5 data (en-GB)
 
 Use the data method to return the yaml as a string:
 
@@ -2361,8 +2361,8 @@ Search Field Merge Type: ANY
 
 # IN
 # (short for index)
-# Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
-# In the case of subjects, match these subject ids or those of any of their decendants in the subject tree.
+# Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
+# In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
 
 # EQ
 # (short for equal)
@@ -2371,7 +2371,7 @@ Search Field Merge Type: ANY
 # EX
 # (short for exact)
 # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-# In the case of subjects, match the specified subjects, but not their decendants.
+# In the case of subjects, match the specified subjects, but not their descendants.
 
 # SET
 # If the value is non-empty.
@@ -2744,7 +2744,7 @@ package ChangeName::Languages v2.0.0 {
         my  @in_all_languages                       =   ();
         my  $in_all_languages_string                =   q{};
         my  $language_base_class                    =   __PACKAGE__;
-        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline (useful as line seperator).
+        my  $format                                 =   "%s: %s\n"; # String, colon, space, string, newline (useful as line separator).
         my  $remove_trailing_new_line               =   qr/\n$/;    # Remove any trailing newline possibly left by the above format.
 
         # Processing:
@@ -3113,7 +3113,11 @@ package ChangeName::Log v2.0.0 {
         return  $self;
     }
 
-=head4 ready (en-GB)
+=head4 METHODS (ChangeName::Log en-GB)
+
+=cut
+
+=head5 ready (en-GB)
 
 Checks if the C<Log> object is ready for use in logging.
 
@@ -3820,13 +3824,16 @@ See L</new (ChangeName::Operation en-GB)> method for info on acceptable object p
    
 =head4 CLASS METHODS (ChangeName::Operation en-GB)
 
-=head5 $class->start(@object_params);
+=head5 start (en-GB)
 
-Serves as an example of how to use the object.
+    $class->start(%object_params);
 
-Constructs a new ChangeName::Operation object instance
+The code in this class method, can serve as an example
+of how to use the object.
+
+This constructs a new C<ChangeName::Operation> object instance
 from the class (using the object parameters passed in),
-upon which the program flow methods are then called...
+upon which the program flow methods are then called, like so...
 
     # Construct new object, and begin program flow...
     ChangeName::Operation->new(@object_params)->search->prepare->display->confirm->change->finish;
@@ -3856,7 +3863,7 @@ making changes (L</change (ChangeName::Operation en-GB)>),
 
 =item *
 
-and proceding to finish (L</finish (ChangeName::Operation en-GB)>).
+and proceeding to finish (L</finish (ChangeName::Operation en-GB)>).
 
 =back
 
@@ -3906,7 +3913,7 @@ can be called.
 
 =head4 INSTANCE METHODS (ChangeName::Operation en-GB)
 
-=head4 search (en-GB)
+=head5 search (en-GB)
 
     # Construct an object, and populate its 
     my  $object  =   ChangeName::Operation->new(@object_params)->search;
@@ -3951,7 +3958,7 @@ now with C<list_of_results> and C<records_found> object attributes set.
 
     }
 
-=head4 prepare (en-GB)
+=head5 prepare (en-GB)
 
     # Prepare for performing a find and replace operation... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->prepare;
@@ -4033,7 +4040,7 @@ it will prompt the user for them too.
 
     }
 
-=head4 confirm (en-GB)
+=head5 confirm (en-GB)
 
 To do.
 
@@ -4074,7 +4081,7 @@ To do.
 
     }
 
-=head4 change (en-GB)
+=head5 change (en-GB)
 
 To do.
 
@@ -4145,7 +4152,7 @@ To do.
 
     }
 
-=head4 finish (en-GB)
+=head5 finish (en-GB)
 
 To do.
 
