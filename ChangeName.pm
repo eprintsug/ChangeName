@@ -1625,7 +1625,13 @@ Contains exportable subroutines that are useful utilities and functions for othe
 
 =cut
 
+=pod validate_class
+
+B<---------------->
+
 =head5 validate_class (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -1670,7 +1676,13 @@ indicating it is ready to begin being used to log with.
         return                                      $valid_object_of_acceptable_class;
     }
 
+=pod valid_object
+
+B<---------------->
+
 =head5 valid_object (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -1739,8 +1751,13 @@ indicating it is ready to begin being used to log with.
                 && $object->can($method_name)
     }
 
+=pod get_options
+
+B<---------------->
 
 =head5 get_options (en-GB)
+
+B<---------------->
 
 Example:
 
@@ -1764,7 +1781,13 @@ for more information.
         return [process_commandline_arguments(@ARG)]->[0];
     }
 
+=pod get_arguments
+
+B<---------------->
+
 =head5 get_arguments (en-GB)
+
+B<---------------->
 
 Example:
 
@@ -1789,7 +1812,13 @@ for more information.
         return [process_commandline_arguments(@ARG)]->[1];
     }
 
+=pod process_commandline_arguments (en-GB)
+
+B<---------------->
+
 =head5 process_commandline_arguments (en-GB)
+
+B<---------------->
 
 Takes a hash of arguments, as follows...
 
@@ -1875,11 +1904,11 @@ The value string can contain as many space separated alternatives as desired.
 Returns a list containing
 an options hash reference,
 an arguments hash reference,
-and a no_input flag.
+and a C<no_input> flag.
 
     my ($options, $arguments, $no_input)    =   $self->process_commandline_arguments(%hash);
 
-The no_input flag should be considered a boolean,
+The C<$no_input> flag should be considered a boolean,
 as it returns a true value
 if there are no arguments after options have been processed,
 and it returns a false value
@@ -2138,8 +2167,13 @@ indicating it is ready to begin being used to log with.
         return $our_option_string;
 
     }
+=pod list_to_regex_logical_or_string (en-GB)
+
+B<---------------->
 
 =head5 list_to_regex_logical_or_string (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2191,8 +2225,13 @@ to form a "Logical Or" grouping from the string.
                 );
 
     }
+=pod is_populated_array_ref (en-GB)
+
+B<---------------->
 
 =head5 is_populated_array_ref (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2220,8 +2259,13 @@ this method will return an C<undef> value.
     sub is_populated_array_ref {
         _is_populated_ref(shift, shift, 'ARRAY');
     }
+=pod is_populated_hash_ref (en-GB)
+
+B<---------------->
 
 =head5 is_populated_hash_ref (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2251,7 +2295,13 @@ this method will return an C<undef> value.
         _is_populated_ref(shift, shift, 'HASH');
     }
 
+=pod is_populated_scalar_ref (en-GB)
+
+B<---------------->
+
 =head5 is_populated_scalar_ref (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2309,7 +2359,13 @@ then this method will return an C<undef> value.
     }
 
 
+=pod is_true_or_zero (en-GB)
+
+B<---------------->
+
 =head5 is_true_or_zero (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2347,7 +2403,13 @@ to be more in keeping with other methods in this class.
                             $value || $value eq '0'
                         );
     }
+=pod
+
+B<---------------->
+
 =head5 chunkify (en-GB)
+
+B<---------------->
 
 Designed to be used with object instances. So...
 
@@ -2411,8 +2473,13 @@ Returns an array of array references.
         return @list_of_arrayrefs;
 
     }
+=pod stringify_array_ref (en-GB)
+
+B<---------------->
 
 =head5 stringify_array_ref (en-GB)
+
+B<---------------->
 
 Convert an array reference to a text string, consisting of the items separated by a universal C<separator.stringify_array_ref> localisation value.
 
@@ -2482,7 +2549,13 @@ Consists of a single L<"data"|/data (en-GB)> method that returns a string.
 
 =cut
 
+=pod data (en-GB)
+
+B<---------------->
+
 =head5 data (en-GB)
+
+B<---------------->
 
 Use the data method to return the yaml as a string:
 
@@ -2802,6 +2875,14 @@ package ChangeName::Languages v2.0.0 {
             );
 
     my  @tokens = (
+        # These tokens are in the base class, as universal to all languages.
+        # If something is universal, why does it need localising?
+        # In particular, separator.stringify_array_ref
+        # could be set directly in the stringify_array_ref method
+        # instead of requiring a localised value.
+        # That said, having every separator in one place,
+        # makes separator changes easier when needed,
+        # and keeps code and content separate.
         'separator.name_parts'              =>  ' ',            # space
         'separator.name_values'             =>  ', ',           # comma, space
         'separator.new_line'                =>  "\n",           # new line
@@ -3321,7 +3402,13 @@ package ChangeName::Log v2.0.0 {
 
 =cut
 
+=pod ready (en-GB)
+
+B<---------------->
+
 =head5 ready (en-GB)
+
+B<---------------->
 
 Checks if the C<Log> object is ready for use in logging.
 
@@ -4028,46 +4115,54 @@ See L</new (ChangeName::Operation en-GB)> method for info on acceptable object p
    
 =head4 CLASS METHODS (ChangeName::Operation en-GB)
 
+=pod start (en-GB)
+
+B<---------------->
+
 =head5 start (en-GB)
+
+B<---------------->
 
     $class->start(%object_params);
 
 The code in this class method, can serve as an example
 of how to use the object.
 
-This constructs a new C<ChangeName::Operation> object instance
-from the class (using the object parameters passed in),
-upon which the program flow methods are then called, like so...
+This method is equivalent to the following method chain:
 
     # Construct new object, and begin program flow...
     ChangeName::Operation->new(@object_params)->search->prepare->display->confirm->change->finish;
+
+This start method constructs a new C<ChangeName::Operation> object instance
+from the class (using the object parameters passed in and the L<"new"|/new (ChangeName::Operation en-GB)> constructor)>,
+upon which the program flow methods are then called, like so...
 
 =over
 
 =item *
 
-Beginning with a search (L</search (ChangeName::Operation en-GB)>),
+Beginning with a search (L</search (en-GB)>),
 
 =item *
 
-then preparing to find and replace (L</prepare (ChangeName::Operation en-GB)>),
+then preparing to find and replace (L</prepare (en-GB)>),
 
 
 =item *
 
-then generating what will be displayed to the user (L</display (ChangeName::Operation en-GB)>),
+then generating what will be displayed to the user (L</display (en-GB)>),
 
 =item *
 
-confirming any changes to be made (L</confirm (ChangeName::Operation en-GB)>),
+confirming any changes to be made (L</confirm (en-GB)>),
 
 =item *
 
-making changes (L</change (ChangeName::Operation en-GB)>),
+making changes (L</change (en-GB)>),
 
 =item *
 
-and proceeding to finish (L</finish (ChangeName::Operation en-GB)>).
+and proceeding to finish (L</finish (en-GB)>).
 
 =back
 
@@ -4089,7 +4184,13 @@ and proceeding to finish (L</finish (ChangeName::Operation en-GB)>).
 
 =cut
 
+=pod new (ChangeName::Operation en-GB)
+
+B<---------------->
+
 =head5 new (ChangeName::Operation en-GB)
+
+B<---------------->
 
     # Construct new object, and begin program flow...
     my  $object =   ChangeName::Operation->new(@object_params);
@@ -4117,7 +4218,15 @@ can be called.
 
 =head4 INSTANCE METHODS (ChangeName::Operation en-GB)
 
+=cut
+
+=pod search (en-GB)
+
+B<---------------->
+
 =head5 search (en-GB)
+
+B<---------------->
 
     # Construct an object, and populate its 
     my  $object  =   ChangeName::Operation->new(@object_params)->search;
@@ -4162,7 +4271,13 @@ now with C<list_of_results> and C<records_found> object attributes set.
 
     }
 
+=pod prepare (en-GB)
+
+B<---------------->
+
 =head5 prepare (en-GB)
+
+B<---------------->
 
     # Prepare for performing a find and replace operation... 
     my  $object  =   ChangeName::Operation->new(@object_params)->search->prepare;
@@ -4205,6 +4320,18 @@ it will prompt the user for them too.
 
     }
 
+=pod display (en-GB)
+
+B<---------------->
+
+=head5 display (en-GB)
+
+B<---------------->
+
+To do.
+
+=cut
+
     sub display {
 
         # Initial values:
@@ -4244,7 +4371,13 @@ it will prompt the user for them too.
 
     }
 
+=pod confirm (en-GB)
+
+B<---------------->
+
 =head5 confirm (en-GB)
+
+B<---------------->
 
 To do.
 
@@ -4285,7 +4418,13 @@ To do.
 
     }
 
+=pod change (en-GB)
+
+B<---------------->
+
 =head5 change (en-GB)
+
+B<---------------->
 
 To do.
 
@@ -4356,7 +4495,13 @@ To do.
 
     }
 
+=pod finish (en-GB)
+
+B<---------------->
+
 =head5 finish (en-GB)
+
+B<---------------->
 
 To do.
 
