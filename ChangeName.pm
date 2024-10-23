@@ -86,7 +86,7 @@ ChangeName.pm – Namen von Personen in „Dataset“-Datensätzen ändern.
     perl ./ChangeName.pm
 
     # In der Befehlszeile mit Argumenten und Flags ausführen:
-    perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exakt --ausführlich --live
+    perl -CAS ./ChangeName.pm MyArchive bob Bobbi vorname --exakt --ausführlich --live
 
 =head2 DATEIBESCHREIBUNG (de-DE)
 
@@ -139,7 +139,10 @@ ChangeName.pm betrachtet die ersten vier in der Befehlszeile angegebenen Argumen
 
 =item 4
 
-...und schließlich einen Namensteil – entweder den „C<Vorname>“ oder den „C<Familienname>“ (angegeben im obigen Beispiel L</SYNOPSE (de-DE)>).
+...und schließlich einen Namensteil
+– entweder den „C<Vorname>“
+oder den „C<Familienname>“
+(„C<familienname>“ im obigen Beispiel L</SYNOPSE (de-DE)>).
 
 =back
 
@@ -147,38 +150,6 @@ Kann auch eine Reihe von Flags akzeptieren (vorangestellt durch zwei Bindestrich
 – wie die oben gezeigten Beispiele C<–-exakt> C<–-ausführlich> und C<–-live>).
 Die Flags und ihre Verwendung werden unter L</OPTIONEN (de-DE)> beschrieben.
 Ihre Positionierung relativ zu den Argumenten sollte keine Rolle spielen.
-
-=head2 ARGUMENTS (en-GB)
-
-ChangeName.pm considers the first four arguments provided at the commandline to be...
-
-=over
-
-=item 1
-
-...an EPrints archive ID (C<MyArchive> in the L</SYNOPSIS (en-GB)> example above),
-
-=item 2
-
-...then a case insensitive search term (C<bob> in the L</SYNOPSIS (en-GB)> example above),
-
-=item 3
-
-...then a case sensitive replacement (C<Bobbi> in the L</SYNOPSIS (en-GB)> example above),
-
-=item 4
-
-...and finally a name part
-- either "C<given>" name
-or "C<family>" name
-(C<given> in the L</SYNOPSIS (en-GB)> example above).
-
-=back 
-
-Can also accept a number of flags (preceded by two dashes 
-- such as the C<--exact> C<--verbose> and C<--live> examples shown above).
-The flags and their usage are described under L</OPTIONS (en-GB)>.
-Their positioning relative to the arguments shouldn't matter.
 
 =head2 OPTIONS (en-GB)
 
