@@ -46,15 +46,197 @@ LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
 package ChangeName::Languages::de_de {
 
-=pod Deutsch
+=pod Deutsch (Deutschland) - Vollständiger deutscher ChangeName.pm-POD innerhalb dieser Sprachklasse gefunden. Englischsprachiger POD wird mit ChangeName.pm-Code gemischt.
 
 =head1 Deutsch (Deutschland)
 
-=head2 TO BE TRANSLATED.
+Beispiel für die Angabe von Deutsch (Deutschland) in der Befehlszeile...
 
-TODO.
+    perl -CAS ChangeName.pm --lang de-DE
+
+Beispiel für die Angabe von Deutsch (Deutschland) in einer unterstützten L<"YAML-Konfiguration“|/YAML KONFIGURATION (de-DE)>...
+
+    Language Tag: de-DE
+
+Beispiel für die Angabe keiner festgelegten Sprache in der Befehlszeile...
+
+    perl -CAS ChangeName.pm --lang
+
+Beispiel für die Angabe keiner festgelegten Sprache in einer unterstützten L<"YAML-Konfiguration“|/YAML KONFIGURATION (de-DE)>...
+
+    Language Tag:
+
+Befehlszeilen-L<"Optionen"|/OPTIONEN (de-DE)> haben Vorrang vor L<"YAML-Konfigurationen“|/YAML KONFIGURATION (de-DE)>.
 
 =cut
+
+=pod DATEINAME
+
+=head2 DATEINAME (de-DE)
+
+ChangeName.pm – Namen von Personen in „Dataset“-Datensätzen ändern.
+
+=cut
+
+=pod Synopse, Beschreibung, Optionen
+
+=head2 SYNOPSE (de-DE)
+
+    # Datei in der Befehlszeile ausführen:
+    perl ./ChangeName.pm
+
+    # In der Befehlszeile mit Argumenten und Flags ausführen:
+    perl -CAS ./ChangeName.pm MyArchive bob Bobbi given --exakt --ausführlich --live
+
+=head2 DATEIBESCHREIBUNG (de-DE)
+
+Eine Datei mit mehreren Perl-Paketen,
+die jeweils bei einer Operation zum Ändern
+der mit einem EPrint verknüpften Namen
+innerhalb eines EPrints-Repositorys helfen.
+
+Erfordert derzeit Perl 5.16 oder höher
+und wurde für EPrints 3.4.x entwickelt.
+
+Der Hauptteil der Datei selbst
+legt globale Perl-Einstellungen fest,
+wie z. B. das zu verwendende Perl-Versions-Feature-Bundle
+und globale UTF-8-Kodierungsparameter,
+bevor eingebettete Pakete beginnen.
+
+BEGIN-Blöcke greifen in der Ladereihenfolge ein,
+um sicherzustellen, dass die
+Variable der Zeichenkodierungsschicht
+zur Kompilierzeit geladen wird
+und dass die Sprachklassen
+vor allen Paketen geladen werden,
+die sie verwenden.
+Sprachklassen werden außerdem
+am Anfang des Skripts positioniert,
+sodass sie auch zur Kompilierzeit
+zuerst geladen werden,
+da einige Pakete zur Kompilierzeit
+aufgerufen werden und sie benötigen.
+
+=head2 ARGUMENTS (en-GB)
+
+ChangeName.pm considers the first four arguments provided at the commandline to be...
+
+=over
+
+=item 1
+
+...an EPrints archive ID (C<MyArchive> in the L</SYNOPSIS (en-GB)> example above),
+
+=item 2
+
+...then a case insensitive search term (C<bob> in the L</SYNOPSIS (en-GB)> example above),
+
+=item 3
+
+...then a case sensitive replacement (C<Bobbi> in the L</SYNOPSIS (en-GB)> example above),
+
+=item 4
+
+...and finally a name part
+- either "C<given>" name
+or "C<family>" name
+(C<given> in the L</SYNOPSIS (en-GB)> example above).
+
+=back 
+
+Can also accept a number of flags (preceded by two dashes 
+- such as the C<--exact> C<--verbose> and C<--live> examples shown above).
+The flags and their usage are described under L</OPTIONS (en-GB)>.
+Their positioning relative to the arguments shouldn't matter.
+
+=head2 OPTIONS (en-GB)
+
+=over
+
+=item B<-la> I<tag>, B<--lang> I<tag>, B<--language>=I<tag>
+
+Allows setting of language, by way of a language tag.
+i.e. C<en-GB>, or C<de-DE>.
+
+    --lang en-GB
+
+See L<"Language Packages"|/LANGUAGE PACKAGES (en-GB)> for list of current language packages.
+
+See L<"Language Links"|/Language Links:> for list of supported languages
+and their language tags.
+
+=item B<-c> I</path/to/yaml_config.yml>, B<--config> I</path/to/yaml_config.yml>, B<--configuration>=I</path/to/yaml_config.yml>
+
+Allows setting the location of a YAML configuration file to use.
+i.e. ... 
+
+    # Absolute path:
+    --config /path/to/yaml_config.yml
+
+    # Relative path (relative to the directory you run the command from):
+    --config yaml_config.yml
+
+See L</YAML CONFIGURATION (en-GB)>.
+
+=item B<-li>, B<--live>
+
+Ensures changes take effect.
+
+Without this flag, the script will run in dry run mode by default,
+where changes do not take effect.
+
+=item B<-e>, B<--exact>
+
+Indicates the search term, if provided on the command line,
+should be interpreted as a case insensitive find value too
+(finding via full matches, and not partial matches).
+
+This means that when using this flag,
+you will not be prompted for a find value,
+in the find and replace operation on the search results.
+Your search term will be considered your find value too,
+making this an exact search (albeit case insensitive).
+
+=item B<-v>, B<--verbose>
+
+Provides additional insightful output during the operation.
+
+=item B<-d>, B<--debug>
+
+Shows verbose and debugging messages during execution.
+Also shows L<Data::Dumper> derived log output for debugging purposes.
+Use the C<--no_dumper> flag to suppress this.
+
+When C<--verbose> or C<--trace> is used alongside C<--debug>,
+C<< EPrints->trace >> output will also be shown after each debug message.
+Use the C<--no_trace> flag to suppress such stacktrace information.
+
+=item B<-t>, B<--trace>
+
+Should the debug flag be set,
+this trace flag will ensure an C<< EPrints->trace >> stack trace
+is displayed alongside every log message,
+unless this flag is suppressed by a C<--no_trace> flag.
+
+=item B<-no_t>, B<-not>, B<--no_trace>, B<--notrace>
+
+Prevents the display of C<< EPrints->trace >> stacktraces
+which would otherwise be shown when
+either the C<--debug> flag and C<--verbose> flag,
+or the C<--debug> flag and C<--trace> flag, are used together.
+
+=item B<--no_d>, B<--nod>, B<--no_dump>, B<--nodump>, B<--no_dumper>, B<--nodumper>
+
+Prevents the display of L<Data::Dumper> derived log messages
+when the debug flag is in effect.
+
+=back
+
+=cut
+
+
+
 
 # Use --lang=de-DE at the commandline to use it.
 
@@ -1694,6 +1876,20 @@ Supports L</ChangeName::Log (en-GB)> if C<$self> has
 a C<logger> method that returns a C<ChangeName::Log>
 instance whose C<ready> method returns true,
 indicating it is ready to begin being used to log with.
+
+Supports multi-language options,
+where L<Locale::Maketext> Lexicon
+key and value conventions are as follows:
+
+    'options.option_name'   =>  'option_name alternative_option_name short_option_name',
+
+For example...
+
+    'options.config'        =>  'config configuration conf',
+
+Or simply...
+
+    'options.verbose'       =>  'verbose',
 
 =cut
 
