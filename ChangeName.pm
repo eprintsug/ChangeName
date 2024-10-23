@@ -151,34 +151,36 @@ Kann auch eine Reihe von Flags akzeptieren (vorangestellt durch zwei Bindestrich
 Die Flags und ihre Verwendung werden unter L</OPTIONEN (de-DE)> beschrieben.
 Ihre Positionierung relativ zu den Argumenten sollte keine Rolle spielen.
 
-=head2 OPTIONS (en-GB)
+=head2 OPTIONEN (de-DE)
 
 =over
 
-=item B<-la> I<tag>, B<--lang> I<tag>, B<--language>=I<tag>
+=item B<-sp> I<Sprachtag>, B<--spr> I<Sprachtag>, B<--sprache>=I<Sprachtag>
 
-Allows setting of language, by way of a language tag.
-i.e. C<en-GB>, or C<de-DE>.
+Ermöglicht die Einstellung der Sprache über einen Sprachtag.
+z. B. C<de-DE> oder C<en-GB>.
 
-    --lang en-GB
+    --spr de-DE
 
-See L<"Language Packages"|/LANGUAGE PACKAGES (en-GB)> for list of current language packages.
+Eine Liste der aktuellen Sprachpakete
+finden Sie unter L<"Sprachpakete"|/SPRACHPAKETE (de-DE)>.
 
-See L<"Language Links"|/Language Links:> for list of supported languages
-and their language tags.
+Eine Liste der unterstützten Sprachen
+und ihrer Sprachtags finden Sie
+unter L<"Language Links (Sprachlinks)"|/Language Links:>.
 
-=item B<-c> I</path/to/yaml_config.yml>, B<--config> I</path/to/yaml_config.yml>, B<--configuration>=I</path/to/yaml_config.yml>
+=item B<-k> I</pfad/zu/yaml_konfig.yml>, B<--konfig> I</pfad/zu/yaml_konfig.yml>, B<--konfiguration>=I</pfad/zu/yaml_konfig.yml>
 
-Allows setting the location of a YAML configuration file to use.
-i.e. ... 
+Ermöglicht die Einstellung des Speicherorts einer zu verwendenden YAML-Konfigurationsdatei
+z. ...
 
-    # Absolute path:
-    --config /path/to/yaml_config.yml
+    # Absoluter Pfad:
+    --konfig /pfad/zu/yaml_konfig.yml
 
-    # Relative path (relative to the directory you run the command from):
-    --config yaml_config.yml
+    # Relativer Pfad (relativ zum Verzeichnis, aus dem Sie den Befehl ausführen):
+    --konfig yaml_konfig.yml
 
-See L</YAML CONFIGURATION (en-GB)>.
+Siehe L</YAML KONFIGURATION (de-DE)>.
 
 =item B<-li>, B<--live>
 
