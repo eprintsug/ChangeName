@@ -1850,6 +1850,28 @@ Akin to '+' - see L<Getopt::Long/A-little-bit-less-simple-options>.
 
 =back
 
+Supports multi-language options,
+where L<Locale::Maketext> Lexicon
+key and value conventions,
+for localising options within a specific language package
+are as follows:
+
+    # Key                       # Value
+    'options.option_name'   =>  'option_name alternative_option_name short_option_name',
+
+For example...
+
+    # Key                       # Value
+    'options.config'        =>  'config configuration conf',
+
+Or simply...
+
+    # Key                       # Value
+    'options.verbose'       =>  'verbose',
+
+The key always remains English. The value should be localised to the language.
+The value string can contain as many space separated alternatives as desired.
+
 Returns a list containing
 an options hash reference,
 an arguments hash reference,
@@ -1876,20 +1898,6 @@ Supports L</ChangeName::Log (en-GB)> if C<$self> has
 a C<logger> method that returns a C<ChangeName::Log>
 instance whose C<ready> method returns true,
 indicating it is ready to begin being used to log with.
-
-Supports multi-language options,
-where L<Locale::Maketext> Lexicon
-key and value conventions are as follows:
-
-    'options.option_name'   =>  'option_name alternative_option_name short_option_name',
-
-For example...
-
-    'options.config'        =>  'config configuration conf',
-
-Or simply...
-
-    'options.verbose'       =>  'verbose',
 
 =cut
 
