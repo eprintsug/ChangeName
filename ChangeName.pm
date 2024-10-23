@@ -2002,13 +2002,13 @@ Designed to be used with object instances. So...
         # do stuff - confident we have a populated array reference.
     };
 
-Takes a value.
-If the value is found to be an array reference
+Takes a C<$value>.
+If the C<$value> is found to be an array reference
 populated with one or more values
-(warning - these values can be C<undef>)
-then it will return the original value passed in.
+(warning - these array values can be C<undef>)
+then it will return the original C<$value> passed in.
 
-If the value is found to not be an array reference,
+If the passed in C<$value> is found to not be an array reference,
 or to be an array reference that is empty,
 this method will return an C<undef> value.
 
@@ -2031,14 +2031,14 @@ Designed to be used with object instances. So...
         # do stuff - confident we have a hash reference with at least one hash key.
     };
 
-Takes a value.
-If the value is found to be a hash reference
+Takes a C<$value>.
+If the C<$value> is found to be a hash reference
 populated with at least one key
 (warning - does not check
 for a hash value paired with the hash key)
-then it will return the original value passed in.
+then it will return the original C<$value> passed in.
 
-If the value is found to not be a hash reference,
+If the passed in C<$value> is found to not be a hash reference,
 or to be a hash reference without any hash keys,
 this method will return an C<undef> value.
 
@@ -2063,16 +2063,16 @@ Designed to be used with object instances. So...
         # - i.e. not an empty string, nor undef.
     };
 
-Takes a value.
-If the value is found to be a scalar reference
+Takes a C<$value>.
+If the C<$value> is found to be a scalar reference
 populated with either a true value,
 or the number/character zero (i.e 'C<0>')
-then it will return the original value passed in.
+then it will return the original C<$value> passed in.
 
-If the value is found to not be a scalar reference,
+If the passed in C<$value> is found
+to not be a scalar reference,
 or to be a scalar reference that
-is not the number/character zero ('C<0>')
-and still returns false,
+returns false and is not the number/character zero ('C<0>'),
 then this method will return an C<undef> value.
 
 =cut
@@ -2123,16 +2123,16 @@ Designed to be used with object instances. So...
         # or the number/character zero (0).
     };
 
-Takes a value.
+Takes a C<$value>.
 Checks it is defined and true,
 or defined and the number/character zero ('C<0>').
 
 Returns a boolean value evaluating to true or false,
 depending on if these conditions have been met or not.
 
-Warning - does not currently return the original value.
+Warning - does not currently return the original C<$value>.
 This behaviour may change in a future update,
-to be more in keeping with other C<ChangeName::Utilities> methods.
+to be more in keeping with other methods in this class.
 
 =cut
     sub is_true_or_zero {
@@ -2152,29 +2152,29 @@ Designed to be used with object instances. So...
     # ...or...
     my  @array_of_array_refs    =   chunkify($self, $eprints_list);
 
+This method, can help reduce processing strain,
+by breaking down an C<EPrints::List> object into "chunks" of no more than 100 list items,
+using C<EPrints::List>'s C<slice> method.
+
+A different chunk size limit to C<100>
+can also be provided by passing in a number after the list object.
+
+For example, to use chunks of no more than C<50> items...
+
+    my  @array_of_array_refs    =   $self->chunkify($eprints_list, 50);
+
 You can also omit the expected C<$eprints_list>
-if $self has a get_list_of_results method that retrieved an C<EPrints::List>.
+if C<$self> has a C<get_list_of_results> method that retrieves a valid C<EPrints::List> object.
 
-AM REALISING NOW WE NEED TO CHECK WE CAN THAT METHOD...
+For example:
 
-    my  @array_of_array_refs    =   $self->chunkify
+    foreach my $current_chunk_of_100_results ($self->chunkify) {
+        # Do something with no more than 100 results at a time,
+        # from the list of results returned by
+        # the $self->get_list_of_results method.
+    }
 
-    # Allowing for...
-    foreach my $current_chunk ($self->chunkify) {
-        # do stuff
-    };
-
-Takes a value.
-If the value is found to be a scalar reference
-populated with either a true value,
-or the number/character zero (i.e 'C<0>')
-then it will return the original value passed in.
-
-If the value is found to not be a scalar reference,
-or to be a scalar reference that
-is not the number/character zero ('C<0>')
-and still returns false,
-then this method will return an C<undef> value.
+Returns an array of array references.
 
 =cut
     sub chunkify {
@@ -2208,6 +2208,25 @@ then this method will return an C<undef> value.
 
     }
 
+=head4 stringify_array_ref (en-GB)
+
+Convert an array reference to a text string, consisting of the items separated by a universal C<separator.stringify_array_ref> localisation value.
+
+    my  $array_reference    =   [1,2,3];
+    $self->stringify_array_ref($array_reference);   # Outputs "1, 2, 3"
+                                                    # when separator.stringify_array_ref language token
+                                                    # is set to a comma and a space.
+
+Requires C<$self> to have a C<language> method that returns
+a L<"ChangeName::Language"|/ChangeName::Language (en-GB)> instance
+with a C<localise> method.
+
+Also expects a (considered to be universal to all languages)
+C<seperator.stringify_array_ref> Lexicon key to be set in the
+L<"ChangeName::Languages"|/ChangeName::Languages (en-GB)>
+base class for language classes.
+
+=cut
     sub stringify_array_ref {
         return join shift->language->localise('separator.stringify_array_ref'), @{ (shift) };
     }
@@ -2220,7 +2239,7 @@ then this method will return an C<undef> value.
 =head3 ChangeName::Config::YAML (en-GB)
 
 Package storing YAML formatted default configuration settings.
-Used if no external .yml file is provided, or for default values should any external file omit a setting.
+Used if no external C<.yml> file is provided, or for default values should any external file omit a setting.
 
 =cut
 package ChangeName::Config::YAML v2.0.0 {
@@ -2270,25 +2289,37 @@ This can then be loaded using L<YAML::Tiny>'s L<"Load"|YAML::Tiny/Load> Function
     use YAML::Tiny;
     my  $perl_data_structure    =   Load($yaml_string);
 
-You can use L<CPAN::Meta::YAML> in Perl's Core, that is based on L<YAML::Tiny>,
-when external modules like L<YAML::Tiny> are not available.
-Bear in mind, it may not support the full YAML standard.
+When external modules like L<YAML::Tiny> are not available,
+you can use L<CPAN::Meta::YAML> in Perl's Core,
+since it is based on L<YAML::Tiny>.
+Bear in mind, L<CPAN::Meta::YAML> is only ever
+envisaged to support CPAN metadata files,
+and may not support the full YAML standard.
 
-Settings can easily be customised with external YAML files.
-See L</YAML CONFIGURATION (en-GB)>.
+    use CPAN::Meta::YAML qw(Load);
 
-This method contains the default fallback configuration settings
-for the ChangeName.pm modulino file,
+    my  $yaml_string            =   ChangeName::Config::YAML::data;
+    my  $perl_data_structure    =   Load($yaml_string);
+
+These internal YAML configuration settings for C<ChangeName.pm>
+can easily be customised with the use of external YAML files.
+See L</YAML CONFIGURATION (en-GB)> for more information on this.
+
+This C<data> method contains the default fallback configuration settings
+for the C<ChangeName.pm> modulino file,
 so should not be edited to customise settings,
 and instead only be edited to change the fallback defaults the file uses,
-when external customisations are lacking, or commandline options are not specified.
+when external customisations are lacking,
+or relevant commandline L<"options"|/OPTIONS (en-GB)> are not specified.
 
 =cut
-    
 
 sub data {
 
 # The YAML below is quoted in single quotes, to preserve line breaks.
+
+# It is also flush to the left-hand side,
+# to avoid unwanted leading whitespace on each line.
 
 # Should you need to use a single quote or apostrophe
 # within this Perl text string of a YAML config,
@@ -2787,7 +2818,7 @@ package ChangeName::Languages v2.0.0 {
 =head3 ChangeName::Language (en-GB)
 
 Our own language class for the language we will use.
-Its C<language_handle> attribute can be left undefined to use multiple languages.
+Its C<language_handle> attribute can be left undefined to use all supported languages.
 
 =cut
 package ChangeName::Language v2.0.0 {
@@ -2970,10 +3001,10 @@ package ChangeName::Language v2.0.0 {
 
 =head3 ChangeName::Log (en-GB)
 
-Allows for creating a logger object
+Allows for creating a C<logger> object
 that has methods related to logging
-verbose, debug, trace, and data dumper output
-to the EPrints log, or STDERR.
+verbose, debug, stacktrace, and Data::Dumper output
+to an C<EPrints::Repository>'s C<log> method, or STDERR.
 
 =cut
 package ChangeName::Log v2.0.0 {
@@ -3084,7 +3115,18 @@ package ChangeName::Log v2.0.0 {
 
 =head4 ready (en-GB)
 
-Checks if the Log object is ready for use in logging. Presently the readiness checks include checking that the instance has a valid ChangeName::Language object for its language attribute. The definition of readiness may change in future, and what will be constant is that readiness is intended to mean the object instance is ready for use - i.e. for having debug, verbose or dumper method calls.
+Checks if the C<Log> object is ready for use in logging.
+
+Presently the readiness checks include checking
+that the instance has a valid
+L<"ChangeName::Language"|/ChangeName::Language (en-GB)>
+object for its C<language> attribute.
+
+The definition of readiness may change in future,
+and what will be constant always is that
+C<ready> is intended to mean the object instance
+is ready for use - i.e. for having
+C<debug>, C<verbose> or C<dumper> method calls.
 
 =cut
     sub ready {
@@ -3742,11 +3784,11 @@ package ChangeName::Operation v2.0.0 {
 
 =encoding utf8
 
-=head4 MODULE NAME
+=head4 MODULE NAME (ChangeName::Operation en-GB)
 
 ChangeName::Operation - changes the name of a dataset record.
 
-=head4 VERSION
+=head4 VERSION (ChangeName::Operation en-GB)
 
 v2.0.0
 
@@ -3754,13 +3796,13 @@ v2.0.0
 
 =pod Synopsis, Description
 
-=head4 SYNOPSIS
+=head4 SYNOPSIS (ChangeName::Operation en-GB)
 
     use ChangeName;
 
     my $object = ChangeName::Operation->new(@object_params);
 
-=head4 DESCRIPTION
+=head4 DESCRIPTION (ChangeName::Operation en-GB)
 
 Contains methods that are part of the process of changing a name of a dataset record.
 
@@ -3776,7 +3818,7 @@ See L</new (ChangeName::Operation en-GB)> method for info on acceptable object p
 =cut
 
    
-=head4 CLASS METHODS
+=head4 CLASS METHODS (ChangeName::Operation en-GB)
 
 =head5 $class->start(@object_params);
 
@@ -3832,11 +3874,11 @@ and proceding to finish (L</finish (ChangeName::Operation en-GB)>).
     # Program Flow Methods:
 
 
-=head4 CONSTRUCTORS
+=head4 CONSTRUCTORS (ChangeName::Operation en-GB)
 
 =cut
 
-=head5 ChangeName::Operation->new(@object_params);
+=head5 new (ChangeName::Operation en-GB)
 
     # Construct new object, and begin program flow...
     my  $object =   ChangeName::Operation->new(@object_params);
@@ -3862,17 +3904,18 @@ can be called.
         return $self;
     }
 
-=head4 INSTANCE METHODS
+=head4 INSTANCE METHODS (ChangeName::Operation en-GB)
 
-=head4 $self->search;
+=head4 search (en-GB)
 
     # Construct an object, and populate its 
     my  $object  =   ChangeName::Operation->new(@object_params)->search;
 
 Performs an EPrints search,
-according to values set during ChangeName::Operation object construction.
+according to values set during C<ChangeName::Operation> object construction.
 
-Returns the initial ChangeName::Operation object, now with list_of_results and records_found object attributes set.
+Returns the initial C<ChangeName::Operation> object,
+now with C<list_of_results> and C<records_found> object attributes set.
 
 =cut
 
@@ -3908,10 +3951,10 @@ Returns the initial ChangeName::Operation object, now with list_of_results and r
 
     }
 
-=head5 $self->part_specific;
+=head4 prepare (en-GB)
 
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
+    # Prepare for performing a find and replace operation... 
+    my  $object  =   ChangeName::Operation->new(@object_params)->search->prepare;
 
 Should search results have been retrieved (will return prematurely if not),
 it will process the search results in order to generate useful lists,
@@ -3950,20 +3993,6 @@ it will prompt the user for them too.
         return $self->log_debug('Leaving prepare method.')->dumper;
 
     }
-
-=head5 $self->part_specific;
-
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific;
-
-Should search results have been retrieved (will return prematurely if not),
-it will process the search results in order to generate useful lists,
-and then attempt to refine the search down by setting or prompting for a specific name part.
-
-If find and replace values have not already been set,
-it will prompt the user for them too.
-
-=cut
 
     sub display {
 
@@ -4004,10 +4033,7 @@ it will prompt the user for them too.
 
     }
 
-=head5 $self->confirm;
-
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm;
+=head4 confirm (en-GB)
 
 To do.
 
@@ -4048,10 +4074,7 @@ To do.
 
     }
 
-=head5 $self->change;
-
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change;
+=head4 change (en-GB)
 
 To do.
 
@@ -4122,10 +4145,7 @@ To do.
 
     }
 
-=head5 $self->finish;
-
-    # Narrow search down to specific part... 
-    my  $object  =   ChangeName::Operation->new(@object_params)->search->part_specific->confirm->change->finish;
+=head4 finish (en-GB)
 
 To do.
 
