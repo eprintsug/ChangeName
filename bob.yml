@@ -1,0 +1,59 @@
+# This is a YAML Configuration File:
+%YAML 1.2
+# Three dashes to start new YAML document.
+---
+
+EPrints Perl Library Path: /opt/eprints3/perl_lib/
+
+Language Tag: en-GB
+
+Fields to search:
+    -   creators_name
+    -   contributors_name
+    -   editors_name
+
+Dataset to use: eprint
+
+Force commit changes to database: yes
+
+# For the above, provide a yes or y (case insensitive) to force commit,
+# or anything else (such as no) to not force commit.
+
+Search Field Match Type: IN
+
+Search Field Merge Type: ANY
+
+# The "Search Field Match Type" parameter which can be one of:
+
+# IN
+# (short for index)
+# Treat the value as a list of whitespace-seperated words. Search for each one in the full-text index.
+# In the case of subjects, match these subject ids or the those of any of their decendants in the subject tree.
+
+# EQ
+# (short for equal)
+# Treat the value as a single string. Match only fields which have this value.
+
+# EX
+# (short for exact)
+# If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
+# In the case of subjects, match the specified subjects, but not their decendants.
+
+# SET
+# If the value is non-empty.
+
+# NO
+# This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+
+# The "Search Field Merge Type" parameter can be one of:
+
+# ANY
+# Match an item if any of the space-separated words in the value match.
+
+# ALL
+# Match an item only if all of the space-separated words in the value match.
+
+# "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+
+...
+# Three dots to end current YAML document.
