@@ -24,6 +24,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
 
+our $VERSION                            =   'v2.0.0';
 
 =pod LANGUAGES - List of Links to POD Languages - Guidence - try to use symbols and language native terms.
 
@@ -44,7 +45,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 =cut
 LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
-package ChangeName::Languages::de_de {
+package ChangeName::Languages::de_de v2.0.0 {
 
 # Use --lang=de-DE at the commandline to use it.
 
@@ -1173,7 +1174,7 @@ our %Lexicon = (
 
 }
 
-package ChangeName::Languages::en_gb { 
+package ChangeName::Languages::en_gb v2.0.0 {
 
 # Use --lang=en-GB at the commandline to use it.
 
