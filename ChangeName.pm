@@ -619,15 +619,19 @@ Zusätzlich können in diesen
 Klassen auch POD-Übersetzungen
 enthalten sein.
 
+=head3 ChangeName::Languages::de_de
+
 =over
 
-=item ChangeName::Languages::en_gb
+Deutsch (Deutschland).
+
+=back
+
+=head3 ChangeName::Languages::en_gb
+
+=over
 
 Englisch (Vereinigtes Königreich).
-
-=item ChangeName::Languages::de_de
-
-Deutsch (Deutschland).
 
 =back
 
@@ -2006,15 +2010,19 @@ and then customise it as required:
 These classes contain a language specific lexicon, containing localised configurations, tokens, and phrases.
 Additionally POD translations may also be included in these classes.
 
+=head3 ChangeName::Languages::de_de
+
 =over
 
-=item ChangeName::Languages::en_gb
+German (Germany).
+
+=back
+
+=head3 ChangeName::Languages::en_gb
+
+=over
 
 English (United Kingdom).
-
-=item ChangeName::Languages::de_de
-
-German (Germany).
 
 =back
 
@@ -2999,7 +3007,7 @@ package ChangeName::Config::YAML v2.0.0 {
 
 =head4 MODULE NAME (ChangeName::Config::YAML en-GB)
 
-ChangeName::Config::YAML - Class containing default configuration settings for ChangeName.pm in YAML format.
+ChangeName::Config::YAML - Class containing default configuration settings for C<ChangeName.pm> in YAML format.
 
 =head4 VERSION (ChangeName::Config::YAML en-GB)
 
@@ -3018,7 +3026,7 @@ v2.0.0
 
 =head4 DESCRIPTION (ChangeName::Config::YAML en-GB)
 
-Class containing default configuration settings for ChangeName.pm in YAML format.
+Class containing default configuration settings for C<ChangeName.pm> in YAML format.
 Consists of a single L<"data"|/data (en-GB)> method that returns a string.
 
 =cut
@@ -4678,6 +4686,8 @@ and returns a new ChangeName::Operation object,
 upon which program flow methods
 or setters and getters,
 can be called.
+
+TODO - detail the object parameters accepted.
 
 =cut
 
