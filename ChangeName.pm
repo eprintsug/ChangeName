@@ -4681,8 +4681,8 @@ B<---------------->
     # Construct new object, and begin program flow...
     my  $object =   ChangeName::Operation->new(@object_params);
 
-Accepts parameters required for a new ChangeName::Operation,
-and returns a new ChangeName::Operation object,
+Accepts parameters required for a new C<ChangeName::Operation>,
+and returns a new C<ChangeName::Operation> object,
 upon which program flow methods
 or setters and getters,
 can be called.
