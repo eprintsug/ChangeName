@@ -710,9 +710,20 @@ Führt den Vorgang zur Namensänderung aus.
 
 =cut
 
-=head2 AUTOR
+=head2 AUTOR (de-DE)
 
 Andrew Mehta
+
+=cut
+
+=head2 COPYRIGHT UND LIZENZ (de-DE)
+
+Copyright ©2024, Andrew Mehta.
+
+Dieses Programm ist kostenlose Software; Sie können es unter denselben Bedingungen wie Perl 5.40.0 weitergeben und/oder ändern.
+Weitere Einzelheiten finden Sie im vollständigen Text der Lizenzen über L<perlartistic> und L<perlgpl>.
+Dieses Programm wird in der Hoffnung verbreitet, dass es nützlich sein wird, jedoch ohne jegliche Garantie;
+ohne die implizite Garantie der Marktgängigkeit oder Eignung für einen bestimmten Zweck.
 
 =cut
 
@@ -5971,13 +5982,23 @@ To do.
 }; # ChangeName::Operation Package.
 
 
-=head2 AUTHOR
+=head2 AUTHOR (en-GB)
 
 Andrew Mehta
+
+=cut
+
+=head2 COPYRIGHT AND LICENSE (en-GB)
+
+Copyright ©2024, Andrew Mehta.
+
+This program is free software; you can redistribute it and/or modify it under the same terms as Perl 5.40.0.
+For more details, see the full text of the licenses via L<perlartistic> and L<perlgpl>.
+This program is distributed in the hope that it will be useful, but without any warranty;
+without even the implied warranty of merchantability or fitness for a particular purpose.
 
 =cut
 
 1;
 
 __END__
-
