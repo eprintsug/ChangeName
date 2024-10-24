@@ -46,13 +46,24 @@ LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
 package ChangeName::Languages::de_de {
 
+# Use --lang=de-DE at the commandline to use it.
+
+# Specific:
+ChangeName::Languages->import;
+our @ISA                        =   ('ChangeName::Languages');
+
+# ----------------------------------
+
+# de-DE POD-Dokumentation:
+{
+
 =pod Deutsch (Deutschland) - Vollständiger deutscher ChangeName.pm-POD innerhalb dieser Sprachklasse gefunden. Englischsprachiger POD wird mit ChangeName.pm-Code gemischt.
 
 =head1 Deutsch (Deutschland)
 
 Beispiel für die Angabe von Deutsch (Deutschland) in der Befehlszeile...
 
-    perl -CAS ChangeName.pm --lang de-DE
+    perl -CAS ChangeName.pm --spr de-DE
 
 Beispiel für die Angabe von Deutsch (Deutschland) in einer unterstützten L<"YAML-Konfiguration“|/YAML KONFIGURATION (de-DE)>...
 
@@ -60,7 +71,7 @@ Beispiel für die Angabe von Deutsch (Deutschland) in einer unterstützten L<"YA
 
 Beispiel für die Angabe keiner festgelegten Sprache in der Befehlszeile...
 
-    perl -CAS ChangeName.pm --lang
+    perl -CAS ChangeName.pm --spr
 
 Beispiel für die Angabe keiner festgelegten Sprache in einer unterstützten L<"YAML-Konfiguration“|/YAML KONFIGURATION (de-DE)>...
 
@@ -86,7 +97,7 @@ ChangeName.pm – Namen von Personen in „Dataset“-Datensätzen ändern.
     perl ./ChangeName.pm
 
     # In der Befehlszeile mit Argumenten und Flags ausführen:
-    perl -CAS ./ChangeName.pm MyArchive bob Bobbi vorname --exakt --ausführlich --live
+    perl -CAS ./ChangeName.pm MeinArchiv bob Bobbi vorname --exakt --ausführlich --live
 
 =head2 DATEIBESCHREIBUNG (de-DE)
 
@@ -127,22 +138,22 @@ ChangeName.pm betrachtet die ersten vier in der Befehlszeile angegebenen Argumen
 
 =item 1
 
-...eine EPrints-Archiv-ID (MyArchive im obigen Beispiel L</SYNOPSE (de-DE)>),
+...eine EPrints-Archiv-ID (C<MeinArchiv> im obigen Beispiel L</SYNOPSE (de-DE)>),
 
 =item 2
 
-...dann einen Suchbegriff ohne Berücksichtigung der Groß-/Kleinschreibung (bob im obigen Beispiel L</SYNOPSE (de-DE)>),
+...dann einen Suchbegriff ohne Berücksichtigung der Groß-/Kleinschreibung (C<bob> im obigen Beispiel L</SYNOPSE (de-DE)>),
 
 =item 3
 
-...dann einen Ersatz mit Berücksichtigung der Groß-/Kleinschreibung (Bobbi im obigen Beispiel L</SYNOPSE (de-DE)>),
+...dann einen Ersatz mit Berücksichtigung der Groß-/Kleinschreibung (C<Bobbi> im obigen Beispiel L</SYNOPSE (de-DE)>),
 
 =item 4
 
 ...und schließlich einen Namensteil
 – entweder den „C<Vorname>“
 oder den „C<Familienname>“
-(„C<familienname>“ im obigen Beispiel L</SYNOPSE (de-DE)>).
+(„C<vorname>“ im obigen Beispiel L</SYNOPSE (de-DE)>).
 
 =back
 
@@ -327,14 +338,14 @@ sich um einen Ordner C<perl_lib>
 innerhalb des Ordners,
 in dem Sie Ihr EPrints-Repository
 installiert haben.
-In fast allen EPrints-Repositorys
+In fast allen EPrints-Repositorien
 lautet er: C</opt/eprints3/perl_lib/>.
 
 Wenn Sie Ihre EPrints jedoch
 in einem ungewöhnlichen Ordner
 installiert haben,
 möchten Sie diese Einstellung
-möglicherweise in
+möglicherweise in:
 C</ungewöhnlichen_ordner/eprints3/perl_lib/>
 ändern.
 
@@ -484,25 +495,33 @@ Werts mit dem Element übereinstimmt.
 
 =back
 
-Note that this setting has no affect on EX matches, which always match the entire value.
-
+Beachten Sie,
+dass diese Einstellung
+keine Auswirkungen auf
+C<EX>-Übereinstimmungen hat,
+die immer mit dem
+gesamten Wert
+übereinstimmen.
 
 =back
 
-=head3 Example YAML Configuration
+=head3 Beispiel einer YAML-Konfiguration
 
-You can use the following example YAML as a template
-for your own external C<ChangeNameConfig.yml> file (or custom named C<.yml> config file),
-and then customise it as required:
+Sie können das folgende YAML-Beispiel
+als Vorlage für Ihre eigene
+externe C<ChangeNameConfig.yml>-Datei
+(oder eine individuell benannte
+C<.yml>-Konfigurationsdatei)
+verwenden und es dann nach Bedarf anpassen:
 
-    # This is a YAML Configuration File:
+    # Dies ist eine YAML-Konfigurationsdatei:
     %YAML 1.2
-    # Three dashes to start new YAML document.
+    # Drei Bindestriche, um ein neues YAML-Dokument zu beginnen.
     ---
 
     EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
-    Language Tag:
+    Language Tag: de-DE
 
     Fields to Search:
         -   creators_name
@@ -513,260 +532,190 @@ and then customise it as required:
 
     Force Commit Changes to Database: yes
 
-    # For the above, provide a yes or y (case insensitive) to force commit,
-    # or anything else (such as no) to not force commit.
+    # Geben Sie für das Obige ein „yes“ oder „y“
+    # (ohne Berücksichtigung der Groß-/Kleinschreibung) ein,
+    # um das Festschreiben zu erzwingen,
+    # oder etwas anderes (z. B. „no“),
+    # um das Festschreiben nicht zu erzwingen.
 
     Search Field Match Type: IN
 
     Search Field Merge Type: ANY
 
-    # The "Search Field Match Type" parameter which can be one of:
+    # Der Parameter
+    # „Search Field Match Type“ (Suchfeld-Übereinstimmungstyp)
+    # kann einer der folgenden sein:
 
     # IN
-    # (short for index)
-    # Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
-    # In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
+    # (Abkürzung für Index).
+    # Behandeln Sie den Wert als eine Liste von durch Leerzeichen getrennten Wörtern.
+    # Suchen Sie im Volltextindex nach jedem einzelnen.
+    # Bei Betreffzeilen müssen Sie diese Betreffzeilen-IDs
+    # oder die ihrer Nachkommen im Betreffbaum abgleichen.
 
     # EQ
-    # (short for equal)
-    # Treat the value as a single string. Match only fields which have this value.
+    # (Abkürzung für „equal“ [gleich]).
+    # Behandeln Sie den Wert als einzelne Zeichenfolge.
+    # Passen Sie nur die Felder an, die diesen Wert haben.
 
     # EX
-    # (short for exact)
-    # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-    # In the case of subjects, match the specified subjects, but not their descendants.
+    # (Abkürzung für „exakt“).
+    # Wenn der Wert eine leere Zeichenfolge ist,
+    # wird nach leeren Feldern gesucht,
+    # anstatt dieses Suchfeld zu überspringen.
+    # Bei Betreffzeilen werden
+    # die angegebenen Betreffzeilen abgeglichen,
+    # nicht jedoch deren Nachkommen.
 
     # SET
-    # If the value is non-empty.
+    # Wenn der Wert nicht leer ist.
 
     # NO
-    # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+    # Dies wird normalerweise
+    # nur intern verwendet
+    # und führt dazu,
+    # dass das betreffende
+    # Suchfeld keine Treffer
+    # liefert.
+    # Dies geschieht,
+    # ohne dass Verarbeitungsaufwand
+    # für eine gründliche
+    # Suche betrieben wird.
 
-    # The "Search Field Merge Type" parameter can be one of:
+    # Der Parameter
+    # „Search Field Merge Type“ (Suchfeld-Zusammenführungstyp)
+    # kann einer der folgenden sein:
 
     # ALL
-    # Match an item only if all of the space-separated words in the value match.
+    # Ordnen Sie ein Element nur dann zu,
+    # wenn alle durch Leerzeichen 
+    # etrennten Wörter
+    # mit dem Element übereinstimmen.
 
     # ANY
-    # Match an item if any of the space-separated words in the value match.
+    # Stimmt mit einem Element überein,
+    # wenn eines der durch Leerzeichen
+    # getrennten Wörter innerhalb des
+    # Werts mit dem Element übereinstimmt.
 
-    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+    # „Search Field Merge Type“ (Suchfeld-Zusammenführungstyp) hat
+    # keine Auswirkungen auf EX-Übereinstimmungen,
+    # die immer mit dem gesamten Wert übereinstimmen.
 
     ...
-    # Three dots to end current YAML document.
-
+    # Drei Punkte zum Beenden des aktuellen YAML-Dokument.
 
 =cut
 
+=pod Sprachpakete - Befindet sich am Anfang der Datei, da es zuerst geladen werden muss. Enthält auch POD in Fremdsprachen, wobei englisches POD zuletzt kommt, um weiter unten fortgesetzt zu werden, verteilt über die englische Codebasis der Datei ChangeName.pm.
 
+=head2 SPRACHPAKETE (de-DE)
 
-
-=pod YAML Configuration
-
-=head2 YAML CONFIGURATION (en-GB)
-
-The file has internal configuration values set already, and these can be overwritten partially, or in full, by an external configuration file.
-
-An external configuration will be automatically loaded from any C<ChangeNameConfig.yml> file (case sensitive) found in the same directory as the C<ChangeName.pm> file.
-
-Alternatively, you can use a custom configuration file, with any path and filename you wish, via the C<--config> option, described in L</OPTIONS (en-GB)>.
-
-=head3 Configuration Values
-
-    EPrints Perl Library Path: /opt/eprints3/perl_lib/
-
-    Language Tag: en-GB
-
-    Fields to Search:
-        -   creators_name
-        -   contributors_name
-        -   editors_name
-
-    Dataset to Use: eprint
-
-    Force Commit Changes to Database: yes
-
-    Search Field Match Type: IN
-
-    Search Field Merge Type: ANY
-
-
-Above are the currently supported configuration settings, with example values.
-You can include or omit as many of these as you wish, in your config.
-
-The names of the configuration settings are case sensitive.
+Diese Klassen enthalten
+ein sprachspezifisches Lexikon
+mit lokalisierten Konfigurationen,
+Token und Phrasen.
+Zusätzlich können in diesen
+Klassen auch POD-Übersetzungen
+enthalten sein.
 
 =over
 
-=item EPrints Perl Library Path:
+=item ChangeName::Languages::en_gb
 
-This is the path of your local EPrints Repository installation's Perl Library.
-It is typically a C<perl_lib> folder, within the folder you installed your EPrints Repository to.
-In almost all EPrints Repositories it will be: C</opt/eprints3/perl_lib/>.
+Englisch (Vereinigtes Königreich).
 
-If you have installed your EPrints to an unusual folder, however, you may wish to alter this setting to:
-C</unusual_folder/eprints3/perl_lib/>.
+=item ChangeName::Languages::de_de
 
-Note that both the E and the P in EPrints are capitalised here in the name of the setting (EPrints Perl Library Path).
-
-=item Language Tag:
-
-This is the language the script is to use, expressed as a language tag.
-See L</Language Links:> section for a list of supported languages, including their language tags.
-
-The language, should be a single language tag, or nothing.
-
-If the field is not set, missing, or left blank, the script will run multilingually, using all supported languages.
-
-=item Fields to Search:
-
-These are the dataset fields you wish to search. Currently, the default fields to search are C<creators_name>, C<contributors_name> and C<editors_name> and you are free to customise these how you wish,
-or restrict the fields searched to only one of these.
-
-=item Dataset to Use:
-
-Defaults to C<eprint> - can be set to any dataset you wish to perform a search on, and change names in. This script has only been tested with the eprints dataset.
-
-=item Force Commit Changes to Database:
-
-Takes a C<yes> or C<y> (case insensitive) to force commit,
-or anything else (such as C<no>) to not force commit.
-
-Force-committing is sometimes necessary to have your changes take effect.
-
-=item Search Field Match Type:
-
-This is documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
-
-=over
-
-=item IN
-
-(Short for index).
-Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
-In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
-
-
-=item EQ
-
-(Short for equal).
-Treat the value as a single string. Match only fields which have this value.
-    
-=item EX
-
-(Short for exact).
-If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-In the case of subjects, match the specified subjects, but not their descendants.
-    
-=item SET
-
-If the value is non-empty.
-    
-=item NO
-
-This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
+Deutsch (Deutschland).
 
 =back
-
-=item Search Field Merge Type:
-
-This is also documented online here: L<https://wiki.eprints.org/w/API:EPrints/Search/Field#DESCRIPTION> and can be any one of the following values:
-
-=over
-
-=item ALL
-
-Match an item only if all of the space-separated words in the value match.
-
-=item ANY
-
-Match an item if any of the space-separated words in the value match.
-
-=back
-
-Note that this setting has no affect on EX matches, which always match the entire value.
-
-
-=back
-
-=head3 Example YAML Configuration
-
-You can use the following example YAML as a template
-for your own external C<ChangeNameConfig.yml> file (or custom named C<.yml> config file),
-and then customise it as required:
-
-    # This is a YAML Configuration File:
-    %YAML 1.2
-    # Three dashes to start new YAML document.
-    ---
-
-    EPrints Perl Library Path: /opt/eprints3/perl_lib/
-
-    Language Tag:
-
-    Fields to Search:
-        -   creators_name
-        -   contributors_name
-        -   editors_name
-
-    Dataset to Use: eprint
-
-    Force Commit Changes to Database: yes
-
-    # For the above, provide a yes or y (case insensitive) to force commit,
-    # or anything else (such as no) to not force commit.
-
-    Search Field Match Type: IN
-
-    Search Field Merge Type: ANY
-
-    # The "Search Field Match Type" parameter which can be one of:
-
-    # IN
-    # (short for index)
-    # Treat the value as a list of whitespace-separated words. Search for each one in the full-text index.
-    # In the case of subjects, match these subject ids or those of any of their descendants in the subject tree.
-
-    # EQ
-    # (short for equal)
-    # Treat the value as a single string. Match only fields which have this value.
-
-    # EX
-    # (short for exact)
-    # If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
-    # In the case of subjects, match the specified subjects, but not their descendants.
-
-    # SET
-    # If the value is non-empty.
-
-    # NO
-    # This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
-
-    # The "Search Field Merge Type" parameter can be one of:
-
-    # ALL
-    # Match an item only if all of the space-separated words in the value match.
-
-    # ANY
-    # Match an item if any of the space-separated words in the value match.
-
-    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
-
-    ...
-    # Three dots to end current YAML document.
-
 
 =cut
 
+=head2 PERL-PAKETE (de-DE)
 
+=cut
 
-# Use --lang=de-DE at the commandline to use it.
+=head3 ChangeName::Utilities (de-DE)
 
-# Specific:
-ChangeName::Languages->import;
-our @ISA                        =   ('ChangeName::Languages');
+Paket, das nützliche Dienstprogramme
+und Funktionen speichert,
+die von anderen Paketen
+in dieser C<ChangeName.pm>-Datei
+verwendet werden.
 
-# ----------------------------------
+=cut
+
+=head3 ChangeName::Config::YAML (de-DE)
+
+Paket, das YAML-formatierte
+Standardkonfigurationseinstellungen speichert.
+Wird verwendet, wenn keine externe
+C<.yml>-Datei bereitgestellt wird,
+oder für Standardwerte,
+falls eine externe Datei
+eine Einstellung auslässt.
+
+=cut
+
+=head3 ChangeName::Config (de-DE)
+
+Paket, das die Konfiguration lädt.
+
+=cut
+
+=head3 ChangeName::Languages ​​(de-DE)
+
+L<Locale::Maketext>-Projektklasse zum Laden von Sprachklassen.
+
+=cut
+
+=head3 ChangeName::Language (de-DE)
+
+Unsere eigene Sprachklasse für die Sprache,
+die wir verwenden werden.
+Ihr C<language_handle>-Attribut
+kann undefiniert bleiben,
+um alle unterstützten Sprachen
+zu verwenden.
+
+=cut
+
+=head3 ChangeName::Log (de-DE)
+
+Ermöglicht die Erstellung eines C<ChangeName::Log>-Objektinstanz,
+das über Methoden zum Protokollieren von ausführlichen,
+debug, stacktrace und L<Data::Dumper>-Ausgaben
+in die C<log>methode eines C<EPrints::Repository>
+oder C<STDERR> verfügt.
+
+=cut
+
+=head3 ChangeName::Modulino (de-DE)
+
+Führt das Skript über die Befehlszeile
+aus oder startet den Vorgang
+über eine neue Modulino-Klasseninstanz.
+
+=cut
+
+=head3 ChangeName::Operation (de-DE)
+
+Führt den Vorgang zur Namensänderung aus.
+
+=cut
+
+=head2 AUTOR
+
+Andrew Mehta
+
+=cut
+
+}
+
+# de-DE Konfigurationen, Token, Phrasen, Lexikon:
+{
 
 my  $new_line                   =   "\n";
 
@@ -1076,7 +1025,7 @@ my  @phrases = (
     'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
     'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
     'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
-    'Language set to [language_name].'             =>  'Sprache auf [language_name] eingestellt.',
+    'Language set to [nest,language.name].'             =>  'Sprache auf [nest,language.name] eingestellt.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Für die Protokollierung Methoden waren Archiv- und Repository-Attribute sowie mit der Protokollierung verbundene Parameter erforderlich.',
     'Now setting additional instance attributes from params...' => 'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt ...',
@@ -1150,8 +1099,8 @@ my  @phrases = (
     'Initial option translation...'=>'Anfängliche Optionsübersetzung...',
     'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'=>'Optionenübersetzung als Liste, wobei der vorhandene Optionsschlüssel "[_1]" der Codebasis weggelassen wird...',
     'Option string is: [_1]'=>'Optionszeichenfolge ist: [_1]',
-    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
-    =>'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [language_name].',
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].' # [nest,language.name] is a function and parameter not to be translated.
+    =>'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [nest,language.name].',
     'Leaving subroutine.'=>'Im Begriff, das Unterprogramm zu verlassen.',
     'Configuration Values are...'=>'Konfigurationswerte sind ...',
     'In subroutine.'=>'Im Unterprogramm.',
@@ -1201,8 +1150,6 @@ our %Lexicon = (
     @phrases,
 );
 
-sub language_name {
-    return $Lexicon{'language.name'};
 }
 
 # ----------------------------------
@@ -1212,6 +1159,16 @@ sub language_name {
 }
 
 package ChangeName::Languages::en_gb { 
+
+# Use --lang=en-GB at the commandline to use it.
+
+ChangeName::Languages->import;
+our @ISA                        =   ('ChangeName::Languages');
+
+# ----------------------------------
+
+# en-GB POD (Plain Old Documentation):
+{
 
 =pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
 
@@ -1237,12 +1194,10 @@ Commandline L<"options"|/OPTIONS (en-GB)> take precedence over L<"YAML configura
 
 =cut
 
-# Use --lang=en-GB at the commandline to use it.
+}
 
-ChangeName::Languages->import;
-our @ISA                        =   ('ChangeName::Languages');
-
-# ----------------------------------
+# en-GB Configurations, Tokens, Phrases, Lexicon:
+{
 
 my  $new_line                   =   "\n";
 
@@ -1547,7 +1502,7 @@ my  @phrases = (
     'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
     'Commandline Options are...'        =>  'Commandline Options are...',
     'Commandline Arguments are...'      =>  'Commandline Arguments are...',
-    'Language set to [language_name].'  =>  'Language set to [language_name].',
+    'Language set to [nest,language.name].'  =>  'Language set to [nest,language.name].',
     'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
     'Archive, repository, and log related params were all required for log methods.' =>  'Archive, repository, and log related params were all required for log methods.',
     'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
@@ -1621,8 +1576,8 @@ my  @phrases = (
     'Initial option translation...'=>'Initial option translation...',
     'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'=>'Option translation as a list with codebase\'s existing option key "[_1]" omitted...',
     'Option string is: [_1]'=>'Option string is: [_1]',
-    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].' # [language_name] is a function not to be translated.
-    =>'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', # [language_name] is a function not to be translated.
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].' # [nest,language.name] is a function and parameter not to be translated.
+    =>'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', # [nest,language.name] is a function and parameter not to be translated.
     'Leaving subroutine.'=>'Leaving subroutine.',
     'Configuration Values are...'=>'Configuration Values are...',
     'In subroutine.'=>'In subroutine.',
@@ -1672,8 +1627,7 @@ our %Lexicon = (
     @phrases,
 );
 
-sub language_name {
-    return $Lexicon{'language.name'};
+
 }
 
 # ----------------------------------
@@ -1829,11 +1783,11 @@ Use the C<--no_trace> flag to suppress such stacktrace information.
 =item B<-t>, B<--trace>
 
 Should the debug flag be set,
-this trace flag will ensure an C<< EPrints->trace >> stack trace
+this trace flag will ensure an C<< EPrints->trace >> stacktrace
 is displayed alongside every log message,
 unless this flag is suppressed by a C<--no_trace> flag.
 
-=item B<-not>, B<-no_t>, B<--notrace>, B<--no_trace>
+=item B<-not>, B<-no_t>, B<--notrace>, B<--no_trace>, B<--nostacktrace>, B<--no_stacktrace>
 
 Prevents the display of C<< EPrints->trace >> stacktraces
 which would otherwise be shown when
@@ -1972,7 +1926,7 @@ Match an item if any of the space-separated words in the value match.
 
 =back
 
-Note that this setting has no affect on EX matches, which always match the entire value.
+Note that this setting has no affect on C<EX> matches, which always match the entire value.
 
 
 =back
@@ -1990,7 +1944,7 @@ and then customise it as required:
 
     EPrints Perl Library Path: /opt/eprints3/perl_lib/
 
-    Language Tag:
+    Language Tag: en-GB
 
     Fields to Search:
         -   creators_name
@@ -2043,7 +1997,6 @@ and then customise it as required:
     ...
     # Three dots to end current YAML document.
 
-
 =cut
 
 =pod Language Packages - Found at the top of the file due to needing to be loaded first. Also containing foreign language POD, with English POD last, and continued now...
@@ -2071,10 +2024,9 @@ German (Germany).
 
 =cut
 
-
 =head3 ChangeName::Utilities (en-GB)
 
-Package storing useful utilities and functions, used by other packages in this ChangeName.pm file.
+Package storing useful utilities and functions, used by other packages in this C<ChangeName.pm> file.
 
 =cut
 package ChangeName::Utilities v2.0.0 {
@@ -2674,7 +2626,7 @@ indicating it is ready to begin being used to log with.
                                                 if @values;
 
                 $self                           ->logger
-                                                ->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [language_name].', $translation)
+                                                ->debug('No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', $translation)
                                                 unless @values;
             };
 
@@ -3379,7 +3331,7 @@ package ChangeName::Config v2.0.0 {
 
 =head3 ChangeName::Languages (en-GB)
 
-MakeText project class for loading language classes.
+L<Locale::Maketext> project class for loading language classes.
 
 =cut
 package ChangeName::Languages v2.0.0 {
@@ -3536,7 +3488,7 @@ package ChangeName::Languages v2.0.0 {
 
             next unless $language_instance;
 
-            push @output_strings                    ,   $language_instance->language_name;
+            push @output_strings                    ,   $language_instance->nest('language.name');
 
         };
 
@@ -3812,10 +3764,10 @@ package ChangeName::Language v2.0.0 {
 
 =head3 ChangeName::Log (en-GB)
 
-Allows for creating a C<logger> object
+Allows for creating a C<ChangeName::Log> object instance
 that has methods related to logging
-verbose, debug, stacktrace, and Data::Dumper output
-to an C<EPrints::Repository>'s C<log> method, or STDERR.
+verbose, debug, stacktrace, and L<Data::Dumper> output
+to an C<EPrints::Repository>'s C<log> method, or C<STDERR>.
 
 =cut
 package ChangeName::Log v2.0.0 {
@@ -4216,7 +4168,7 @@ C<debug>, C<verbose> or C<dumper> method calls.
         # Premature log-only exit:
         return $self unless $self->{trace};
 
-        # Stack trace:
+        # Stacktrace:
         $loop_count                 =   0;
         foreach my $current_language (@languages) {
 
@@ -4474,7 +4426,7 @@ package ChangeName::Modulino v2.0.0 {
 
         if ($self->logger->language_is_set) {
 
-            $self->logger->verbose('Language set to [language_name].');
+            $self->logger->verbose('Language set to [nest,language.name].');
 
         }
         else {
