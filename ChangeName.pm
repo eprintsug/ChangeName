@@ -4400,14 +4400,15 @@ package ChangeName::Modulino v2.0.0 {
         };
 
         say $self->language->localise(
-            $self->{no_input}?                  'commandline.no_arguments':
             $no_input_that_requires_utf8?       'commandline.utf8_not_needed':
             $acceptable_utf8_options?           'commandline.utf8_enabled':
-            'commandline.utf8_not_enabled'
+            'commandline.utf8_not_enabled' # This option displays the -CAS warning.
         );
 
         die                                     $self->language->localise('commandline.end_program')
                                                 unless $continue;
+
+        say $self->language->localise('commandline.no_arguments') if $self->{no_input};
 
         return $self;
     }
