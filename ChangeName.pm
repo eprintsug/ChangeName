@@ -2127,7 +2127,7 @@ Contains exportable subroutines that are useful utilities and functions for othe
 
 B<---------------->
 
-=head5 validate_class (en-GB)
+=head4 validate_class (en-GB)
 
 B<---------------->
 
@@ -2178,7 +2178,7 @@ indicating it is ready to begin being used to log with.
 
 B<---------------->
 
-=head5 valid_object (en-GB)
+=head4 valid_object (en-GB)
 
 B<---------------->
 
@@ -2253,7 +2253,7 @@ indicating it is ready to begin being used to log with.
 
 B<---------------->
 
-=head5 get_options (en-GB)
+=head4 get_options (en-GB)
 
 B<---------------->
 
@@ -2283,7 +2283,7 @@ for more information.
 
 B<---------------->
 
-=head5 get_arguments (en-GB)
+=head4 get_arguments (en-GB)
 
 B<---------------->
 
@@ -2314,7 +2314,7 @@ for more information.
 
 B<---------------->
 
-=head5 process_commandline_arguments (en-GB)
+=head4 process_commandline_arguments (en-GB)
 
 B<---------------->
 
@@ -2669,7 +2669,7 @@ indicating it is ready to begin being used to log with.
 
 B<---------------->
 
-=head5 list_to_regex_logical_or_string (en-GB)
+=head4 list_to_regex_logical_or_string (en-GB)
 
 B<---------------->
 
@@ -2727,7 +2727,7 @@ to form a "Logical Or" grouping from the string.
 
 B<---------------->
 
-=head5 is_populated_array_ref (en-GB)
+=head4 is_populated_array_ref (en-GB)
 
 B<---------------->
 
@@ -2761,7 +2761,7 @@ this method will return an C<undef> value.
 
 B<---------------->
 
-=head5 is_populated_hash_ref (en-GB)
+=head4 is_populated_hash_ref (en-GB)
 
 B<---------------->
 
@@ -2797,7 +2797,7 @@ this method will return an C<undef> value.
 
 B<---------------->
 
-=head5 is_populated_scalar_ref (en-GB)
+=head4 is_populated_scalar_ref (en-GB)
 
 B<---------------->
 
@@ -2861,7 +2861,7 @@ then this method will return an C<undef> value.
 
 B<---------------->
 
-=head5 is_true_or_zero (en-GB)
+=head4 is_true_or_zero (en-GB)
 
 B<---------------->
 
@@ -2905,7 +2905,7 @@ to be more in keeping with other methods in this class.
 
 B<---------------->
 
-=head5 chunkify (en-GB)
+=head4 chunkify (en-GB)
 
 B<---------------->
 
@@ -2975,7 +2975,7 @@ Returns an array of array references.
 
 B<---------------->
 
-=head5 stringify_array_ref (en-GB)
+=head4 stringify_array_ref (en-GB)
 
 B<---------------->
 
@@ -3051,7 +3051,7 @@ Consists of a single L<"data"|/data (en-GB)> method that returns a string.
 
 B<---------------->
 
-=head5 data (en-GB)
+=head4 data (en-GB)
 
 B<---------------->
 
@@ -3904,7 +3904,7 @@ package ChangeName::Log v2.0.0 {
 
 B<---------------->
 
-=head5 ready (en-GB)
+=head4 ready (en-GB)
 
 B<---------------->
 
@@ -4618,7 +4618,7 @@ See L</new (ChangeName::Operation en-GB)> method for info on acceptable object p
 
 B<---------------->
 
-=head5 start (en-GB)
+=head4 start (en-GB)
 
 B<---------------->
 
@@ -4687,7 +4687,7 @@ and proceeding to finish (L</finish (en-GB)>).
 
 B<---------------->
 
-=head5 new (ChangeName::Operation en-GB)
+=head4 new (ChangeName::Operation en-GB)
 
 B<---------------->
 
@@ -4725,7 +4725,7 @@ TODO - detail the object parameters accepted.
 
 B<---------------->
 
-=head5 search (en-GB)
+=head4 search (en-GB)
 
 B<---------------->
 
@@ -4776,7 +4776,7 @@ now with C<list_of_results> and C<records_found> object attributes set.
 
 B<---------------->
 
-=head5 prepare (en-GB)
+=head4 prepare (en-GB)
 
 B<---------------->
 
@@ -4825,7 +4825,7 @@ it will prompt the user for them too.
 
 B<---------------->
 
-=head5 display (en-GB)
+=head4 display (en-GB)
 
 B<---------------->
 
@@ -4876,7 +4876,7 @@ To do.
 
 B<---------------->
 
-=head5 confirm (en-GB)
+=head4 confirm (en-GB)
 
 B<---------------->
 
@@ -4923,7 +4923,7 @@ To do.
 
 B<---------------->
 
-=head5 change (en-GB)
+=head4 change (en-GB)
 
 B<---------------->
 
@@ -5000,7 +5000,7 @@ To do.
 
 B<---------------->
 
-=head5 finish (en-GB)
+=head4 finish (en-GB)
 
 B<---------------->
 
