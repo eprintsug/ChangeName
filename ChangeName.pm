@@ -3318,7 +3318,7 @@ package ChangeName::Config v2.0.0 {
         # Output:
         return $self;
         
-    };
+    }
     
     sub get_data {
         return shift->{data};
