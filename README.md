@@ -23,7 +23,7 @@ Or in a web browser by adding the script here:
 # Improvements:
 Ask for improvements to be made here (Github Login required):
 
-[https://metacpan.org/pod2html](https://github.com/eprintsug/ChangeName/issues)
+[https://github.com/eprintsug/ChangeName/issues](https://github.com/eprintsug/ChangeName/issues)
 
 # Contact:
 Or contact the author via eprints_git at unitedgames dot co dot uk
