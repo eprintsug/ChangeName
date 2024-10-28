@@ -1130,7 +1130,8 @@ my  @phrases = (
     'Replacement operation performed.'=>'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
     'In method.'=>'In der Methode.',
     'About to set Repository.'=>'Der nächste Schritt besteht darin, das Repository einzurichten.',
-    'Set Repository. About to add attributes from params...'=>'Legen Sie das zu verwendende Repository fest. Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
+    'Set Repository.'=>'Legen Sie das zu verwendende Repository fest.',
+    'About to add attributes from params...'=>'Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
     'Language and Logger attributes set.'=>'Sprach- und Logger-Attribute festgelegt.',
     'Data dump prevented by no_dumper option.'=>'Datendump durch Option kein_dumper verhindert.',
     'No specific language set. Using all supported languages: [_1].'=>'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1]',
@@ -1608,7 +1609,8 @@ my  @phrases = (
     'In method.'=>'In method.',
     'Language and Logger attributes set.'=>'Language and Logger attributes set.',
     'About to set Repository.'=>'About to set Repository.',
-    'Set Repository. About to add attributes from params...'=>'Set Repository. About to add attributes from params...',
+    'Set Repository.'=>'Set Repository.',
+    'About to add attributes from params...'=>'About to add attributes from params...',
     'Data dump prevented by no_dumper option.'=>'Data dump prevented by no_dumper option.',
     'No specific language set. Using all supported languages: [_1].'=>'No specific language set. Using all supported languages: [_1].',
     'Default options set as follows...'=>'Default options set as follows...',
@@ -5041,6 +5043,10 @@ To do.
         return shift->{part};
     }
 
+    sub live {
+        return shift->{live};
+    }
+
     sub get_find {
         return shift->{find};
     }
@@ -5416,18 +5422,11 @@ To do.
                                             dumper_exclude          =>  $dumper_exclude,
                                         );
 
-        $self->log_debug    ('In method.'                         )
-        ->log_debug         ('Language and Logger attributes set.')
-        ->log_debug         ('Params have been as follows...')
+        $self->log_debug    ('In method.'                               )
+        ->log_debug         ('Language and Logger attributes set.'      )
+        ->log_debug         ('Params have been as follows...'           )
         ->dumper            ($params)
-        ->log_debug         ('About to set Repository.'           )
-        ->_set_repository   ($params->{archive_id}                );
-
-        $self->logger->set_repository(
-            $self->get_repository
-        );
-
-        $self->log_debug    ('Set Repository. About to add attributes from params...'             );
+        ->log_debug         ('About to add attributes from params...'   );
 
         %{
             $self
@@ -5443,11 +5442,22 @@ To do.
                                         (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
+        
+        say $self->language->localise('LIVE mode - changes will be made at the end after confirmation.') if $self->live;
+        say $self->language->localise('DRY RUN mode - no changes will be made.') unless $self->live;
+        
+        $self
+        ->log_debug         ('Set initial instance attributes using params or defaults.')
+        ->log_debug         ('About to set Repository.'                                 )
+        ->_set_repository   ($params->{archive_id}                                      );
+
+        $self->logger->set_repository($self->get_repository);
+
 #warn 'Self dump2...'.Dumper($self); #die 'enough2';
         #warn 'About to use the logger...';
 
         $self
-        ->log_debug                     ('Set initial instance attributes using params or defaults.')
+        ->log_debug                     ('Set Repository.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
 #warn 'Self dump...'.Dumper($self); die 'enough3';        
