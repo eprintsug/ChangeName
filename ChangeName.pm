@@ -24,9 +24,9 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
 
-our $VERSION                            =   'v2.0.4';
+our $VERSION                            =   'v2.0.5';
 
-=pod LANGUAGES - List of Links to POD Languages - Guidence - try to use symbols and language native terms.
+=pod LANGUAGES - List of Links to POD Languages - Guidance - try to use symbols and language native terms.
 
 =encoding utf8
 
@@ -45,7 +45,7 @@ our $VERSION                            =   'v2.0.4';
 =cut
 LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
-package ChangeName::Languages::de_de v2.0.4 {
+package ChangeName::Languages::de_de v2.0.5 {
 
 # Use --lang=de-DE at the commandline to use it.
 
@@ -1175,7 +1175,7 @@ our %Lexicon = (
 
 }
 
-package ChangeName::Languages::en_gb v2.0.4 {
+package ChangeName::Languages::en_gb v2.0.5 {
 
 # Use --lang=en-GB at the commandline to use it.
 
@@ -1258,7 +1258,7 @@ my  @tokens = (
 
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
-'name.honourific'               =>  'Honourific Name',
+'name.honourific'               =>  'Honorific Name',
 'name.lineage'                  =>  'Lineage Name',
 
 'display_line'                  =>  'Record [_1]: [_2].',
@@ -1944,7 +1944,7 @@ Match an item if any of the space-separated words in the value match.
 
 =back
 
-Note that this setting has no affect on C<EX> matches, which always match the entire value.
+Note that this setting has no effect on C<EX> matches, which always match the entire value.
 
 
 =back
@@ -2010,7 +2010,7 @@ and then customise it as required:
     # ANY
     # Match an item if any of the space-separated words in the value match.
 
-    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+    # "Search Field Merge Type" has no effect on EX matches, which always match the entire value.
 
     ...
     # Three dots to end current YAML document.
@@ -2051,7 +2051,7 @@ English (United Kingdom).
 Package storing useful utilities and functions, used by other packages in this C<ChangeName.pm> file.
 
 =cut
-package ChangeName::Utilities v2.0.4 {
+package ChangeName::Utilities v2.0.5 {
 
     # Standard:
     use English qw(
@@ -2095,7 +2095,7 @@ ChangeName::Utilities - a collection of useful utilities and functions.
 
 =head4 VERSION (ChangeName::Utilities en-GB)
 
-v2.0.4
+v2.0.5
 
 =cut
 
@@ -2432,7 +2432,7 @@ indicating it is ready to begin being used to log with.
 
     sub process_commandline_arguments {
 
-        # Intial Values:
+        # Initial Values:
         my  $self                                   =   shift;
         my  $params                                 =   is_populated_hash_ref($self, {@ARG});
         my  $option_types                           =   $params
@@ -3013,7 +3013,7 @@ Package storing YAML formatted default configuration settings.
 Used if no external C<.yml> file is provided, or for default values should any external file omit a setting.
 
 =cut
-package ChangeName::Config::YAML v2.0.4 {
+package ChangeName::Config::YAML v2.0.5 {
 
 =pod Name, Version
 
@@ -3025,7 +3025,7 @@ ChangeName::Config::YAML - Class containing default configuration settings for C
 
 =head4 VERSION (ChangeName::Config::YAML en-GB)
 
-v2.0.4
+v2.0.5
 
 =cut
 
@@ -3100,7 +3100,7 @@ sub data {
 
 # Should you need to use a single quote or apostrophe
 # within this Perl text string of a YAML config,
-# use the escaped form with a slash infront of it ( \' )
+# use the escaped form with a slash in front of it ( \' )
 # to prevent the single quote or apostrophe being mistaken
 # for the end of the text string.
 
@@ -3164,7 +3164,7 @@ Search Field Merge Type: ANY
 # ANY
 # Match an item if any of the space-separated words in the value match.
 
-# "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+# "Search Field Merge Type" has no effect on EX matches, which always match the entire value.
 
 ...
 # Three dots to end current YAML document.
@@ -3181,7 +3181,7 @@ Search Field Merge Type: ANY
 Package that loads configuration.
 
 =cut
-package ChangeName::Config v2.0.4 {
+package ChangeName::Config v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -3356,7 +3356,7 @@ package ChangeName::Config v2.0.4 {
 L<Locale::Maketext> project class for loading language classes.
 
 =cut
-package ChangeName::Languages v2.0.4 {
+package ChangeName::Languages v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -3606,7 +3606,7 @@ Our own language class for the language we will use.
 Its C<language_handle> attribute can be left undefined to use all supported languages.
 
 =cut
-package ChangeName::Language v2.0.4 {
+package ChangeName::Language v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -3792,7 +3792,7 @@ verbose, debug, stacktrace, and L<Data::Dumper> output
 to an C<EPrints::Repository>'s C<log> method, or C<STDERR>.
 
 =cut
-package ChangeName::Log v2.0.4 {
+package ChangeName::Log v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -4260,7 +4260,7 @@ Runs the script from the commandline,
 or starts the operation via a new Modulino class instance.
 
 =cut
-package ChangeName::Modulino v2.0.4 {
+package ChangeName::Modulino v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -4543,7 +4543,7 @@ package ChangeName::Modulino v2.0.4 {
 Performs the change name operation.
 
 =cut
-package ChangeName::Operation v2.0.4 {
+package ChangeName::Operation v2.0.5 {
 
     # Standard:
     use     English qw(
@@ -4586,7 +4586,7 @@ ChangeName::Operation - changes the name of a dataset record.
 
 =head4 VERSION (ChangeName::Operation en-GB)
 
-v2.0.4
+v2.0.5
 
 =cut
 
@@ -5029,7 +5029,7 @@ To do.
         my  $self               =   shift;
         my  $input              =   shift;
         
-        # Mulitlingual Input Validation and Translation:
+        # Multilingual Input Validation and Translation:
         my  $validated_input    =   $self->language->matches_case_insensitively($input => 'input.given')?   'given':
                                     $self->language->matches_case_insensitively($input => 'input.family')?  'family':
                                     undef;
