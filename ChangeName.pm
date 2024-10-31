@@ -26,7 +26,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
 
 our $VERSION                            =   'v2.0.4';
 
-=pod LANGUAGES - List of Links to POD Languages - Guidence - try to use symbols and language native terms.
+=pod LANGUAGES - List of Links to POD Languages - Guidance - try to use symbols and language native terms.
 
 =encoding utf8
 
@@ -1258,7 +1258,7 @@ my  @tokens = (
 
 'name.given'                    =>  'Given Name',
 'name.family'                   =>  'Family Name',
-'name.honourific'               =>  'Honourific Name',
+'name.honourific'               =>  'Honorific Name',
 'name.lineage'                  =>  'Lineage Name',
 
 'display_line'                  =>  'Record [_1]: [_2].',
@@ -1944,7 +1944,7 @@ Match an item if any of the space-separated words in the value match.
 
 =back
 
-Note that this setting has no affect on C<EX> matches, which always match the entire value.
+Note that this setting has no effect on C<EX> matches, which always match the entire value.
 
 
 =back
@@ -2010,7 +2010,7 @@ and then customise it as required:
     # ANY
     # Match an item if any of the space-separated words in the value match.
 
-    # "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+    # "Search Field Merge Type" has no effect on EX matches, which always match the entire value.
 
     ...
     # Three dots to end current YAML document.
@@ -2432,7 +2432,7 @@ indicating it is ready to begin being used to log with.
 
     sub process_commandline_arguments {
 
-        # Intial Values:
+        # Initial Values:
         my  $self                                   =   shift;
         my  $params                                 =   is_populated_hash_ref($self, {@ARG});
         my  $option_types                           =   $params
@@ -3100,7 +3100,7 @@ sub data {
 
 # Should you need to use a single quote or apostrophe
 # within this Perl text string of a YAML config,
-# use the escaped form with a slash infront of it ( \' )
+# use the escaped form with a slash in front of it ( \' )
 # to prevent the single quote or apostrophe being mistaken
 # for the end of the text string.
 
@@ -3164,7 +3164,7 @@ Search Field Merge Type: ANY
 # ANY
 # Match an item if any of the space-separated words in the value match.
 
-# "Search Field Merge Type" has no affect on EX matches, which always match the entire value.
+# "Search Field Merge Type" has no effect on EX matches, which always match the entire value.
 
 ...
 # Three dots to end current YAML document.
@@ -5029,7 +5029,7 @@ To do.
         my  $self               =   shift;
         my  $input              =   shift;
         
-        # Mulitlingual Input Validation and Translation:
+        # Multilingual Input Validation and Translation:
         my  $validated_input    =   $self->language->matches_case_insensitively($input => 'input.given')?   'given':
                                     $self->language->matches_case_insensitively($input => 'input.family')?  'family':
                                     undef;
