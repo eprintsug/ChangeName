@@ -4983,6 +4983,7 @@ To do.
                     $fresh_result->commit(@{$self->{force_or_not}});
                     say $self->language->localise('change.done');
                     $self->{changes_made}++;
+                    $fresh_result->queue_all;
                 }
                 else {
                     say $self->language->localise('change.locked', $fresh_result->id);
