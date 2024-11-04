@@ -4984,6 +4984,7 @@ To do.
                     say $self->language->localise('change.done');
                     $self->{changes_made}++;
                     $fresh_result->queue_all;
+                    $fresh_result->save_revision;
                 }
                 else {
                     say $self->language->localise('change.locked', $fresh_result->id);
