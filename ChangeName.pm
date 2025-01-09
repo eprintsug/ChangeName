@@ -1339,13 +1339,13 @@ To enable UTF-8 arguments,
 please run the script again with, for example, -CAS after perl as such...
 
     perl -CAS ChangeName.pm
-    
+
 To learn more,
 you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
 or run...
 
     perldoc perlrun
-    
+
 ...and scroll to the Command Switches section,
 and read the -C switch section within that.
 
