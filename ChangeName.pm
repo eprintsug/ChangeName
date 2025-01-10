@@ -733,7 +733,7 @@ ohne die implizite Garantie der Marktgängigkeit oder Eignung für einen bestimm
 # de-DE Konfigurationen, Token, Phrasen, Lexikon:
 {
 
-my  $new_line                   =   "\n";
+my  $new_line                           =   "\n";
 
 my  @configurations = (
 
@@ -741,116 +741,160 @@ my  @configurations = (
 # and focuses on desired order.
 # Ignores characters or words 
 # that are not an EPrints::MetaField::Name name part.
-'name_parts.display_order'      =>  'honourific, given, family, lineage',
+'name_parts.display_order'              =>  'honourific, given, family, lineage',
 
 );
 
-my  @tokens = (
+my  @tokens_short = (
 
-'language.name'                 =>  'Deutsch (Deutschland)',
-'language.error.set_language_handle'   =>  'Probleme beim Finden einer zu verwendenden Sprache.',
+'language.name'                         =>  'Deutsch (Deutschland)',
+'language.error.set_language_handle'    =>  'Probleme beim Finden einer zu verwendenden Sprache.',
 
-'nest.error.language'           =>  'Ungültiger Sprach-Handle zum Aufrufen der Methode „maketext“.',
-'nest.error.key'                =>  'Fehler beim Verschachteln eines Lexikonwerts.',
+'nest.error.language'                   =>  'Ungültiger Sprach-Handle zum Aufrufen der Methode „maketext“.',
+'nest.error.key'                        =>  'Fehler beim Verschachteln eines Lexikonwerts.',
 
-'options.language'              =>  'sprache spr',
-'options.config'                =>  'konfig konfiguration',
-'options.live'                  =>  'live',
-'options.verbose'               =>  'ausführlich ausführl',
-'options.debug'                 =>  'debug',
-'options.trace'                 =>  'stacktrace trace',
-'options.no_dumper'             =>  'kein_dumper kein_dump keindumper keindump',
-'options.no_trace'              =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
-'options.exact'                 =>  'exakt genau genaue',
-'options.help'                  =>  'hilfe',
+'options.language'                      =>  'sprache spr',
+'options.config'                        =>  'konfig konfiguration',
+'options.live'                          =>  'live',
+'options.verbose'                       =>  'ausführlich ausführl',
+'options.debug'                         =>  'debug',
+'options.trace'                         =>  'stacktrace trace',
+'options.no_dumper'                     =>  'kein_dumper kein_dump keindumper keindump',
+'options.no_trace'                      =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
+'options.exact'                         =>  'exakt genau genaue',
+'options.help'                          =>  'hilfe',
 
-'input.yes_letter'              =>  'J',
-'input.no_letter'               =>  'N',
-'input.all'                     =>  'ALLE',
-'input.none'                    =>  'KEINER',
-'input.given'                   =>  'vorname',
-'input.family'                  =>  'familienname',
-'input.1'                       =>  '1',
-'input.2'                       =>  '2',
+'input.yes_letter'                      =>  'J',
+'input.no_letter'                       =>  'N',
+'input.all'                             =>  'ALLE',
+'input.none'                            =>  'KEINER',
+'input.given'                           =>  'vorname',
+'input.family'                          =>  'familienname',
+'input.1'                               =>  '1',
+'input.2'                               =>  '2',
 
 
-'name.given'                    =>  'Vorname',
-'name.family'                   =>  'Familienname',
-'name.honourific'               =>  'Ehrenname',
-'name.lineage'                  =>  'Abstammungsname', # Unsure about this one - it's literally Ancestral Name
-'display_line'                  =>  'Datensatz [_1]: [_2].',
+'name.given'                            =>  'Vorname',
+'name.family'                           =>  'Familienname',
+'name.honourific'                       =>  'Ehrenname',
+'name.lineage'                          =>  'Abstammungsname', # Unsure about this one - it's literally Ancestral Name
+'display_line'                          =>  'Datensatz [_1]: [_2].',
 
-'log.type.verbose'              =>  'ausführlich',
-'log.type.log'                  =>  'protokoll',
-'log.type.debug'                =>  'debug',
-'log.type.dumper'               =>  'dumper',
-'log.type.trace'                =>  'stacktrace',
+'log.type.verbose'                      =>  'ausführlich',
+'log.type.log'                          =>  'protokoll',
+'log.type.debug'                        =>  'debug',
+'log.type.dumper'                       =>  'dumper',
+'log.type.trace'                        =>  'stacktrace',
 
-'utilities.valid_object.invalid_object' =>
-'Fehler – Kein gültiges Objekt.',
+'finish.change'                         =>  '[quant,_1,Änderung] von [quant,_2,Änderungen] abgeschlossen.',
+'finish.no_change'                      => 'Keine Änderungen vorgenommen.', 
+'finish.thank_you'                      => 'Vielen Dank, dass Sie dieses Skript verwenden.',
 
-'utilities.valid_object.valid_object' =>
-'Gültiges Objekt.',
+);
 
-'utilities.validate_class.invalid_class' =>
+my  @tokens_long = (
+
+
+    # Utilities: 
+
+    'utilities.valid_object.invalid_object'
+    =>  'Fehler – Kein gültiges Objekt.',
+
+    'utilities.valid_object.valid_object'
+    =>  'Gültiges Objekt.',
+
+    'utilities.validate_class.invalid_class'
+    =>
 'Fehler - Ihr [_1] Objekt wird aufgrund seiner Klasse
 für diesen Zweck als ungültiges Objekt betrachtet.
 Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
 - verwenden Sie stattdessen ein Objekt dieser Klasse.',
 
-'utilities.validate_class.valid_class' =>
-'[_1] Objekt ist eine gültige Objektklasse für diesen Zweck.',
+    'utilities.validate_class.valid_class'
+    =>  '[_1] Objekt ist eine gültige Objektklasse für diesen Zweck.',
 
-'config.load.error.custom_external_not_found'=>
-'Konfigurationsdatei [_1] nicht gefunden.',
 
-'config.load.debug.default_external_not_found'=>
-'Standard-externe Konfigurationsdatei [_1] nicht gefunden.',
+    # Config:
 
-'config.load.verbose.loaded_file'=>
-'Konfiguration von [_1] geladen',
+    'config.load.error.custom_external_not_found'
+    =>  'Konfigurationsdatei [_1] nicht gefunden.',
 
-'config.load.verbose.internal'=>
-'Interne Konfiguration wird geladen.',
 
-'log.valid_repository.error.invalid'    =>
-'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
+    'config.load.debug.default_external_not_found'
+    =>  'Standard-externe Konfigurationsdatei [_1] nicht gefunden.',
 
-'log.set_repository.error.bad_value'    =>
-'Der an die Methode „set_repository“ übergebene Wert ist kein Repository. Der Wert bleibt unverändert.',
 
-'modulino.error.perl_lib'       =>
+    'config.load.verbose.loaded_file'
+    =>  'Konfiguration von [_1] geladen',
+
+
+    'config.load.verbose.internal'
+    =>  'Interne Konfiguration wird geladen.',
+
+
+    # Log:
+
+    'log.valid_repository.error.invalid'
+    =>  'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
+
+    'log.set_repository.error.bad_value'
+    =>  'Der an die Methode „set_repository“ übergebene Wert ist kein Repository. Der Wert bleibt unverändert.',
+
+    # Modulino:
+
+    'modulino.error.perl_lib'
+    =>
 'Der Pfad zur EPrints Perl-Bibliothek ist entweder nicht in der YAML-Konfiguration definiert
 oder ist ein Pfad zu einem Verzeichnis, das scheinbar nicht existiert.',
 
-'modulino.perl_lib_path' =>
+    'modulino.perl_lib_path'
+    =>
 'Der Wert des EPrints Perl-Bibliothekspfads war:
 [_1]',
 
-'format_single_line_for_display.error.no_params' =>
+
+    # Operation:
+
+    'format_single_line_for_display.error.no_params'
+    =>
 'Die Methode format_single_line_for_display erfordert,
 dass ein DataObj-Objekt (d. h. ein Suchergebnis oder ein E-Print)
 und eine Zeichenfolge eines Feldnamens (d. h. ein Suchfeld wie Erstellername)
 als Parameter übergeben werden,
 und es wurden keine Parameter übergeben.',
 
-'_stringify_name.error.no_params' =>
+    '_stringify_name.error.no_params'
+    =>
 'Die Methode erfordert die Übergabe
 einer Namens-Hash-Referenz von Namensteilen als Argument,
 und es wurden keine derartigen Parameter bereitgestellt.',
 
-'commandline.config_undefined'  =>  'Beim Versuch, das „Config“-Attribut einer Modulino-Instanz abzurufen, wurde festgestellt, dass es noch nicht definiert war.',
 
-'commandline.end_program'       =>  'Dieses Programm wird nun beendet...'.$new_line,
-'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
+    # Validation:
 
-'commandline.utf8_not_needed'   =>  'Keine UTF-8-kritischen Befehlszeilenoptionen oder Argumente als Eingabe angegeben.',
+    'validation.errors.invalid'
+    =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
-'commandline.no_arguments'      =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
-'commandline.utf8_enabled'      =>  'UTF-8-Befehlszeilenargumente aktiviert.',
 
-'commandline.utf8_not_enabled'  =>
+    # Commandline:
 
+    'commandline.config_undefined'
+    =>  'Beim Versuch, das „Config“-Attribut einer Modulino-Instanz abzurufen, wurde festgestellt, dass es noch nicht definiert war.',
+
+    'commandline.end_program'
+    =>  'Dieses Programm wird nun beendet...'.$new_line,
+
+    'commandline.utf8_not_needed'
+    =>  'Keine UTF-8-kritischen Befehlszeilenoptionen oder Argumente als Eingabe angegeben.',
+
+    'commandline.no_arguments'
+    =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
+
+    'commandline.utf8_enabled'
+    =>  'UTF-8-Befehlszeilenargumente aktiviert.',
+
+    'commandline.utf8_not_enabled'
+    =>
 'UTF-8-Befehlszeilenargumente scheinen nicht aktiviert zu sein.
 
 Um UTF-8-Argumente zu aktivieren,
@@ -874,9 +918,14 @@ UTF-8-Befehlszeilenargumente auf diese Weise nicht aktivieren können,
 erwägen Sie, das Skript ohne Argumente auszuführen.
 Stattdessen werden Sie zur Eingabe aufgefordert.',
 
-'prompt_for.1or2'               =>  'Bitte geben Sie 1 oder 2 ein.',
-'prompt_for.part'               =>
-    
+
+    # Prompt:
+
+    'prompt_for.1or2'
+    =>  'Bitte geben Sie 1 oder 2 ein.',
+
+    'prompt_for.part'
+    =>
 '
 Bei Ihrer Suche haben wir übereinstimmende Datensätze gefunden,
 die den folgenden Vornamen zugeordnet sind ...
@@ -894,8 +943,8 @@ Wo möchten Sie Ihre Änderung zuerst durchführen?
      2) Familienname
 ',
 
-'prompt_for.confirm' =>
-
+    'prompt_for.confirm'
+    =>
 'Bestätigen Sie, um den Namen von [_1] zu ändern von...
 
 „[_2]“
@@ -910,42 +959,98 @@ Wo möchten Sie Ihre Änderung zuerst durchführen?
 
 ...?',
 
-'change.locked'     =>  'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+    'prompt_for.confirm.acceptable_input'
+    =>
+'Geben Sie „J“ für „Ja“ ein.
+Geben Sie „N“ für „Nein“ ein.
+Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige Namenskombination ein.
+Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
+',
 
-'change.from.can'   =>
+    'prompt_for.continue'
+    =>  'Drücken Sie die ENTER- oder RETURN-Taste, um fortzufahren...',
 
+    'prompt_for.archive'
+    =>  'Bitte geben Sie eine Archiv-ID an: ',
+
+    'prompt_for.search'
+    =>  'Bitte geben Sie einen Suchbegriff ein:  ',
+
+    'prompt_for.replace'
+    =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
+
+    'prompt_for.find'
+    =>
+'Ihre Änderung wird mithilfe von „Suchen und Ersetzen“ durchgeführt
+(wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
+und die Groß-/Kleinschreibung nicht beachtet wird).
+
+Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
+',
+
+    'prompt_for.find.error.no_part'
+    =>  
+'Bei der Aufforderung,
+einen Wert in einem bestimmten namensteil zu finden,
+muss ein teil-Attribut festgelegt werden.',
+
+    'prompt_for.replace.prompt_on_blank'
+    =>
+'Wollten Sie absichtlich, dass der „Ersetzen“-Wert ein Leer-/Nullwert ist,
+der, wenn er später während des Bestätigungsprozesses als Änderung bestätigt wird,
+das Feld effektiv löscht?
+Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
+
+    'prompt_for.error.no_prompt_type'
+    =>  'Kein Eingabeaufforderungstypargument für die Methode prompt_for bereitgestellt.',
+
+
+    # Change:
+
+    'change.locked'
+    =>
+'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+
+    'change.from.can'
+    =>
 'Ändern...
 
 [_1]
 ',
 
-'change.from.cannot'  =>
-
+    'change.from.cannot'
+    =>
 'Änderung nicht möglich... 
 
 [_1]
 ',
 
-'change.to.can' =>
-
+    'change.to.can'
+    =>
 '...zu...
 
 [_1]',
 
-'change.to.cannot' =>
-
+    'change.to.cannot'
+    =>
 '...zu...
 
 [_1]
 
 ..aufgrund einer Bearbeitungssperre für diesen Datensatz (Datensatz [_2]).',
 
-'change.dry_run'    =>  'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
+    'change.dry_run'
+    =>
+'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
 
-'change.done'       =>  'Fertig – die Änderung wurde für Sie vorgenommen.',
+    'change.done'
+    =>
+'Fertig – die Änderung wurde für Sie vorgenommen.',
 
-'seeking_confirmation.display_lines' =>
+    # Seeking Confirmation:
 
+    'seeking_confirmation.display_lines'
+    =>
 '
 Für die eindeutige Namenskombination...
 
@@ -955,91 +1060,258 @@ Für die eindeutige Namenskombination...
 
 [_2]',
 
-'prompt_for.confirm.acceptable_input'  =>
+    # _validate:
 
-'Geben Sie „J“ für „Ja“ ein.
-Geben Sie „N“ für „Nein“ ein.
-Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige Namenskombination ein.
-Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
-',
-
-'prompt_for.continue'                       =>  'Drücken Sie die ENTER- oder RETURN-Taste, um fortzufahren...',
-'prompt_for.archive'                        =>  'Bitte geben Sie eine Archiv-ID an: ',
-'prompt_for.search'                         =>  'Bitte geben Sie einen Suchbegriff ein:  ',
-'prompt_for.replace'                        =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
-
-'prompt_for.find'                           =>  
-
-'Ihre Änderung wird mithilfe von „Suchen und Ersetzen“ durchgeführt
-(wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
-und die Groß-/Kleinschreibung nicht beachtet wird).
-
-Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
-',
-
-'prompt_for.find.error.no_part'             =>  
-
-'Bei der Aufforderung,
-einen Wert in einem bestimmten namensteil zu finden,
-muss ein teil-Attribut festgelegt werden.',
-
-'prompt_for.replace.prompt_on_blank'        =>  
-
-'Wollten Sie absichtlich, dass der „Ersetzen“-Wert ein Leer-/Nullwert ist,
-der, wenn er später während des Bestätigungsprozesses als Änderung bestätigt wird,
-das Feld effektiv löscht?
-Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
-
-'prompt_for.error.no_prompt_type'           =>  
-
-'Kein Eingabeaufforderungstypargument für die Methode prompt_for bereitgestellt.',
-
-
-'_validate.error.four_byte_character'       =>
-
+    '_validate.error.four_byte_character'
+    =>
 'Dieses Skript unterstützt keine 
 4-Byte-Zeichen in der Eingabe.',
 
-'_validate.error.no_arguments'              =>
-
+    '_validate.error.no_arguments'
+    =>
 'Die private _validate-Methode wurde ohne Argumente aufgerufen.
 und hatte daher keine Eingaben zur Validierung.
 Die Methode erfordert mindestens eine Sache zur Validierung, ',
 
-'_log.error.no_repository'                  =>  'Für die private _log-Methode ist ein gültiges EPrints::Repository-Objekt erforderlich, das als Attribut von $self festgelegt ist.',
+    # _log:
 
-'_confirmation_feedback.heading.confirmed_so_far'       =>  
+    '_log.error.no_repository'
+    =>  'Für die private _log-Methode ist ein gültiges EPrints::Repository-Objekt erforderlich, das als Attribut von $self festgelegt ist.',
 
+    # _confirmation_feedback:
+
+    '_confirmation_feedback.heading.confirmed_so_far'
+    =>
 '
 Die von Ihnen bestätigten Datensätze sollen bisher geändert werden...
 
 ',
 
-'_confirmation_feedback.heading.unique_name'            =>
-
+    '_confirmation_feedback.heading.unique_name'
+    =>
 '
 Für den einzigartigen Namen [_1]...
 
 Bestätigung | Zum Ändern aufzeichnen...
 ',
 
-'_confirmation_feedback.record.confirmed_for_changing'  =>  
-
+    '_confirmation_feedback.record.confirmed_for_changing'
+    =>
 '[_1] | [_2]
 ',
 
+);
 
-'finish.change'     =>  '[quant,_1,Änderung] von [quant,_2,Änderungen] abgeschlossen.',
 
-'finish.no_change'  => 'Keine Änderungen vorgenommen.', 
+my  @debug_phrases = (
 
-'finish.thank_you'  => 'Vielen Dank, dass Sie dieses Skript verwenden.',
+    # Commonly used:
+    'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
+    'Entered method.'                           =>  'Innerhalb der Methode.',
+    'Leaving method.'                           =>  'Jetzt verlassen wir die Objektmethode.',
+    'Processing search field: [_1]'             =>  'Suchfeld wird verarbeitet: [_1]',
+    'Processing Unique name: [_1]'              =>  'Eindeutiger Name für die Verarbeitung: [_1]',
+    'Premature exit - Prerequisites not met.'   =>  'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
+    'Premature exit - no result passed in.'     =>  'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
 
+    # ChangeName::Modulino::new
+    'Params to be used for a new logger are as follows...'  =>  'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
+
+    # ChangeName::Modulino::setup
+    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
+    'Commandline Arguments are...'      =>  'Commandline Arguments are...',
+    'Configuration Values are...'       =>  'Configuration Values are...',
+
+    # ChangeName::Modulino::start_change_name_operation
+    'In subroutine.'                                            =>  'In subroutine.',
+    'Creating object params for ChangeName::Operation'          =>  'Creating object params for ChangeName::Operation',
+    'Object params as follows...'                               =>  'Object params as follows...',
+    'About to call start method on ChangeName::Operation class' =>  'About to call start method on ChangeName::Operation class',
+    'Options we will use are as follows...'                     =>  'Options we will use are as follows...',
+    'Arguments we will use are as follows...'                   =>  'Arguments we will use are as follows...',
+
+    # ChangeName::Operation::new
+    'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
+
+    # ChangeName::Operation::_set_attributes
+    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
+    'Now setting additional instance attributes from params...' =>  'Now setting additional instance attributes from params...',
+    'Setting self-referential instance attributes...'           =>  'Setting self-referential instance attributes...',
+    'Set YAML configurations.'                                  =>  'Set YAML configurations.',
+    'Set search-fields.'                                        =>  'Set search-fields.',
+    'Setting further self-referential attributes...'            =>  'Setting further self-referential attributes...',
+    'In method.'                                                =>  'In method.',
+    'Language and Logger attributes set.'                       =>  'Language and Logger attributes set.',
+    'About to set Repository.'                                  =>  'About to set Repository.',
+    'Set Repository.'                                           =>  'Set Repository.',
+    'About to add attributes from params...'                    =>  'About to add attributes from params...',
+    'Params have been as follows...'                            =>  'Params have been as follows...',
+
+    # ChangeName::Operation::_set_search
+    'Set search normally, as no --exact flag provided.' =>  'Set search normally, as no --exact flag provided.',
+
+    # ChangeName::Operation::_set_search_exact
+    'Find attribute set to ([_1]).'     =>  'Find attribute set to ([_1]).',
+    'Search attribute set to ([_1]).'   =>  'Search attribute set to ([_1]).',
+
+    # ChangeName::Operation::set_name_parts
+    'Name parts before we begin:'                                       =>  'Name parts before we begin:',
+    'Set name parts according to language localisation as follows...'   =>  'Set name parts according to language localisation as follows...',
+    'Premature exit - name parts already populated.'                    =>  'Premature exit - name parts already populated.',
+    'Invalid name parts filter regex as follows...'                     =>  'Invalid name parts filter regex as follows...',
+
+    # ChangeName::Operation::_set_repository
+    'Archive attribute of [_1] instance is now "[_2]".'             =>  'Archive attribute of [_1] instance is now "[_2]".',
+    'Repository attribute of [_1] instance is now of class "[_2]".' =>  'Repository attribute of [_1] instance is now of class "[_2]".',
+
+    'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'
+    => 'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
+
+    # ChangeName::Operation::search
+    'Using search settings...' => 'Using search settings...',
+
+    # ChangeName::Operation::prepare
+    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
+    'Leaving prepare method.' => 'Leaving prepare method.',
+    'Premature exit - No search results to narrow down.' => 'Premature exit - No search results to narrow down.',
+    'Premature Exit - our operation is already specific to a name part.' => 'Premature Exit - our operation is already specific to a name part.',
+
+    # ChangeName::Operation::display
+    'Called display method.' => 'Called display method.',
+    'Leaving display method.' => 'Leaving display method.',
+
+    # ChangeName::Operation::confirm
+    'Called confirm method.' => 'Called confirm method.',
+    'Leaving confirm method.' => 'Leaving confirm method.',
+
+    # ChangeName::Operation::change
+    'Called change method.' => 'Called change method.',
+    'Premature exit - Nothing to change.' => 'Premature exit - Nothing to change.',
+    'Changed our working result - this will not be committed.' => 'Changed our working result - this will not be committed.',
+    'Changed our fresh result - this will be committed.' => 'Changed our fresh result - this will be committed.',
+
+    # ChangeName::Operation::_seeking_confirmation
+    'Checking if display lines have been shown.' => 'Checking if display lines have been shown.',
+    'Setting confirmation' => 'Setting confirmation',
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...' => 'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    'Added details to what_to_change' => 'Added details to what_to_change',
+    'Processing confirmation ([_1])' => 'Processing confirmation ([_1])',
+    'Displaying generated confirmation feedback.' => 'Displaying generated confirmation feedback.',
+    'Detected [nest,input.none].' => 'Detected [nest,input.none].', # [nest,input.none] is a function and parameter not to be translated.
+    'Detected [nest,input.all].' => 'Detected [nest,input.all].', # [nest,input.all] is a function and parameter not to be translated.
+    'Detected [nest,input.yes_letter].' => 'Detected [nest,input.yes_letter].', # [nest,input.yes_letter] is a function and parameter not to be translated.
+    'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.' => 'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
+
+    # ChangeName::Operation::_generate_confirmation_feedback
+    'Generated confirmation feedback.' => 'Generated confirmation feedback.',
+    'No confirmation feedback generated.' => 'No confirmation feedback generated.',
+    'Matched unique name.' => 'Matched unique name.',
+    'Added record to confirmation feedback.' => 'Added record to confirmation feedback.',
+    'Since unique names are unique, we can leave unique name loop now we have processed a match.' => 'Since unique names are unique, we can leave unique name loop now we have processed a match.',
+    'Exited unique name loop.' => 'Exited unique name loop.',
+
+    # ChangeName::Operation::_add_relevant_display_lines
+    'Entered method. Attribute display_lines is...' => 'Entered method. Attribute display_lines is...',
+    'Leaving method. Attribute display_lines is...' => 'Leaving method. Attribute display_lines is...',
+    'Set display flags and added display line:' => 'Set display flags and added display line:',
+
+    # ChangeName::Operation::_match
+    'Match found for: [_1]' => 'Match found for: [_1]',
+    'No match found.' => 'No match found.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...' => 'Matched "[_1]" in "[_2]" part of the following unique name...',
+
+    # ChangeName::Operation::format_single_line_for_display
+    'Found params, and about to process them...' => 'Found params, and about to process them...',
+    'Stringified names for use in a localised display line.' => 'Stringified names for use in a localised display line.',
+    'Returning localised display line as we leave the method.' => 'Returning localised display line as we leave the method.',
+
+    # ChangeName::Log::New
+    'Constructed New Logger Object Instance.' => 'Constructed New Logger Object Instance.',
+
+    # ChangeName::Log::replace_language_object
+    'Current language object is as follows...' => 'Current language object is as follows...',
+    'Leaving method prematurely due to no replacement provided.' => 'Leaving method prematurely due to no replacement provided.',
+    'Proposed replacement language object is as follows...' => 'Proposed replacement language object is as follows...',
+    'Proposed replacement was found to be a valid language object.' => 'Proposed replacement was found to be a valid language object.',
+    'Replacement operation performed.' => 'Replacement operation performed.',
+
+    # ChangeName::Log::dumper
+    'Data dump prevented by no_dumper option.' => 'Data dump prevented by no_dumper option.',
+
+    # ChangeName::Utilities::_multilingual_option_specification
+    'Starting subroutine.' => 'Starting subroutine.',
+    'Multilingual variations of [_1] are as dumped below...' => 'Multilingual variations of [_1] are as dumped below...',
+    'Initial option translation...' => 'Initial option translation...',
+    'Option translation as a list with codebase\'s existing option key "[_1]" omitted...' => 'Option translation as a list with codebase\'s existing option key "[_1]" omitted...',
+    'Option string is: [_1]' => 'Option string is: [_1]',
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].' => 'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', # [nest,language.name] is a function and parameter not to be translated.
+    'Leaving subroutine.' => 'Leaving subroutine.',
+
+    # ChangeName::Utilities::_get_default_options
+    'Default options set as follows...' => 'Default options set as follows...',
+
+    # ChangeName::Utilities::process_commandline_arguments
+    'Passed in commandline arguments from which to derive both options and arguments from are as follows...' => 'Passed in commandline arguments from which to derive both options and arguments from are as follows...',
+    'Validated copy of arguments is as follows...' => 'Validated copy of arguments is as follows...',
+    'Flattened list of default options are as follows...' => 'Flattened list of default options are as follows...',
+    'Option Specifications have been determined as being as follows...' => 'Option Specifications have been determined as being as follows...',
+    'Options after processing the commandline arguments are now as follows...' => 'Options after processing the commandline arguments are now as follows...',
+    'Arguments after processing the commandline arguments are as follows...' => 'Arguments after processing the commandline arguments are as follows...',
+    'The no_input flag will be returned with the value: "[_1]".' => 'The no_input flag will be returned with the value: "[_1]".',
+
+    # ChangeName::Utilities::chunkify
+    'Valid list object. Proceeding to chunkify using chunk size [_1]...' => 'Valid list object. Proceeding to chunkify using chunk size [_1]...',
+    'Adding a chunk, from a list offset of [_1].' => 'Adding a chunk, from a list offset of [_1].',
+    'Invalid list object. Returning the default result - an empty list that will return false in scalar context.' => 'Invalid list object. Returning the default result - an empty list that will return false in scalar context.',
+
+);
+
+my  @verbose_phrases = (
+
+    # ChangeName::Modulino::setup
+    'Language set to [nest,language.name].' => 'Language set to [nest,language.name].',
+    'No specific language set. Using all supported languages: [_1].' => 'No specific language set. Using all supported languages: [_1].',
+
+    # ChangeName::Operation::_set_search
+    'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.' => 'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.',
+
+    # ChangeName::Operation::search
+    'Found Results.' => 'Found Results.',
+
+    # ChangeName::Operation::prepare
+    'Narrowing search to a specific part...' => 'Narrowing search to a specific part...',
+
+);
+
+my  @stdout_phrases = (
+
+     # ChangeName::Operation::search
+    'No Results Found.' => 'No Results Found.',
+    'Searching fields [_1] ...' => 'Searching fields [_1] ...',
+
+    # ChangeName::Operation::_set_attributes
+    'DRY RUN mode - no changes will be made.' => 'DRY RUN mode - no changes will be made.',
+    'LIVE mode - changes will be made at the end after confirmation.' => 'LIVE mode - changes will be made at the end after confirmation.',
+
+    # ChangeName::Operation::display
+    'Thank you for your patience. Your request is being processed...' => 'Thank you for your patience. Your request is being processed...',
+    'Nothing was found to match.' => 'Nothing was found to match.',
+
+);
+
+our %Lexicon = (
+    #'_AUTO' => 1, # Commented out the auto for now.
+    @configurations,
+    @tokens_short,
+    @tokens_long,
+    @debug_phrases,
+    @verbose_phrases,
+    @stdout_phrases,
 );
 
 my  @phrases = (
     'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
-    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
+
     'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
     'Language set to [nest,language.name].'             =>  'Sprache auf [nest,language.name] eingestellt.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
@@ -1048,11 +1320,11 @@ my  @phrases = (
     'Set YAML configurations.' => 'Legen Sie YAML-Konfigurationen fest.',
     'Set search-fields.' => 'Legen Suchfelder.',
     'Setting further self-referential attributes...' => 'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
-    'Entering method.' => 'Jetzt innerhalb der Objektmethode.',
+
     'Name parts before we begin:' => 'Benennen Sie Teile, bevor wir beginnen:',
     'Set name parts according to language localisation as follows...' => 'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest ...',
-    'Leaving method.' => 'Jetzt verlassen wir die Objektmethode.',
-    'Entered method.' => 'Innerhalb der Methode.',
+
+
 
     'Found Results.' => 'Gefundene Ergebnisse.',
     'No Results Found.'=>'Keine Ergebnisse gefunden.',
@@ -1061,7 +1333,7 @@ my  @phrases = (
     'DRY RUN mode - no changes will be made.'=>'DRY RUN-Modus – in diesem Modus werden tatsächlich keine Änderungen vorgenommen.',
     'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
 
-    'Processing search field: [_1]'=>'Suchfeld wird verarbeitet: [_1]',
+
     'Leaving prepare method.'=>'Verlassen der „prepare“-Methode.',
     'Called display method.' => 'Wird als Anzeige Objektmethode bezeichnet.',
     'Processing Unique name: [_1]'=>'Eindeutiger Name für die Verarbeitung: [_1]',
@@ -1084,7 +1356,7 @@ my  @phrases = (
     'Leaving confirm method.'=>'Verlassen der „confirm“-Methode.',
     'Called change method.'=>'Wird als „change“-Objektmethode bezeichnet.',
     'Processing confirmation ([_1])' => 'Bestätigungswert wird jetzt verarbeitet ([_1])',
-    'Premature exit - Prerequisites not met.'=>'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
+
     'Premature exit - Nothing to change.'=>'Vorzeitiger Ausstieg – Es gibt nichts zu ändern.',
     'Searching fields [_1] ...'=>'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
     'Using search settings...'=>'Die folgenden Sucheinstellungen zu verwenden....', # Google translate only gives German for use rather than using!?
@@ -1101,7 +1373,7 @@ my  @phrases = (
     'Premature exit - No search results to narrow down.'=>'Vorzeitiger Ausstieg – Keine Suchergebnisse zum Eingrenzen.',
     'Premature Exit - our operation is already specific to a name part.'=>'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
     'Premature exit - name parts already populated.'=>'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
-    'Premature exit - no result passed in.'=>'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
+
     'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
     'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
     'Set search normally, as no --exact flag provided.'=>'Suche normal einstellen, da kein --exact-Flag bereitgestellt wird.',
@@ -1142,7 +1414,7 @@ my  @phrases = (
     'Options after processing the commandline arguments are now as follows...'=>'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
     'Arguments after processing the commandline arguments are as follows...'=>'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
     'The no_input flag will be returned with the value: "[_1]".'=>'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
-    'Params to be used for a new logger are as follows...'=>'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
+
     'Detected [nest,input.none].'=>'„[nest,input.none]“ erkannt.',
     'Detected [nest,input.all].'=>'„[nest,input.all]“ erkannt.',
     'Detected [nest,input.yes_letter].'=>'Erkannt „[nest,input.yes_letter]“.',
