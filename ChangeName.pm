@@ -787,8 +787,8 @@ my  @tokens_short = (
 'log.type.trace'                        =>  'stacktrace',
 
 'finish.change'                         =>  '[quant,_1,Änderung] von [quant,_2,Änderungen] abgeschlossen.',
-'finish.no_change'                      => 'Keine Änderungen vorgenommen.', 
-'finish.thank_you'                      => 'Vielen Dank, dass Sie dieses Skript verwenden.',
+'finish.no_change'                      =>  'Keine Änderungen vorgenommen.',
+'finish.thank_you'                      =>  'Vielen Dank, dass Sie dieses Skript verwenden.',
 
 );
 
