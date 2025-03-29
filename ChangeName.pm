@@ -1192,14 +1192,18 @@ my  @debug_phrases = (
     'Leaving confirm method.'   =>  'Verlassen der „confirm“-Methode.',
 
     # ChangeName::Operation::change
-    'Called change method.'                                     =>  'Wird als „change“-Objektmethode bezeichnet.',
-    'Premature exit - Nothing to change.'                       =>  'Premature exit - Nothing to change.',
-    'Changed our working result - this will not be committed.'  =>  'Changed our working result - this will not be committed.',
-    'Changed our fresh result - this will be committed.'        =>  'Changed our fresh result - this will be committed.',
+    'Called change method.'                 =>  'Wird als „change“-Objektmethode bezeichnet.',
+    'Premature exit - Nothing to change.'   =>  'Vorzeitiger Ausstieg – Es gibt nichts zu ändern.',
+
+    'Changed our working result - this will not be committed.'
+    =>  'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
+
+    'Changed our fresh result - this will be committed.'
+    =>  'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
 
     # ChangeName::Operation::_seeking_confirmation
-    'Checking if display lines have been shown.'    =>  'Checking if display lines have been shown.',
-    'Setting confirmation'                          =>  'Setting confirmation',
+    'Checking if display lines have been shown.'    =>  'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
+    'Setting confirmation'                          =>  'Bestätigungswert festlegen.',
     'Added details to what_to_change'               =>  'Added details to what_to_change',
     'Processing confirmation ([_1])'                =>  'Processing confirmation ([_1])',
     'Displaying generated confirmation feedback.'   =>  'Displaying generated confirmation feedback.',
@@ -1371,7 +1375,7 @@ my  @phrases = (
 
 
     'Checking if display lines have been shown.'=>'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
-    'Setting confirmation'=>'Bestätigungswert festlegen.',
+
 
     'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Überprüfe nun die Ergebnisse von „matches_auto_no“ ([_1]) und „matches_auto_yes“ ([_2]) ...',
     'Added details to what_to_change'=>'Details zu what_to_change hinzugefügt',
@@ -1396,8 +1400,7 @@ my  @phrases = (
 
 
 
-    'Changed our working result - this will not be committed.'=>'Unsere Arbeitskopie des Ergebnisobjekts wurde geändert. Diese Änderungen werden nicht in der Datenbank „festgeschrieben“ (nicht gespeichert).',
-    'Changed our fresh result - this will be committed.'=>'Unsere neue Kopie des Ergebnisdatensatzes wurde geändert. Diese Änderungen werden in Kürze in die Datenbank „übertragen“ (in Kürze gespeichert).',
+
 
     'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'=>'Der Suchbegriff „[_1]“ wird als exakte (wenn auch nicht zwischen Groß- und Kleinschreibung unterscheidende) Zeichenfolge interpretiert, die gesucht werden soll.',
 
