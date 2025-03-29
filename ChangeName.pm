@@ -1184,15 +1184,15 @@ my  @debug_phrases = (
     'Premature Exit - our operation is already specific to a name part.'    =>  'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
 
     # ChangeName::Operation::display
-    'Called display method.'    =>  'Called display method.',
-    'Leaving display method.'   =>  'Leaving display method.',
+    'Called display method.'    =>  'Wird als Anzeige Objektmethode bezeichnet.',
+    'Leaving display method.'   =>  'Verlassen der „display“-Methode.',
 
     # ChangeName::Operation::confirm
-    'Called confirm method.'    =>  'Called confirm method.',
-    'Leaving confirm method.'   =>  'Leaving confirm method.',
+    'Called confirm method.'    =>  'Wird als „confirm“-Objektmethode bezeichnet.',
+    'Leaving confirm method.'   =>  'Verlassen der „confirm“-Methode.',
 
     # ChangeName::Operation::change
-    'Called change method.'                                     =>  'Called change method.',
+    'Called change method.'                                     =>  'Wird als „change“-Objektmethode bezeichnet.',
     'Premature exit - Nothing to change.'                       =>  'Premature exit - Nothing to change.',
     'Changed our working result - this will not be committed.'  =>  'Changed our working result - this will not be committed.',
     'Changed our fresh result - this will be committed.'        =>  'Changed our fresh result - this will be committed.',
@@ -1357,7 +1357,7 @@ my  @phrases = (
 
 
     'Leaving prepare method.'=>'Verlassen der „prepare“-Methode.',
-    'Called display method.' => 'Wird als Anzeige Objektmethode bezeichnet.',
+
     'Processing Unique name: [_1]'=>'Eindeutiger Name für die Verarbeitung: [_1]',
     'Entered method. Attribute display_lines is...'=>'Eingegebene Methode. Das Attribut display_lines ist...',
     'Leaving method. Attribute display_lines is...'=>'Methode verlassen. Das display_lines-Attribut ist...',
@@ -1368,18 +1368,18 @@ my  @phrases = (
     'Stringified names for use in a localised display line.'=>'Stringifizierte Namen zur Verwendung in einer lokalisierten „display_line“(Anzeigezeile).',
     'Returning localised display line as we leave the method.'=>'Wir geben die lokalisierte Anzeigezeile zurück, da wir nun die Methode verlassen.',
     'Set display flags and added display line:'=>'Setzen Sie das Anzeigeflag und die hinzugefügten Anzeigezeilen:',
-    'Leaving display method.'=>'Verlassen der „display“-Methode.',
-    'Called confirm method.'=>'Wird als „confirm“-Objektmethode bezeichnet.',
+
+
     'Checking if display lines have been shown.'=>'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
     'Setting confirmation'=>'Bestätigungswert festlegen.',
 
     'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Überprüfe nun die Ergebnisse von „matches_auto_no“ ([_1]) und „matches_auto_yes“ ([_2]) ...',
     'Added details to what_to_change'=>'Details zu what_to_change hinzugefügt',
-    'Leaving confirm method.'=>'Verlassen der „confirm“-Methode.',
-    'Called change method.'=>'Wird als „change“-Objektmethode bezeichnet.',
+
+
     'Processing confirmation ([_1])' => 'Bestätigungswert wird jetzt verarbeitet ([_1])',
 
-    'Premature exit - Nothing to change.'=>'Vorzeitiger Ausstieg – Es gibt nichts zu ändern.',
+
     'Searching fields [_1] ...'=>'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
 
     'Generated confirmation feedback.'=>'Generiertes Bestätigungs-Feedback.',
