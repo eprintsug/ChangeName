@@ -1204,125 +1204,125 @@ my  @debug_phrases = (
     # ChangeName::Operation::_seeking_confirmation
     'Checking if display lines have been shown.'    =>  'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
     'Setting confirmation'                          =>  'Bestätigungswert festlegen.',
-    'Added details to what_to_change'               =>  'Added details to what_to_change',
-    'Processing confirmation ([_1])'                =>  'Processing confirmation ([_1])',
-    'Displaying generated confirmation feedback.'   =>  'Displaying generated confirmation feedback.',
-    'Detected [nest,input.none].'                   =>  'Detected [nest,input.none].', # [nest,input.none] is a function and parameter not to be translated.
-    'Detected [nest,input.all].'                    =>  'Detected [nest,input.all].', # [nest,input.all] is a function and parameter not to be translated.
-    'Detected [nest,input.yes_letter].'             =>  'Detected [nest,input.yes_letter].', # [nest,input.yes_letter] is a function and parameter not to be translated.
+    'Added details to what_to_change'               =>  'Details zu what_to_change hinzugefügt',
+    'Processing confirmation ([_1])'                =>  'Bestätigungswert wird jetzt verarbeitet ([_1])',
+    'Displaying generated confirmation feedback.'   =>  'Zeigt nun das generierte Bestätigungsfeedback an.',
+    'Detected [nest,input.none].'                   =>  '„[nest,input.none]“ erkannt.', # [nest,input.none] is a function and parameter not to be translated.
+    'Detected [nest,input.all].'                    =>  '„[nest,input.all]“ erkannt.', # [nest,input.all] is a function and parameter not to be translated.
+    'Detected [nest,input.yes_letter].'             =>  'Erkannt „[nest,input.yes_letter]“.', # [nest,input.yes_letter] is a function and parameter not to be translated.
 
     'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'
-    =>  'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    =>  'Überprüfe nun die Ergebnisse von „matches_auto_no“ ([_1]) und „matches_auto_yes“ ([_2])...',
 
     'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'
-    =>  'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
+    =>  'Habe festgelegt, dass die Bestätigung nicht automatisch auf ja oder nein gesetzt werden soll. Stattdessen fordern wir den Benutzer nun zur Eingabe eines Bestätigungswertes auf.',
 
     # ChangeName::Operation::_generate_confirmation_feedback
-    'Generated confirmation feedback.'          =>  'Generated confirmation feedback.',
-    'No confirmation feedback generated.'       =>  'No confirmation feedback generated.',
-    'Matched unique name.'                      =>  'Matched unique name.',
-    'Added record to confirmation feedback.'    =>  'Added record to confirmation feedback.',
-    'Exited unique name loop.'                  =>  'Exited unique name loop.',
+    'Generated confirmation feedback.'          =>  'Generiertes Bestätigungs-Feedback.',
+    'No confirmation feedback generated.'       =>  'Es wurde kein Bestätigungsfeedback generiert.',
+    'Matched unique name.'                      =>  'Der aktuelle Name stimmte mit dem eindeutigen Namen überein.',
+    'Added record to confirmation feedback.'    =>  'Der Datensatz wurde unserer Bestätigungs-Feedback hinzugefügt.',
+    'Exited unique name loop.'                  =>  'Aus der Schleife für eindeutige Namen ausgebrochen.',
 
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'
-    =>  'Since unique names are unique, we can leave unique name loop now we have processed a match.',
+    =>  'Da eindeutige Namen eindeutig sind, können wir die Schleife für eindeutige Namen verlassen, nachdem wir eine Übereinstimmung verarbeitet haben.',
 
     # ChangeName::Operation::_add_relevant_display_lines
-    'Entered method. Attribute display_lines is...' =>  'Entered method. Attribute display_lines is...',
-    'Leaving method. Attribute display_lines is...' =>  'Leaving method. Attribute display_lines is...',
-    'Set display flags and added display line:'     =>  'Set display flags and added display line:',
+    'Entered method. Attribute display_lines is...' =>  'Eingegebene Methode. Das Attribut display_lines ist...',
+    'Leaving method. Attribute display_lines is...' =>  'Methode verlassen. Das display_lines-Attribut ist...',
+    'Set display flags and added display line:'     =>  'Setzen Sie das Anzeigeflag und die hinzugefügten Anzeigezeilen:',
 
     # ChangeName::Operation::_match
-    'Match found for: [_1]'                                         =>  'Match found for: [_1]',
-    'No match found.'                                               =>  'No match found.',
-    'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Matched "[_1]" in "[_2]" part of the following unique name...',
+    'Match found for: [_1]'                                         =>  'Übereinstimmung gefunden für: [_1]',
+    'No match found.'                                               =>  'Keine Übereinstimmung gefunden.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Entspricht „[_1]“ im „[_2]“-Teil des folgenden eindeutigen Namens...',
 
     # ChangeName::Operation::format_single_line_for_display
-    'Found params, and about to process them...'                =>  'Found params, and about to process them...',
-    'Stringified names for use in a localised display line.'    =>  'Stringified names for use in a localised display line.',
-    'Returning localised display line as we leave the method.'  =>  'Returning localised display line as we leave the method.',
+    'Found params, and about to process them...'                =>  'Parameter gefunden und bin bereit, sie zu verarbeiten...',
+    'Stringified names for use in a localised display line.'    =>  'Stringifizierte Namen zur Verwendung in einer lokalisierten „display_line“(Anzeigezeile).',
+    'Returning localised display line as we leave the method.'  =>  'Wir geben die lokalisierte Anzeigezeile zurück, da wir nun die Methode verlassen.',
 
     # ChangeName::Log::New
-    'Constructed New Logger Object Instance.'   =>  'Constructed New Logger Object Instance.',
+    'Constructed New Logger Object Instance.'   =>  'Neue Logger-Objektinstanz erstellt.',
 
     # ChangeName::Log::replace_language_object
-    'Current language object is as follows...'                      =>  'Current language object is as follows...',
-    'Leaving method prematurely due to no replacement provided.'    =>  'Leaving method prematurely due to no replacement provided.',
-    'Proposed replacement language object is as follows...'         =>  'Proposed replacement language object is as follows...',
-    'Proposed replacement was found to be a valid language object.' =>  'Proposed replacement was found to be a valid language object.',
-    'Replacement operation performed.'                              =>  'Replacement operation performed.',
+    'Current language object is as follows...'                      =>  'Das aktuelle Sprachobjekt ist wie folgt...',
+    'Leaving method prematurely due to no replacement provided.'    =>  'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
+    'Proposed replacement language object is as follows...'         =>  'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
+    'Proposed replacement was found to be a valid language object.' =>  'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
+    'Replacement operation performed.'                              =>  'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
 
     # ChangeName::Log::dumper
-    'Data dump prevented by no_dumper option.'  =>  'Data dump prevented by no_dumper option.',
+    'Data dump prevented by no_dumper option.'  =>  'Datendump durch Option kein_dumper verhindert.',
 
     # ChangeName::Utilities::_multilingual_option_specification
-    'Starting subroutine.'                                      =>  'Starting subroutine.',
-    'Multilingual variations of [_1] are as dumped below...'    =>  'Multilingual variations of [_1] are as dumped below...',
-    'Initial option translation...'                             =>  'Initial option translation...',
-    'Option string is: [_1]'                                    =>  'Option string is: [_1]',
-    'Leaving subroutine.'                                       =>  'Leaving subroutine.',
+    'Starting subroutine.'                                      =>  'Unterprogramm wird gestartet.',
+    'Multilingual variations of [_1] are as dumped below...'    =>  'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind...',
+    'Initial option translation...'                             =>  'Anfängliche Optionsübersetzung...',
+    'Option string is: [_1]'                                    =>  'Optionszeichenfolge ist: [_1]',
+    'Leaving subroutine.'                                       =>  'Im Begriff, das Unterprogramm zu verlassen.',
 
-    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].'
-    =>  'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', # [nest,language.name] is a function and parameter not to be translated.
+    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].' # [nest,language.name] is a function and parameter not to be translated.
+    =>  'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [nest,language.name].',
 
     'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'
-    =>  'Option translation as a list with codebase\'s existing option key "[_1]" omitted...',
+    =>  'Optionenübersetzung als Liste, wobei der vorhandene Optionsschlüssel "[_1]" der Codebasis weggelassen wird...',
 
 
     # ChangeName::Utilities::_get_default_options
-    'Default options set as follows...' =>  'Default options set as follows...',
+    'Default options set as follows...' =>  'Die Standardoptionen sind wie folgt eingestellt...',
 
     # ChangeName::Utilities::process_commandline_arguments
-    'Validated copy of arguments is as follows...'                              =>  'Validated copy of arguments is as follows...',
-    'Flattened list of default options are as follows...'                       =>  'Flattened list of default options are as follows...',
-    'Option Specifications have been determined as being as follows...'         =>  'Option Specifications have been determined as being as follows...',
-    'Options after processing the commandline arguments are now as follows...'  =>  'Options after processing the commandline arguments are now as follows...',
-    'Arguments after processing the commandline arguments are as follows...'    =>  'Arguments after processing the commandline arguments are as follows...',
-    'The no_input flag will be returned with the value: "[_1]".'                =>  'The no_input flag will be returned with the value: "[_1]".',
+    'Validated copy of arguments is as follows...'                              =>  'Eine validierte Kopie der Argumente lautet wie folgt...',
+    'Flattened list of default options are as follows...'                       =>  'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
+    'Option Specifications have been determined as being as follows...'         =>  'Die Optionsspezifikationen wurden wie folgt festgelegt...',
+    'Options after processing the commandline arguments are now as follows...'  =>  'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
+    'Arguments after processing the commandline arguments are as follows...'    =>  'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
+    'The no_input flag will be returned with the value: "[_1]".'                =>  'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
 
     'Passed in commandline arguments from which to derive both options and arguments from are as follows...'
-    =>  'Passed in commandline arguments from which to derive both options and arguments from are as follows...',
+    =>  'Die bereitgestellten Befehlszeilenargumente, aus denen sowohl Optionen als auch Argumente abgeleitet werden müssen, sind wie folgt...',
 
     # ChangeName::Utilities::chunkify
-    'Valid list object. Proceeding to chunkify using chunk size [_1]...'    =>  'Valid list object. Proceeding to chunkify using chunk size [_1]...',
-    'Adding a chunk, from a list offset of [_1].'                           =>  'Adding a chunk, from a list offset of [_1].',
+    'Valid list object. Proceeding to chunkify using chunk size [_1]...'    =>  'Gültiges Listenobjekt. Mit der Chunkifizierung wird mit der Chunkgröße [_1] fortgefahren...',
+    'Adding a chunk, from a list offset of [_1].'                           =>  'Jetzt wird ein „Chunk“ aus einem Listenoffset von [_1] hinzugefügt.',
 
     'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'
-    =>  'Invalid list object. Returning the default result - an empty list that will return false in scalar context.',
+    =>  'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
 
 );
 
 my  @verbose_phrases = (
 
     # ChangeName::Modulino::setup
-    'Language set to [nest,language.name].'                             =>  'Language set to [nest,language.name].',
-    'No specific language set. Using all supported languages: [_1].'    =>  'No specific language set. Using all supported languages: [_1].',
+    'Language set to [nest,language.name].'                             =>  'Sprache auf [nest,language.name] eingestellt.',
+    'No specific language set. Using all supported languages: [_1].'    =>  'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1].',
 
     # ChangeName::Operation::_set_search
     'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'
-    =>  'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.',
+    =>  'Der Suchbegriff „[_1]“ wird als exakte (wenn auch nicht zwischen Groß- und Kleinschreibung unterscheidende) Zeichenfolge interpretiert, die gesucht werden soll.',
 
     # ChangeName::Operation::search
-    'Found Results.'    =>  'Found Results.',
+    'Found Results.'    =>  'Gefundene Ergebnisse.',
 
     # ChangeName::Operation::prepare
-    'Narrowing search to a specific part...'    =>  'Narrowing search to a specific part...',
+    'Narrowing search to a specific part...'    =>  'Die Suche auf ein bestimmtes Teil eingrenzen...',
 
 );
 
 my  @stdout_phrases = (
 
      # ChangeName::Operation::search
-    'No Results Found.'         =>  'No Results Found.',
-    'Searching fields [_1] ...' =>  'Searching fields [_1] ...',
+    'No Results Found.'         =>  'Keine Ergebnisse gefunden.',
+    'Searching fields [_1] ...' =>  'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
 
     # ChangeName::Operation::_set_attributes
-    'DRY RUN mode - no changes will be made.'                           =>  'DRY RUN mode - no changes will be made.',
-    'LIVE mode - changes will be made at the end after confirmation.'   =>  'LIVE mode - changes will be made at the end after confirmation.',
+    'DRY RUN mode - no changes will be made.'                           =>  'DRY RUN-Modus – in diesem Modus werden tatsächlich keine Änderungen vorgenommen.',
+    'LIVE mode - changes will be made at the end after confirmation.'   =>  'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
 
     # ChangeName::Operation::display
-    'Thank you for your patience. Your request is being processed...'   =>  'Thank you for your patience. Your request is being processed...',
-    'Nothing was found to match.'                                       =>  'Nothing was found to match.',
+    'Thank you for your patience. Your request is being processed...'   =>  'Vielen Dank für Ihre Geduld. Ihre Anfrage wird bearbeitet...',
+    'Nothing was found to match.'                                       =>  'Es wurde keine Übereinstimmung festgestellt.',
 
 );
 
@@ -1334,133 +1334,6 @@ our %Lexicon = (
     @debug_phrases,
     @verbose_phrases,
     @stdout_phrases,
-);
-
-my  @phrases = (
-
-
-    'Language set to [nest,language.name].'             =>  'Sprache auf [nest,language.name] eingestellt.',
-
-
-
-
-
-    'Setting further self-referential attributes...' => 'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
-
-
-
-
-
-
-    'Found Results.' => 'Gefundene Ergebnisse.',
-    'No Results Found.'=>'Keine Ergebnisse gefunden.',
-    'Narrowing search to a specific part...' => 'Die Suche auf ein bestimmtes Teil eingrenzen...',
-
-    'DRY RUN mode - no changes will be made.'=>'DRY RUN-Modus – in diesem Modus werden tatsächlich keine Änderungen vorgenommen.',
-    'LIVE mode - changes will be made at the end after confirmation.'=>'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
-
-
-    'Leaving prepare method.'=>'Verlassen der „prepare“-Methode.',
-
-    'Processing Unique name: [_1]'=>'Eindeutiger Name für die Verarbeitung: [_1]',
-    'Entered method. Attribute display_lines is...'=>'Eingegebene Methode. Das Attribut display_lines ist...',
-    'Leaving method. Attribute display_lines is...'=>'Methode verlassen. Das display_lines-Attribut ist...',
-    'Match found for: [_1]'=>'Übereinstimmung gefunden für: [_1]',
-    'No match found.'=>'Keine Übereinstimmung gefunden.',
-    'Matched "[_1]" in "[_2]" part of the following unique name...'=>'Entspricht „[_1]“ im „[_2]“-Teil des folgenden eindeutigen Namens...',
-    'Found params, and about to process them...'=>'Parameter gefunden und bin bereit, sie zu verarbeiten...',
-    'Stringified names for use in a localised display line.'=>'Stringifizierte Namen zur Verwendung in einer lokalisierten „display_line“(Anzeigezeile).',
-    'Returning localised display line as we leave the method.'=>'Wir geben die lokalisierte Anzeigezeile zurück, da wir nun die Methode verlassen.',
-    'Set display flags and added display line:'=>'Setzen Sie das Anzeigeflag und die hinzugefügten Anzeigezeilen:',
-
-
-    'Checking if display lines have been shown.'=>'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
-
-
-    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'=>'Überprüfe nun die Ergebnisse von „matches_auto_no“ ([_1]) und „matches_auto_yes“ ([_2]) ...',
-    'Added details to what_to_change'=>'Details zu what_to_change hinzugefügt',
-
-
-    'Processing confirmation ([_1])' => 'Bestätigungswert wird jetzt verarbeitet ([_1])',
-
-
-    'Searching fields [_1] ...'=>'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
-
-    'Generated confirmation feedback.'=>'Generiertes Bestätigungs-Feedback.',
-    'No confirmation feedback generated.'=>'Es wurde kein Bestätigungsfeedback generiert.',
-    'Displaying generated confirmation feedback.'=>'Zeigt nun das generierte Bestätigungsfeedback an.',
-    'Thank you for your patience. Your request is being processed...'=>'Vielen Dank für Ihre Geduld. Ihre Anfrage wird bearbeitet...',
-    'Matched unique name.'=>'Der aktuelle Name stimmte mit dem eindeutigen Namen überein.',
-    'Added record to confirmation feedback.'=>'Der Datensatz wurde unserer Bestätigungs-Feedback hinzugefügt.',
-    'Since unique names are unique, we can leave unique name loop now we have processed a match.'=>'Da eindeutige Namen eindeutig sind, können wir die Schleife für eindeutige Namen verlassen, nachdem wir eine Übereinstimmung verarbeitet haben.',
-    'Exited unique name loop.'=>'Aus der Schleife für eindeutige Namen ausgebrochen.',
-
-    'Nothing was found to match.'=>'Es wurde keine Übereinstimmung festgestellt.',
-
-
-
-
-
-
-    'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'=>'Der Suchbegriff „[_1]“ wird als exakte (wenn auch nicht zwischen Groß- und Kleinschreibung unterscheidende) Zeichenfolge interpretiert, die gesucht werden soll.',
-
-
-    'Constructed New Logger Object Instance.'=>'Neue Logger-Objektinstanz erstellt.',
-    'Starting subroutine.'=>'Unterprogramm wird gestartet.',
-    'Multilingual variations of [_1] are as dumped below...'=>'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind ...',
-    'Initial option translation...'=>'Anfängliche Optionsübersetzung...',
-    'Option translation as a list with codebase\'s existing option key "[_1]" omitted...'=>'Optionenübersetzung als Liste, wobei der vorhandene Optionsschlüssel "[_1]" der Codebasis weggelassen wird...',
-    'Option string is: [_1]'=>'Optionszeichenfolge ist: [_1]',
-    'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].' # [nest,language.name] is a function and parameter not to be translated.
-    =>'Keine Liste mit Übersetzungswerten zum Hinzufügen neben dem vorhandenen Optionsschlüssel „[_1]“ der Codebasis für die Sprache [nest,language.name].',
-    'Leaving subroutine.'=>'Im Begriff, das Unterprogramm zu verlassen.',
-
-
-
-
-
-    'Current language object is as follows...'=>'Das aktuelle Sprachobjekt ist wie folgt...',
-    'Leaving method prematurely due to no replacement provided.'=>'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
-    'Proposed replacement language object is as follows...'=>'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
-    'Proposed replacement was found to be a valid language object.'=>'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
-    'Replacement operation performed.'=>'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
-
-
-
-
-
-    'Data dump prevented by no_dumper option.'=>'Datendump durch Option kein_dumper verhindert.',
-    'No specific language set. Using all supported languages: [_1].'=>'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1]',
-    'Default options set as follows...'=>'Die Standardoptionen sind wie folgt eingestellt ...',
-    'Passed in commandline arguments from which to derive both options and arguments from are as follows...'=>'Die bereitgestellten Befehlszeilenargumente, aus denen sowohl Optionen als auch Argumente abgeleitet werden müssen, sind wie folgt...',
-    'Validated copy of arguments is as follows...'=>'Eine validierte Kopie der Argumente lautet wie folgt...',
-    'Flattened list of default options are as follows...'=>'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
-    'Option Specifications have been determined as being as follows...'=>'Die Optionsspezifikationen wurden wie folgt festgelegt...',
-    'Options after processing the commandline arguments are now as follows...'=>'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
-    'Arguments after processing the commandline arguments are as follows...'=>'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
-    'The no_input flag will be returned with the value: "[_1]".'=>'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
-
-    'Detected [nest,input.none].'=>'„[nest,input.none]“ erkannt.',
-    'Detected [nest,input.all].'=>'„[nest,input.all]“ erkannt.',
-    'Detected [nest,input.yes_letter].'=>'Erkannt „[nest,input.yes_letter]“.',
-
-
-
-
-
-
-    'Valid list object. Proceeding to chunkify using chunk size [_1]...'=>'Gültiges Listenobjekt. Mit der Chunkifizierung wird mit der Chunkgröße [_1] fortgefahren...',
-    'Adding a chunk, from a list offset of [_1].'=>'Jetzt wird ein „Chunk“ aus einem Listenoffset von [_1] hinzugefügt.',
-    'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'=>'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
-    'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'=>'Habe festgelegt, dass die Bestätigung nicht automatisch auf ja oder nein gesetzt werden soll. Stattdessen fordern wir den Benutzer nun zur Eingabe eines Bestätigungswertes auf.',
-
-);
-
-our %Lexicon = (
-    #'_AUTO' => 1, # Commented out the auto for now.
-    @configurations,
-    @tokens,
-    @phrases,
 );
 
 }
