@@ -55,8 +55,9 @@ our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
-# de-DE POD-Dokumentation:
-{
+#de-DE POD-Dokumentation
+
+'de\-DE_POD\-Dokumentation': {
 
 =pod Deutsch (Deutschland) - Vollständiger deutscher ChangeName.pm-POD innerhalb dieser Sprachklasse gefunden. Englischsprachiger POD wird mit ChangeName.pm-Code gemischt.
 
@@ -730,8 +731,7 @@ ohne die implizite Garantie der Marktgängigkeit oder Eignung für einen bestimm
 
 }
 
-# de-DE Konfigurationen, Token, Phrasen, Lexikon:
-{
+'de-DE Konfigurationen, Token, Phrasen, Lexikon': {
 
 my  $new_line                           =   "\n";
 
@@ -1480,8 +1480,7 @@ our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
-# en-GB POD (Plain Old Documentation):
-{
+'en-GB POD (Plain Old Documentation)': {
 
 =pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
 
@@ -1509,8 +1508,7 @@ Commandline L<"options"|/OPTIONS (en-GB)> take precedence over L<"YAML configura
 
 }
 
-# en-GB Configurations, Tokens, Phrases, Lexicon:
-{
+'en-GB Configurations, Tokens, Phrases, Lexicon': {
 
 my  $new_line                   =   "\n";
 
@@ -2066,7 +2064,7 @@ our %Lexicon = (
 
 }
 
-}; # LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
+}; # End of LOAD_LANGUAGE_CLASSES_FIRST BEGIN Block.
 
 
 =pod ENGLISH Pod (continuing from ChangeName::Languages::en_gb POD above)
