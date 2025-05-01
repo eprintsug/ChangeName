@@ -55,9 +55,8 @@ our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
-#de-DE POD-Dokumentation
-
-'de\-DE_POD\-Dokumentation': {
+# de-DE POD-Dokumentation:
+de_DE_POD_Dokumentation: {
 
 =pod Deutsch (Deutschland) - Vollständiger deutscher ChangeName.pm-POD innerhalb dieser Sprachklasse gefunden. Englischsprachiger POD wird mit ChangeName.pm-Code gemischt.
 
@@ -731,7 +730,8 @@ ohne die implizite Garantie der Marktgängigkeit oder Eignung für einen bestimm
 
 }
 
-'de-DE Konfigurationen, Token, Phrasen, Lexikon': {
+# de-DE Konfigurationen, Token, Phrasen, Lexikon:
+de_DE_Konfigurationen_Token_Phrasen_Lexikon: {
 
 my  $new_line                           =   "\n";
 
@@ -1480,7 +1480,8 @@ our @ISA                        =   ('ChangeName::Languages');
 
 # ----------------------------------
 
-'en-GB POD (Plain Old Documentation)': {
+# en-GB POD (Plain Old Documentation):
+en_GB_POD_Plain_Old_Documentation: {
 
 =pod English (United Kingdom) - English language POD will be mixed with code. Other languages will be in their Language Classes above.
 
@@ -1508,7 +1509,8 @@ Commandline L<"options"|/OPTIONS (en-GB)> take precedence over L<"YAML configura
 
 }
 
-'en-GB Configurations, Tokens, Phrases, Lexicon': {
+# en-GB Configurations, Tokens, Phrases, Lexicon:
+en_GB_Configurations_Tokens_Phrases_Lexicon: {
 
 my  $new_line                   =   "\n";
 
