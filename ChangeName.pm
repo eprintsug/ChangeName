@@ -880,7 +880,7 @@ und es wurden keine derartigen Parameter bereitgestellt.',
     # Validation:
 
     'validation.errors.invalid'
-    =>  'Invalid [_1] field in [_2] form.'.$new_line,
+    =>  'Ungültiges [_1]-Feld im [_2]-Formular.'.$new_line,
 
 
     # Commandline:
