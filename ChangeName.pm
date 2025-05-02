@@ -11,7 +11,7 @@ my      $encoding_layer;
 
 SET_ENCODING_LAYER_AT_COMPILE_TIME: BEGIN {
     my  $encoding_to_use                =   'UTF-8'; # Change this to desired encoding value.
-        
+
     $encoding_layer                     =   ":encoding($encoding_to_use)";  # This is what actually gets used for the layer.
 };
 
@@ -483,7 +483,7 @@ und kann einen der folgenden Werte haben:
 =item ALL
 
 Ordnen Sie ein Element nur dann zu,
-wenn alle durch Leerzeichen 
+wenn alle durch Leerzeichen
 etrennten Wörter
 mit dem Element übereinstimmen.
 
@@ -589,7 +589,7 @@ verwenden und es dann nach Bedarf anpassen:
 
     # ALL
     # Ordnen Sie ein Element nur dann zu,
-    # wenn alle durch Leerzeichen 
+    # wenn alle durch Leerzeichen
     # etrennten Wörter
     # mit dem Element übereinstimmen.
 
@@ -739,7 +739,7 @@ my  @configurations = (
 
 # Ignores formatting and case
 # and focuses on desired order.
-# Ignores characters or words 
+# Ignores characters or words
 # that are not an EPrints::MetaField::Name name part.
 'name_parts.display_order'              =>  'honourific, given, family, lineage',
 
@@ -802,7 +802,7 @@ my  @tokens_long = (
 
 
 
-    # Utilities: 
+    # Utilities:
 
     'utilities.valid_object.invalid_object'
     =>  'Fehler – Kein gültiges Objekt.',
@@ -909,14 +909,14 @@ führen Sie das Skript bitte erneut aus,
 beispielsweise mit -CAS nach Perl als solchem ...
 
      perl -CAS ChangeName.pm
-    
-Um mehr zu erfahren, 
-können Sie 
+
+Um mehr zu erfahren,
+können Sie
 https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
 anzeigen oder ausführen...
 
      perldoc perlrun
-    
+
 ...und scrollen Sie zum Abschnitt „Befehlsschalter“
 und lesen Sie den Abschnitt zum Schalter „-C“ darin.
 
@@ -996,7 +996,7 @@ Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
 ',
 
     'prompt_for.find.error.no_part'
-    =>  
+    =>
 'Bei der Aufforderung,
 einen Wert in einem bestimmten namensteil zu finden,
 muss ein teil-Attribut festgelegt werden.',
@@ -1027,7 +1027,7 @@ Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
 
     'change.from.cannot'
     =>
-'Änderung nicht möglich... 
+'Änderung nicht möglich...
 
 [_1]
 ',
@@ -1071,7 +1071,7 @@ Für die eindeutige Namenskombination...
 
     '_validate.error.four_byte_character'
     =>
-'Dieses Skript unterstützt keine 
+'Dieses Skript unterstützt keine
 4-Byte-Zeichen in der Eingabe.',
 
     '_validate.error.no_arguments'
@@ -1391,7 +1391,7 @@ my  @configurations = (
 
 # Ignores formatting and case
 # and focuses on desired order.
-# Ignores characters or words 
+# Ignores characters or words
 # that are not an EPrints::MetaField::Name name part.
 'name_parts.display_order'      =>  'honourific, given, family, lineage',
 
@@ -1440,7 +1440,7 @@ my  @tokens_short = (
 'log.type.trace'                        =>  'trace',
 
 'finish.change'                         =>  '[quant,_1,change] out of [quant,_2,change] completed.',
-'finish.no_change'                      =>  'No changes made.', 
+'finish.no_change'                      =>  'No changes made.',
 'finish.thank_you'                      =>  'Thank you for using this script.',
 
 );
@@ -1454,7 +1454,7 @@ my  @tokens_long = (
 # and flushed to the left.
 
 
-    # Utilities: 
+    # Utilities:
 
     'utilities.valid_object.invalid_object'
     =>  'Error - Not a valid object.',
@@ -1511,7 +1511,7 @@ or is a path to a directory that does not appear to exist.',
     'format_single_line_for_display.error.no_params'
     =>
 'Method format_single_line_for_display requires
-a DataObj object (i.e. a search result or eprint) 
+a DataObj object (i.e. a search result or eprint)
 and a string of a field name (i.e. a search field like creators_name),
 to be passed to it as params,
 and no params were passed in.',
@@ -1558,16 +1558,16 @@ and you will be prompted for input instead.
 
 'prompt_for.1or2'               =>  'Please enter 1 or 2.',
 'prompt_for.part'               =>
-    
+
 '
 From your search we found matching records with the following given names associated...
 
-Given Names: 
+Given Names:
 [_1]
 
 ...and the following family names associated...
 
-Family Names: 
+Family Names:
 [_2]
 
 Which do you wish to perform your change on first?
@@ -1648,7 +1648,7 @@ Enter "NONE" for No to All Remaining for this unique name combination.
 'prompt_for.search'                         =>  'Please specify a Search Term: ',
 'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
 
-'prompt_for.find'                           =>  
+'prompt_for.find'                           =>
 
 'Your change will be performed using find and replace,
 (looking to find full and not partial matches, and with case insensitivity).
@@ -1656,19 +1656,19 @@ Enter "NONE" for No to All Remaining for this unique name combination.
 What is your find value when matching within [nest,_1]?
 ',
 
-'prompt_for.find.error.no_part'             =>  
+'prompt_for.find.error.no_part'             =>
 
 'A part attribute must be set
 when prompting to find a value
 in a particular name part, ',
 
-'prompt_for.replace.prompt_on_blank'        =>  
+'prompt_for.replace.prompt_on_blank'        =>
 
 'Did you mean for the replace value to be a blank/null value,
 that if later confirmed would effectively be clearing the field?
 Enter Y or y for Yes, or anything else for No: ',
 
-'prompt_for.error.no_prompt_type'           =>  
+'prompt_for.error.no_prompt_type'           =>
 
 'No prompt type argument supplied to prompt_for method, ',
 
@@ -1680,13 +1680,13 @@ four byte characters in input.',
 
 '_validate.error.no_arguments'              =>
 
-'Private _validate method was called with no arguments, 
+'Private _validate method was called with no arguments,
 and thus had no input to validate.
 The method requires at least one thing to validate, ',
 
 '_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
 
-'_confirmation_feedback.heading.confirmed_so_far'       =>  
+'_confirmation_feedback.heading.confirmed_so_far'       =>
 
 '
 Records you have confirmed for changing so far...
@@ -1701,7 +1701,7 @@ For the unique name [_1] ...
 Confirmation | Record To Change...
 ',
 
-'_confirmation_feedback.record.confirmed_for_changing'  =>  
+'_confirmation_feedback.record.confirmed_for_changing'  =>
 
 '[_1] | [_2]
 ',
@@ -2014,9 +2014,9 @@ ChangeName.pm considers the first four arguments provided at the commandline to 
 or "C<family>" name
 (C<given> in the L</SYNOPSIS (en-GB)> example above).
 
-=back 
+=back
 
-Can also accept a number of flags (preceded by two dashes 
+Can also accept a number of flags (preceded by two dashes
 - such as the C<--exact> C<--verbose> and C<--live> examples shown above).
 The flags and their usage are described under L</OPTIONS (en-GB)>.
 Their positioning relative to the arguments shouldn't matter.
@@ -2040,7 +2040,7 @@ and their language tags.
 =item B<-c> I</path/to/yaml_config.yml>, B<--config> I</path/to/yaml_config.yml>, B<--configuration>=I</path/to/yaml_config.yml>
 
 Allows setting the location of a YAML configuration file to use.
-i.e. ... 
+i.e. ...
 
     # Absolute path:
     --config /path/to/yaml_config.yml
@@ -2196,17 +2196,17 @@ In the case of subjects, match these subject ids or those of any of their descen
 
 (Short for equal).
 Treat the value as a single string. Match only fields which have this value.
-    
+
 =item EX
 
 (Short for exact).
 If the value is an empty string then search for fields which are empty, as oppose to skipping this search field.
 In the case of subjects, match the specified subjects, but not their descendants.
-    
+
 =item SET
 
 If the value is non-empty.
-    
+
 =item NO
 
 This is only really used internally, it means the search field will just fail to match anything without doing any actual searching.
@@ -2403,7 +2403,7 @@ Contains exportable subroutines that are useful utilities and functions for othe
 
 =cut
 
-   
+
 =head4 METHODS (ChangeName::Utilities en-GB)
 
 
@@ -2503,7 +2503,7 @@ indicating it is ready to begin being used to log with.
                                     $valid_object?  'utilities.valid_object.valid_object':
                                     'utilities.valid_object.invalid_object'
                                 )
-                                ->set_caller_depth(4) 
+                                ->set_caller_depth(4)
                                 if _can_log($self);
 
         return                  $valid_object;
@@ -2632,7 +2632,7 @@ Example values are:
             },
     };
 
-    my  $array_reference_2      =   # Names for your arguments 
+    my  $array_reference_2      =   # Names for your arguments
                                     # in order they appear:
                                     [
                                         'archive_id',
@@ -2840,9 +2840,9 @@ indicating it is ready to begin being used to log with.
     }
 
     # Stores default argument names.
-    # When an empty array ref, 
+    # When an empty array ref,
     # it means values will need to be
-    # passed in to get_options 
+    # passed in to get_options
     # or process_commandline_options.
 
     sub _get_default_expected_arguments {
@@ -2909,7 +2909,7 @@ indicating it is ready to begin being used to log with.
             "$option"                       =>  1
         };
 
-        # Add translations to option:        
+        # Add translations to option:
         foreach my $translation (values %multilingual_options_hash) {
 
             $translation                    =   $translation =~ $matches_leading_whitespace?   $+{data}:
@@ -3252,9 +3252,9 @@ Returns an array of array references.
         }
         else {
             $self->logger->debug('Invalid list object. Returning the default result - an empty list that will return false in scalar context.') if _can_log($self);
-        };  
+        };
 
-        # Output:    
+        # Output:
         return @list_of_arrayrefs;
 
     }
@@ -3489,7 +3489,7 @@ package ChangeName::Config v2.0.6 {
     use     CPAN::Meta::YAML qw(
                 LoadFile
                 Load
-            );                      # Standard module in Core Perl since Perl 5.14. 
+            );                      # Standard module in Core Perl since Perl 5.14.
                                     # Better to use YAML::Tiny for YAML, except that is not in core, and this is.
     use     Scalar::Util qw(
                 reftype
@@ -3543,7 +3543,7 @@ package ChangeName::Config v2.0.6 {
         my  $default_filepath                   =   $self->get_default_yaml_filepath;
         my  $none                               =   {};
 
-        # Definitions:    
+        # Definitions:
         my  $external                           =   defined $external_filepath
                                                     && (
                                                         $external_filepath eq '0'?  1:
@@ -3588,7 +3588,7 @@ package ChangeName::Config v2.0.6 {
 
                                                     };
 
-        # Messages:                                    
+        # Messages:
         push @{ $self->{messages}->{error} }    ,   ['config.load.error.custom_external_not_found', $external_filepath]
                                                     if $external_not_found;
 
@@ -3604,9 +3604,9 @@ package ChangeName::Config v2.0.6 {
 
         # Output:
         return $self;
-        
+
     }
-    
+
     sub get_data {
         return shift->{data};
     }
@@ -3679,7 +3679,7 @@ package ChangeName::Languages v2.0.6 {
     my  @configurations = (
         # Ignores formatting and case
         # and focuses on desired order.
-        # Ignores characters or words 
+        # Ignores characters or words
         # that are not an EPrints::MetaField::Name name part.
         # This is a default version of name_parts.display_order for when no language has been set.
         'name_parts.default_display_order'  =>  'honourific, given, family, lineage',
@@ -3709,7 +3709,7 @@ package ChangeName::Languages v2.0.6 {
         );
         return @list_of_classes;
     }
-    
+
     sub ordered_language_handles {
 
         # Initial Values:
@@ -3748,16 +3748,16 @@ package ChangeName::Languages v2.0.6 {
 
         my  $non_priority_filter                    =   sub {
                                                             map {
-                                                                $ARG 
+                                                                $ARG
                                                                 && $ARG ne $priority_handle?   $ARG:
                                                                 ()
                                                             } @ARG;
                                                         };
-                                                        
+
         my  $sort_alphabetically                    =   sub {
                                                             sort { $a cmp $b } @ARG
                                                         };
-        
+
         my  $reverse_order_of_final_result          =   1; # Boolean
 
         # Processing:
@@ -3819,7 +3819,7 @@ package ChangeName::Languages v2.0.6 {
 
         # Processing:
         for my $language_handle ($self->ordered_language_handles) {
-                                                        
+
             if ($language_handle) {
 
                 my  $language_instance              =   ($language_base_class.'::'.$language_handle)->new;
@@ -3833,7 +3833,7 @@ package ChangeName::Languages v2.0.6 {
 
                 my  $phrase                         =   $language_instance->maketext(@ARG);
                 my  $phrase_is_valid                =   $phrase || $phrase eq '0';
-                
+
 
                 # HASH context:
                 push @in_all_languages, (
@@ -3848,7 +3848,7 @@ package ChangeName::Languages v2.0.6 {
                                                             sprintf($format, uc($language_tag), $phrase)
                                                         )
                                                         if $phrase_is_valid; #...if valid phrase.
-                                                        
+
                 last if $phrase_considered_universal;
 
             };
@@ -3900,7 +3900,7 @@ package ChangeName::Language v2.0.6 {
                                     # except the regex match variables
                                     # due to a performance if they are invoked,
                                     # on Perl v5.18 or lower.
-                                    
+
     ChangeName::Languages->import;
     use     Scalar::Util qw(
                 reftype
@@ -3921,10 +3921,10 @@ package ChangeName::Language v2.0.6 {
 #warn 'lang new caller'."\n".Dumper(caller);
         # Object Creation:
         bless $self             ,   $class;
-        
+
         # Set Attributes:
         $self->set_language_handle(@language_tags) if @language_tags;
-                            
+
         # Output:
         return $self;
     }
@@ -4047,7 +4047,7 @@ package ChangeName::Language v2.0.6 {
    #     warn "Def values:\n".Dumper(@defined_values);
 
         if (@valid_values) {
-            $self->{language_handle}    =   ChangeName::Languages->get_handle(@valid_values) 
+            $self->{language_handle}    =   ChangeName::Languages->get_handle(@valid_values)
                                             || die scalar ChangeName::Languages->maketext_in_all_languages('language.error.set_language_handle');
         };
 
@@ -4166,8 +4166,8 @@ package ChangeName::Log v2.0.6 {
                                             $acceptable_language_class->new(
                                                 (
                                                     (
-                                                        exists $params->{language} 
-                                                        && defined $params->{language} 
+                                                        exists $params->{language}
+                                                        && defined $params->{language}
                                                         && $params->{language}
                                                     )
                                                     || @nothing
@@ -4253,7 +4253,7 @@ C<debug>, C<verbose> or C<dumper> method calls.
                 @ARG,
 
             ]
-        ); 
+        );
 
         return $self;
     }
@@ -4410,7 +4410,7 @@ C<debug>, C<verbose> or C<dumper> method calls.
         my  $trace_prefixes         =   $blank;
         my  $loop_count             =   0;
         my  $format                 =   '%s: '; # String, colon, space. Used for language prefix (lang_prefix).
-        
+
         # Data Dumper Settings:
         $Data::Dumper::Maxdepth     =   4;  # So when we dump we don't get too much stuff.
         $Data::Dumper::Sortkeys     =   1;  # Hashes in same order each time - for easier dumper comparisons.
@@ -4654,28 +4654,28 @@ package ChangeName::Modulino v2.0.6 {
     sub utf8_check {
         my  $self                           =   shift;
         my  $continue                       =   1;
-        my  @nothing                        =   ();     
+        my  @nothing                        =   ();
         my  $input_that_requires_utf8       =   scalar (
                                                     map {
                                                         defined $ARG && $ARG?   $ARG:
                                                         @nothing
                                                     }
-                                                
+
                                                     (
-                                                
+
                                                         # Arguments to be UTF-8:
                                                         $self->{arguments}->{archive_id},
                                                         $self->{arguments}->{search},
                                                         $self->{arguments}->{replace},
                                                         $self->{arguments}->{part},
-                                                        
+
                                                         # Options where UTF-8 is possibly/arguably important:
                                                         $self->{options}->{language},
-                                                        $self->{options}->{config},    
-                                                
+                                                        $self->{options}->{config},
+
                                                     )
                                                 );
-        my  $no_input_that_requires_utf8    =  !$input_that_requires_utf8; 
+        my  $no_input_that_requires_utf8    =  !$input_that_requires_utf8;
 
         my  $acceptable_utf8_options        =   (${^UNICODE} >= '39')
                                                 &&
@@ -4714,7 +4714,7 @@ package ChangeName::Modulino v2.0.6 {
 
         if ($self->{config_messages}) {
 
-            # Display order is Error, Debug, Verbose, by design. 
+            # Display order is Error, Debug, Verbose, by design.
             # See ChangeName::Config::load for context.
 
             say $self->language->localise(@{$ARG})  for @{$self->{config_messages}->{error}};
@@ -4804,7 +4804,7 @@ package ChangeName::Modulino v2.0.6 {
 
         ChangeName::Operation->start(@object_params);
 
-        # Output:        
+        # Output:
         return $self->logger->debug('Leaving method.');
 
     }
@@ -4891,14 +4891,14 @@ Loads the class when used in another script.
 
     # Use in a unit test or other Perl Script:
     use ChangeName;
-    
+
     my $object = ChangeName::Operation->new(@object_params);
 
 See L</new (ChangeName::Operation en-GB)> method for info on acceptable object parameters.
 
 =cut
 
-   
+
 =head4 CLASS METHODS (ChangeName::Operation en-GB)
 
 =pod start (en-GB)
@@ -5016,7 +5016,7 @@ B<---------------->
 
 B<---------------->
 
-    # Construct an object, and populate its 
+    # Construct an object, and populate its
     my  $object  =   ChangeName::Operation->new(@object_params)->search;
 
 Performs an EPrints search,
@@ -5047,7 +5047,7 @@ now with C<list_of_results> and C<records_found> object attributes set.
                                         # Search interprets 'ó' as matching 'O.' (yes - even with the dot) and 'à' as matching 'A'
                                         # This is an EPrints API behaviour.
                                         # These are not direct matches, and so could be filtered out by us.
-                                        # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés 
+                                        # At the same time, it also works in reverse. Lopez-Aviles can match López-Avilés
                                         # - which is beneficial if someone doesn't have the correct keyboard.
                                         # So let's leave this in.
 
@@ -5068,7 +5068,7 @@ B<---------------->
 
 B<---------------->
 
-    # Prepare for performing a find and replace operation... 
+    # Prepare for performing a find and replace operation...
     my  $object  =   ChangeName::Operation->new(@object_params)->search->prepare;
 
 Should search results have been retrieved (will return prematurely if not),
@@ -5316,7 +5316,7 @@ To do.
     sub _set_part {
         my  $self               =   shift;
         my  $input              =   shift;
-        
+
         # Multilingual Input Validation and Translation:
         my  $validated_input    =   $self->language->matches_case_insensitively($input => 'input.given')?   'given':
                                     $self->language->matches_case_insensitively($input => 'input.family')?  'family':
@@ -5456,7 +5456,7 @@ To do.
                                         {
                                                 $self->is_true_or_zero($ARG)? ($ARG):
                                                 @skip;
-                                        } 
+                                        }
                                         split $not_a_name_part,
                                         $self->language->get_language_handle?   $self->language->localise('name_parts.display_order'):
                                         $self->language->get_first_localisation_for('name_parts.default_display_order') # Avoids duplicate and lang-tag prefixed response if multiple languages.
@@ -5474,7 +5474,7 @@ To do.
         # Initial Values:
         my  $self           =   shift;
         my  $archive_id     =   shift;
-        
+
         # Processing:
         $self->{repository} =   EPrints::Repository->new(
                                     $self->_set_archive($archive_id)->get_archive
@@ -5489,7 +5489,7 @@ To do.
         else {
             $self->log_debug('Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...', scalar __PACKAGE__)->dumper($self->get_repository);
         };
-        
+
         # Output:
         return $self;
     }
@@ -5730,10 +5730,10 @@ To do.
                                         (ChangeName::Config->new(commandline_arguments => \@ARGV)->load->get_data),
 
         );
-        
+
         say $self->language->localise('LIVE mode - changes will be made at the end after confirmation.') if $self->live;
         say $self->language->localise('DRY RUN mode - no changes will be made.') unless $self->live;
-        
+
         $self
         ->log_debug         ('Set initial instance attributes using params or defaults.')
         ->log_debug         ('About to set Repository.'                                 )
@@ -5748,19 +5748,19 @@ To do.
         ->log_debug                     ('Set Repository.')
         ->log_debug                     ('Now setting additional instance attributes from params...')
         ->_set_search                   ($params->{search})
-#warn 'Self dump...'.Dumper($self); die 'enough3';        
+#warn 'Self dump...'.Dumper($self); die 'enough3';
         ->_set_replace                  ($params->{replace}, 'no_prompt')
 #        warn 'Self dump...'.Dumper($self); die 'enough4';           # Optional on object instantiation, so no prompt for value needed if not set.
         ->_set_part                     ($params->{part},    'no_prompt')   # Also optional on initialisation.
         ->dumper;
-#warn 'Self dump5...'.Dumper($self); $self->dumper; $self->dumper($self); die 'enough5';        
+#warn 'Self dump5...'.Dumper($self); $self->dumper; $self->dumper($self); die 'enough5';
         %{
             $self->log_debug('Setting self-referential instance attributes...')
         }                       =   (
-    
+
             # Existing values in $self:
             %{$self},
-    
+
             # From YAML Configuration:
             force_or_not        =>  [
                                         ($self->{yaml}->{'Force Commit Changes to Database'} =~ $matches_yes)?  [1]:
@@ -5784,14 +5784,14 @@ To do.
                                     'ANY',
 
         );
-#warn 'Self dump...'.Dumper($self); die 'enough6';        
+#warn 'Self dump...'.Dumper($self); die 'enough6';
         %{
             $self->log_debug('Set YAML configurations.')->dumper
         }                       =   (
-        
+
             # Existing values in $self:
             %{$self},
-    
+
             # Search:
             search_fields       =>  [{
                                         meta_fields     =>  $self->{fields_to_search},
@@ -5799,56 +5799,56 @@ To do.
                                         match           =>  $self->{search_match_type},
                                         merge           =>  $self->{search_merge_type},
                                     }],
-            
+
         );
-    
+
         %{
             $self->log_debug('Set search-fields.')->dumper
             ->log_debug('Setting further self-referential attributes...')
         }                       =   (
-    
+
             # Existing values in $self:
             %{$self},
-    
+
             # Search Settings:
             search_settings     =>  {
-    
+
                                         #limit               =>  30,    # Limit the number of matching records.
-    
+
                                         satisfy_all         =>  0,      # If this is true than all search-fields must be satisfied,
                                                                         # if false then results matching any search-field will be returned.
-    
+
                                         staff               =>  1,      # If true then this is a "staff" search,
                                                                         # which prevents searching unless the user is staff,
                                                                         # and the results link to the staff URL of an item
                                                                         # rather than the public URL.
-    
+
                                         show_zero_results   =>  1,      # Should the search go to the results page
                                                                         # if there are no results of stay on the search form page
                                                                         # with a warning about no results.
-    
+
                                         allow_blank         =>  0,      # Unless this is set, a search with no conditions
                                                                         # will return zero records rather than all records.
                                                                         # So presumably when a search has no conditions...
                                                                         # - if this is set, you get all records,
                                                                         # - if this is not set, you get zero records
-    
+
                                         search_fields       =>  $self->{search_fields},
                                     },
         );
-    
+
         $self->dumper
         ->set_name_parts
         ->dumper;
-    
+
         return $self;
-    
+
     }
-    
+
     sub language {
         shift->{language};
     }
-    
+
     sub logger {
         shift->{logger};
     };
@@ -5887,7 +5887,7 @@ To do.
 
         };
 
-        # Output:    
+        # Output:
         return $self;
     }
 
@@ -5898,7 +5898,7 @@ To do.
         for my $name_of_list (keys %{$self->{frequencies}}) {
 
             $self->{"$name_of_list"}    =   [
-                                                sort {$a cmp $b} 
+                                                sort {$a cmp $b}
                                                 keys %{$self->{frequencies}->{"$name_of_list"}}    # Defined in _tally_frequencies method.
                                             ];
         };
@@ -5907,77 +5907,77 @@ To do.
     }
 
     sub _add_relevant_display_lines {
-    
+
         my  $self                       =   shift;
-    
+
         $self->log_debug('Entered method. Attribute display_lines is...')->dumper($self->{display_lines});
-    
+
         my  $result                     =   shift;
-    
+
         return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                             unless $result;
-    
+
         foreach my $search_field (@{$self->{'fields_to_search'}}) {
-    
+
             $self->log_debug('Processing search field: [_1]', $search_field);
-    
+
             for my $name (@{$result->get_value($search_field)}) {
-    
+
                 if ( $self->_match($name)->{matches} ) {
-                    
+
                     my  $line                                                   =   $self->format_single_line_for_display($result, $search_field);
-    
+
                     push @{$self->{'display_lines'}->{"$self->{unique_name}"}}  ,   $line;
-    
+
                     $self->{'display'}->{"$self->{unique_name}"}                =   'Yes';
-    
+
                     $self->{'display_is_set'}                                   =   'Yes';
-                    
+
                     $self->log_debug('Set display flags and added display line:')->dumper($line);
-    
+
                 }
-    
+
             };
-    
+
         };
-        
+
         return $self->log_debug('Leaving method. Attribute display_lines is...')->dumper($self->{display_lines});
-    
+
     }
 
     sub _seeking_confirmation {
-    
+
         my  $self                       =   shift;
-    
+
         $self->log_debug('Entered method.')->dumper;
-    
+
         my  $result                     =   shift;
-    
+
         return                              $self->log_debug('Premature exit - no result passed in.') # should this be a die?
                                             unless $result;
-    
+
         my  ($yes, $no)                 =   (
                                                 $self->language->get_first_localisation_for('input.yes_letter'),
                                                 $self->language->get_first_localisation_for('input.no_letter'),
                                             );
-    
+
         foreach my $search_field (@{$self->{'fields_to_search'}}) {
-    
+
             $self->log_debug('Processing search field: [_1]', $search_field);
-    
+
             my  $names                  =   $result->get_value($search_field);
             my  @range_of_names         =   (0..$#{$names});
-    
+
             for my $current (@range_of_names) {
-    
+
                 my  $name   =  $names->[$current];
-    
+
                 next unless $self->_match($name)->{matches};
-    
+
                 $self->log_debug('Checking if display lines have been shown.')->dumper($self->{display_lines_shown});
-                           
+
                 unless ($self->{display_lines_shown}) {
-    
+
                     say $self->language->localise('horizontal.rule');
                     say $self->language->localise(
                             'seeking_confirmation.display_lines',
@@ -5988,14 +5988,14 @@ To do.
                             ),
                         );
                     say $self->language->localise('horizontal.rule');
-    
+
                     $self->{display_lines_shown}    =   'Yes';
-    
+
                 };
-    
+
                 # Set or get confirmation:
                 $self->log_debug('Setting confirmation');
-                
+
                 $self->{confirm_prompt_arguments}   =   [
                                                             $self->{'part'},
                                                             $name->{"$self->{'part'}"},
@@ -6004,29 +6004,29 @@ To do.
                                                             $search_field,
                                                             $self->format_single_line_for_display($result, $search_field),
                                                         ];
-                
+
                 $self->log_debug('Will check matches auto no result ([_1]) and matches auto yes result ([_2])...', $self->{matches_auto_no}, $self->{matches_auto_yes} );
-                
+
                 my  $confirmation       =   $self->{matches_auto_no}?   $no:    # Match determined in _match method and could be refactored out.
                                             $self->{matches_auto_yes}?  $yes:   # Match determined in _match method and could be refactored out.
                                             $self->log_debug('Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.')
                                             ->prompt_for('confirm');
-    
+
                 # Process confirmation:
                 $self->log_debug('Processing confirmation ([_1])', $confirmation);
-    
+
                 if ( $self->language->matches_case_insensitively($confirmation, 'input.none') ) {
                     $self->log_debug('Detected [nest,input.none].');
                     $self->{auto_no}    =   $self->{unique_name};
                     $confirmation       =   $no;
                 };
-    
+
                 if ($self->language->matches_case_insensitively($confirmation, 'input.all')) {
                     $self->log_debug('Detected [nest,input.all].');
                     $self->{auto_yes}   =   $self->{unique_name};
                     $confirmation       =   $yes;
                 };
-    
+
                 if ($self->language->matches_case_insensitively($confirmation, 'input.yes_letter')) {
                     $self->log_debug('Detected [nest,input.yes_letter].');
                     my  $feedback       =   [
@@ -6035,7 +6035,7 @@ To do.
                                                 uc($confirmation),
                                                 $self->format_single_line_for_display($result, $search_field),
                                             ];
-                
+
                     my  $details        =   [
                                                 $result,
                                                 $search_field,
@@ -6044,91 +6044,91 @@ To do.
                                                 $current,
                                                 $feedback,
                                             ];
-    
+
                     push @{$self->{what_to_change}}, $details;
-    
+
                     $self->log_debug('Added details to what_to_change')->dumper($details);
-                    
+
                 };
-    
+
                 say $self->_generate_confirmation_feedback->log_debug('Displaying generated confirmation feedback.')->{confirmation_feedback} // q{};
                 $self->prompt_for('continue') if $self->{confirmation_feedback};
-    
+
             };
-    
+
         };
-        
+
         return $self->log_debug('Leaving method.')->dumper;
-    
+
     }
 
     sub _generate_confirmation_feedback {
-    
+
         my  $self                                               =   shift;
-    
+
         $self->log_debug('Entered method.')->dumper;
-    
+
         my  $prerequisites                                      =   @{$self->{what_to_change}}
                                                                     && @{$self->{unique_names}};
         #warn 'check what up';
         #EPrints->trace;
         return $self->log_debug('Premature exit - Prerequisites not met.') unless $prerequisites;
-    
+
         my  $output                                             =   $self->language->localise('horizontal.rule')."\n".
                                                                     $self->language->localise('_confirmation_feedback.heading.confirmed_so_far');
         my  $at_least_one_confirmation                          =   undef;
         my  $heading_shown_for                                  =   {};
-    
+
         foreach my $details (@{$self->{what_to_change}}) {
             for my $current_unique_name (@{$self->{unique_names}}) {
-    
+
                 my  (
                         $matches_unique_name,
                         $stringified_name,
                         $confirmation,
                         $display_line
                     )                                           =   @{ $details->[5] };
-    
+
                 if ($current_unique_name                        =~  $matches_unique_name) {
-    
+
                     $self->log_debug('Matched unique name.');
-    
+
                     $at_least_one_confirmation                  =   'Yes';
-    
+
                     $output                                     .=  $self->language->localise('_confirmation_feedback.heading.unique_name', $stringified_name)
                                                                     unless $heading_shown_for->{$current_unique_name};
-    
+
                     $output                                     .=  $self->language->localise('_confirmation_feedback.record.confirmed_for_changing', $confirmation, $display_line);
-            
+
                     $heading_shown_for->{"$current_unique_name"}=   'Yes';
-    
+
                     $self->log_debug('Added record to confirmation feedback.');
-                    
+
                     $self->log_debug('Since unique names are unique, we can leave unique name loop now we have processed a match.');
                     last;
-    
+
                 };
-        
+
             };
             $self->log_debug('Exited unique name loop.');
         };
-        
+
         #$output                                                 .=  $self->language->localise('horizontal.rule');    # Not needed if continue prompt will follow.
-        
+
         $self->{confirmation_feedback}                          =   $at_least_one_confirmation? $output:
                                                                     undef;
-        
+
         $self->log_debug(
             $self->{confirmation_feedback}? 'Generated confirmation feedback.':
             'No confirmation feedback generated.',
         );
-        
+
         return $self->log_debug('Leaving method.')->dumper;
-    
+
     }
 
     sub _match {
-    
+
         my  $self                   =   shift->log_debug('Entering method.');
         my  $name                   =   shift;
         my  $name_part_value        =   $name->{"$self->{'part'}"};
@@ -6187,7 +6187,7 @@ To do.
     sub _stringify_name {
         my  $self           =   shift;
         my  $name           =   shift;
-        
+
         # Premature Exit:
         die                     $self->language->localise('_stringify_name.error.no_params')
                                 unless $name; # hash ref check?
@@ -6213,26 +6213,26 @@ To do.
 
         # Definitions:
         my  $number_of_input_arguments      =   scalar @input;
-        my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;    
-    
+        my  $matches_four_byte_character    =   qr/[\N{U+10000}-\N{U+7FFFFFFF}]/;
+
         # Premature death:
         die                                     $self->language->localise('_validate.error.no_arguments')
                                                 unless $number_of_input_arguments; # Blank string or a zero are both valid values.
-    
+
         # Processing:
         for my $current_index (0..$#input) {
-    
+
             # Consider a sole zero as a true input value:
             $input[$current_index]          =   $input[$current_index] eq '0'? "0 but true":
                                                 $input[$current_index];
-    
+
             # Stop out of range input:
             die                                 $self->language->localise('_validate.error.four_byte_character')
                                                 if (
                                                     $input[$current_index]
                                                     && ($input[$current_index] =~ $matches_four_byte_character)
                                                 );
-    
+
         };
         #warn 'validate Input 0 is: '.$input[0];
         #warn 'validate Input array is: '.Dumper(@input);
@@ -6257,7 +6257,7 @@ To do.
 
     sub log_debug {
         my  $self   =   shift;
-        
+
         $self->{logger}->set_caller_depth(4)->debug(@ARG);
 
         return $self;
@@ -6265,7 +6265,7 @@ To do.
 
     sub dumper {
         my  $self   =   shift;
-    
+
         $self->{logger}->set_caller_depth(4)->set_dumper_default($self)->dumper(@ARG);
 
         return $self;
