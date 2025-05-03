@@ -843,14 +843,11 @@ Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
     'config.load.error.custom_external_not_found'
     =>  'Konfigurationsdatei [_1] nicht gefunden.',
 
-
     'config.load.debug.default_external_not_found'
     =>  'Standard-externe Konfigurationsdatei [_1] nicht gefunden.',
 
-
     'config.load.verbose.loaded_file'
     =>  'Konfiguration von [_1] geladen',
-
 
     'config.load.verbose.internal'
     =>  'Interne Konfiguration wird geladen.',
@@ -960,6 +957,7 @@ https://github.com/eprintsug/ChangeName/issues
 [nest,horizontal.rule]
 ',
 
+
     # Validation:
 
     'validation.errors.invalid'
@@ -1006,7 +1004,8 @@ und lesen Sie den Abschnitt zum Schalter „-C“ darin.
 Wenn Sie alternativ
 UTF-8-Befehlszeilenargumente auf diese Weise nicht aktivieren können,
 erwägen Sie, das Skript ohne Argumente auszuführen.
-Stattdessen werden Sie zur Eingabe aufgefordert.',
+Stattdessen werden Sie zur Eingabe aufgefordert.
+',
 
 
     # Prompt:
@@ -1098,8 +1097,7 @@ Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
     # Change:
 
     'change.locked'
-    =>
-'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+    =>  'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
 
     'change.from.can'
     =>
@@ -1130,12 +1128,11 @@ Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
 ..aufgrund einer Bearbeitungssperre für diesen Datensatz (Datensatz [_2]).',
 
     'change.dry_run'
-    =>
-'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
+    =>  'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
 
     'change.done'
-    =>
-'Fertig – die Änderung wurde für Sie vorgenommen.',
+    =>  'Fertig – die Änderung wurde für Sie vorgenommen.',
+
 
     # Seeking Confirmation:
 
@@ -1163,10 +1160,12 @@ Für die eindeutige Namenskombination...
 und hatte daher keine Eingaben zur Validierung.
 Die Methode erfordert mindestens eine Sache zur Validierung, ',
 
+
     # _log:
 
     '_log.error.no_repository'
     =>  'Für die private _log-Methode ist ein gültiges EPrints::Repository-Objekt erforderlich, das als Attribut von $self festgelegt ist.',
+
 
     # _confirmation_feedback:
 
@@ -1590,6 +1589,7 @@ The only acceptable object class for this purpose is [_2]
     'utilities.validate_class.valid_class'
     =>  '[_1] object is a valid class of object for this purpose.',
 
+
     # Config:
 
     'config.load.error.custom_external_not_found'
@@ -1603,6 +1603,7 @@ The only acceptable object class for this purpose is [_2]
 
     'config.load.verbose.internal'
     =>  'Loading internal configuration.',
+
 
     # Log:
 
@@ -1625,6 +1626,7 @@ or is a path to a directory that does not appear to exist.',
 [_1]',
 
 
+    # Operation:
 
     'format_single_line_for_display.error.no_params'
     =>
@@ -1651,20 +1653,24 @@ Could not establish a valid EPrints Repository to work with,
 when using the following Archive ID: "[_1]",
 and using the following EPrints Perl Library Path: "[_2]".
 
-Please check for any possible errors that may have caused this.
+Please check for any possible errors
+that may have caused this.
 
 [nest,horizontal.rule]
 
 HOW TO TEST EPRINTS:
 
 To ensure EPrints is configured correctly,
-and able to connect to its database, you may wish to run...
+and able to connect to its database,
+you may wish to run...
 
 epadmin test --verbose
 
-...from the bin folder inside your EPrints directory ( see https://wiki.eprints.org/w/Bin/ ).
+...from the bin folder inside your EPrints directory
+( see https://wiki.eprints.org/w/Bin/ ).
 
-More information is available by running the perldoc command...
+More information is available
+by running the perldoc command...
 
 perldoc epadmin
 
@@ -1704,19 +1710,33 @@ https://github.com/eprintsug/ChangeName/issues
 ',
 
 
+    # Validation:
 
-# Using q{} instead of single or double quotes in line below, so single and double quote characters are free to use within the string:
-'commandline.config_undefined'  =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
+    'validation.errors.invalid'
+    =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
-'commandline.end_program'       =>  'This program will now end...'.$new_line,
-'validation.errors.invalid'     =>  'Invalid [_1] field in [_2] form.'.$new_line,
 
-'commandline.utf8_not_needed'   =>  'No UTF-8 critical commandline options or arguments given.',
-'commandline.no_arguments'      =>  'No commandline arguments given.',
-'commandline.utf8_enabled'      =>  'UTF-8 commandline arguments enabled.',
+    # Commandline:
 
-'commandline.utf8_not_enabled'  =>
+    'commandline.config_undefined'
+    # Using q{} instead of single or double quotes in line below,
+    # so single and double quote characters are free to use within the string:
+    =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
 
+    'commandline.end_program'
+    =>  'This program will now end...'.$new_line,
+
+    'commandline.utf8_not_needed'
+    =>  'No UTF-8 critical commandline options or arguments given.',
+
+    'commandline.no_arguments'
+    =>  'No commandline arguments given.',
+
+    'commandline.utf8_enabled'
+    =>  'UTF-8 commandline arguments enabled.',
+
+    'commandline.utf8_not_enabled'
+    =>
 'UTF-8 commandline arguments do not appear to be enabled.
 
 To enable UTF-8 arguments,
@@ -1739,9 +1759,14 @@ consider running the script without arguments,
 and you will be prompted for input instead.
 ',
 
-'prompt_for.1or2'               =>  'Please enter 1 or 2.',
-'prompt_for.part'               =>
 
+    # Prompt:
+
+    'prompt_for.1or2'
+    =>  'Please enter 1 or 2.',
+
+    'prompt_for.part'
+    =>
 '
 From your search we found matching records with the following given names associated...
 
@@ -1758,8 +1783,8 @@ Which do you wish to perform your change on first?
     2) Family Name
 ',
 
-'prompt_for.confirm' =>
-
+    'prompt_for.confirm'
+    =>
 'Confirm to change [_1] name from...
 
 "[_2]"
@@ -1774,43 +1799,96 @@ Which do you wish to perform your change on first?
 
 ...?',
 
-'change.locked'     =>  'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+    'prompt_for.confirm.acceptable_input'
+    =>
+'Enter "Y" for Yes,
+Enter "N" for No,
+Enter "ALL" for Yes to All Remaining for this unique name combination.
+Enter "NONE" for No to All Remaining for this unique name combination.
+',
 
-'change.from.can'   =>
+    'prompt_for.continue'
+    =>  'Press the ENTER or RETURN key to continue...',
 
+    'prompt_for.archive'
+    =>  'Please specify an Archive ID: ',
+
+    'prompt_for.search'
+    =>  'Please specify a Search Term: ',
+
+    'prompt_for.replace'
+    =>  'Please specify a Replace Term: ',
+
+    'prompt_for.find'
+    =>
+'Your change will be performed using find and replace,
+(looking to find full and not partial matches, and with case insensitivity).
+
+What is your find value when matching within [nest,_1]?
+',
+
+    'prompt_for.find.error.no_part'
+    =>
+'A part attribute must be set
+when prompting to find a value
+in a particular name part, ',
+
+    'prompt_for.replace.prompt_on_blank'
+    =>
+'Did you mean for the replace value to be a blank/null value,
+that if later confirmed would effectively be clearing the field?
+Enter Y or y for Yes, or anything else for No: ',
+
+    'prompt_for.error.no_prompt_type'
+    =>  'No prompt type argument supplied to prompt_for method, ',
+
+
+    # Change:
+
+    'change.locked'
+    =>  'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+
+    'change.from.can'
+    =>
 'Changing...
 
 [_1]
 ',
 
-'change.from.cannot'  =>
-
+    'change.from.cannot'
+    =>
 'Unable to change...
 
 [_1]
 ',
 
-'change.to.can' =>
-
+    'change.to.can'
+    =>
 '...to...
 
 [_1]',
 
-'change.to.cannot' =>
-
+    'change.to.cannot'
+    =>
 '...to...
 
 [_1]
 
 ...due to an edit lock on this record (record [_2]).',
 
-'change.dry_run'    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
+    'change.dry_run'
+    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
 
-'change.done'       =>  'Done - the change has been made for you.',
+    'change.done'
+    =>  'Done - the change has been made for you.',
 
-'seeking_confirmation.display_lines' =>
 
-'For the unique name combination...
+    # Seeking Confirmation:
+
+    'seeking_confirmation.display_lines'
+    =>
+'
+For the unique name combination...
 
 [_1]
 
@@ -1818,66 +1896,38 @@ Which do you wish to perform your change on first?
 
 [_2]',
 
-'prompt_for.confirm.acceptable_input'  =>
 
-'Enter "Y" for Yes,
-Enter "N" for No,
-Enter "ALL" for Yes to All Remaining for this unique name combination.
-Enter "NONE" for No to All Remaining for this unique name combination.
-',
+    # _validate:
 
-'prompt_for.continue'                       =>  'Press the ENTER or RETURN key to continue...',
-'prompt_for.archive'                        =>  'Please specify an Archive ID: ',
-'prompt_for.search'                         =>  'Please specify a Search Term: ',
-'prompt_for.replace'                        =>  'Please specify a Replace Term: ',
-
-'prompt_for.find'                           =>
-
-'Your change will be performed using find and replace,
-(looking to find full and not partial matches, and with case insensitivity).
-
-What is your find value when matching within [nest,_1]?
-',
-
-'prompt_for.find.error.no_part'             =>
-
-'A part attribute must be set
-when prompting to find a value
-in a particular name part, ',
-
-'prompt_for.replace.prompt_on_blank'        =>
-
-'Did you mean for the replace value to be a blank/null value,
-that if later confirmed would effectively be clearing the field?
-Enter Y or y for Yes, or anything else for No: ',
-
-'prompt_for.error.no_prompt_type'           =>
-
-'No prompt type argument supplied to prompt_for method, ',
-
-
-'_validate.error.four_byte_character'       =>
-
+    '_validate.error.four_byte_character'
+    =>
 'This script does not support
 four byte characters in input.',
 
-'_validate.error.no_arguments'              =>
-
+    '_validate.error.no_arguments'
+    =>
 'Private _validate method was called with no arguments,
 and thus had no input to validate.
 The method requires at least one thing to validate, ',
 
-'_log.error.no_repository'                  =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
 
-'_confirmation_feedback.heading.confirmed_so_far'       =>
+    # _log:
 
+    '_log.error.no_repository'
+    =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
+
+
+    # _confirmation_feedback:
+
+    '_confirmation_feedback.heading.confirmed_so_far'
+    =>
 '
 Records you have confirmed for changing so far...
 
 ',
 
-'_confirmation_feedback.heading.unique_name'            =>
-
+    '_confirmation_feedback.heading.unique_name'
+    =>
 '
 For the unique name [_1] ...
 
