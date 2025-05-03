@@ -735,7 +735,16 @@ de_DE_Konfigurationen_Token_Phrasen_Lexikon: {
 
 my  $new_line                           =   "\n";
 
-my  @configurations = (
+my  @configurations;
+my  @tokens_short;
+my  @tokens_long;
+my  @debug_phrases;
+my  @verbose_phrases;
+my  @stdout_phrases;
+
+Konfigurationen: {
+
+@configurations = (
 
 # Ignores formatting and case
 # and focuses on desired order.
@@ -745,7 +754,12 @@ my  @configurations = (
 
 );
 
-my  @tokens_short = (
+}
+
+Token: {
+
+Kurz: {
+@tokens_short = (
 
 'language.name'                         =>  'Deutsch (Deutschland)',
 'language.error.set_language_handle'    =>  'Probleme beim Finden einer zu verwendenden Sprache.',
@@ -792,7 +806,10 @@ my  @tokens_short = (
 
 );
 
-my  @tokens_long = (
+}
+
+Lang: {
+@tokens_long = (
 
 
 # Style: Fat comma on new line,
@@ -876,6 +893,72 @@ und es wurden keine Parameter übergeben.',
 einer Namens-Hash-Referenz von Namensteilen als Argument,
 und es wurden keine derartigen Parameter bereitgestellt.',
 
+    '_set_attributes.error.invalid_repository'
+    =>
+'
+[nest,horizontal.rule]
+
+AUFGETRETENES PROBLEM:
+
+Es konnte kein gültiges EPrints-Repository zum Arbeiten erstellt werden,
+wenn die folgende Archiv-ID verwendet wurde: „[_1]“
+und der folgende EPrints-Perl-Bibliothekspfad verwendet wurde: „[_2]“.
+
+Bitte prüfen Sie, ob möglicherweise Fehler vorliegen,
+die dies verursacht haben könnten.
+
+[nest,horizontal.rule]
+
+SO TESTEN SIE EPRINTS:
+
+Um sicherzustellen, dass EPrints korrekt konfiguriert ist
+und eine Verbindung zur Datenbank herstellen kann,
+führen Sie Folgendes aus...
+
+epadmin test --verbose
+
+...aus dem „bin“-Ordner Ihres EPrints-Verzeichnisses
+( siehe https://wiki.eprints.org/w/Bin/ ).
+
+Weitere Informationen erhalten Sie,
+indem Sie den perldoc-Befehl...
+
+perldoc epadmin
+
+...ausführen oder https://metacpan.org/pod2html mit einem Webbrowser besuchen
+und die epadmin-Datei hinzufügen.
+
+Das EPrints-Wiki kann ebenfalls hilfreich sein:
+
+https://wiki.eprints.org/w/API:bin/epadmin
+
+[nest,horizontal.rule]
+
+DEBUGGING-INFORMATIONEN FÜR DIESES SKRIPT ANZEIGEN:
+
+Wenn es hilfreich ist,
+können Sie ChangeName.pm mit der Option --debug erneut ausführen,
+um besser zu verstehen, was passiert ist.
+
+Beispiel:
+
+perl -CAS ChangeName.pm --debug --lang=en-GB
+
+Weitere Dokumentation zu den Optionen finden Sie,
+indem Sie den Befehl perldoc für das Skript ausführen...
+
+perldoc ChangeName.pm
+
+...oder indem Sie https://metacpan.org/pod2html in einem Webbrowser
+aufrufen und das Skript hinzufügen.
+
+Sollten Sie beim Überprüfen der Debugging-Informationen einen Fehler entdecken,
+melden Sie ihn bitte als Problem auf GitHub:
+
+https://github.com/eprintsug/ChangeName/issues
+
+[nest,horizontal.rule]
+',
 
     # Validation:
 
@@ -1109,8 +1192,14 @@ Bestätigung | Zum Ändern aufzeichnen...
 
 );
 
+}
 
-my  @debug_phrases = (
+}
+
+Phrasen: {
+
+Debug: {
+@debug_phrases = (
 
     # Commonly used:
     'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
@@ -1153,6 +1242,7 @@ my  @debug_phrases = (
     'Set Repository.'                                           =>  'Legen Sie das zu verwendende Repository fest.',
     'About to add attributes from params...'                    =>  'Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
     'Params have been as follows...'                            =>  'Die Parameter, mit denen wir gearbeitet haben und weiterhin arbeiten werden, sind die folgenden...',
+    'Premature exit - Unable to set valid Repository.'          =>  'Vorzeitiges Beenden – Gültiges Repository konnte nicht festgelegt werden.',
 
     # ChangeName::Operation::_set_search
     'Set search normally, as no --exact flag provided.' =>  'Suche normal einstellen, da kein --exact-Flag bereitgestellt wird.',
@@ -1291,8 +1381,10 @@ my  @debug_phrases = (
     =>  'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
 
 );
+}
 
-my  @verbose_phrases = (
+Ausführlich: {
+    @verbose_phrases = (
 
     # ChangeName::Modulino::setup
     'Language set to [nest,language.name].'                             =>  'Sprache auf [nest,language.name] eingestellt.',
@@ -1310,7 +1402,11 @@ my  @verbose_phrases = (
 
 );
 
-my  @stdout_phrases = (
+}
+
+Standardausgabe: {
+
+@stdout_phrases = (
 
      # ChangeName::Operation::search
     'No Results Found.'         =>  'Keine Ergebnisse gefunden.',
@@ -1325,6 +1421,10 @@ my  @stdout_phrases = (
     'Nothing was found to match.'                                       =>  'Es wurde keine Übereinstimmung festgestellt.',
 
 );
+
+}
+
+}
 
 our %Lexicon = (
     #'_AUTO' => 1, # Commented out the auto for now.
@@ -1387,7 +1487,16 @@ en_GB_Configurations_Tokens_Phrases_Lexicon: {
 
 my  $new_line                   =   "\n";
 
-my  @configurations = (
+my  @configurations;
+my  @tokens_short;
+my  @tokens_long;
+my  @debug_phrases;
+my  @verbose_phrases;
+my  @stdout_phrases;
+
+Configurations: {
+
+@configurations = (
 
 # Ignores formatting and case
 # and focuses on desired order.
@@ -1397,8 +1506,13 @@ my  @configurations = (
 
 );
 
+}
 
-my  @tokens_short = (
+Tokens: {
+
+Short: {
+
+@tokens_short = (
 
 'language.name'                         =>  'English (United Kingdom)',
 'language.error.set_language_handle'    =>  'Trouble finding a language to use.',
@@ -1445,7 +1559,11 @@ my  @tokens_short = (
 
 );
 
-my  @tokens_long = (
+}
+
+Long: {
+
+@tokens_long = (
 
 
 # Style: Fat comma on new line,
@@ -1521,6 +1639,71 @@ and no params were passed in.',
 'Method requires a name hash reference of name parts,
 to be passed in as an argument,
 and no such params were provided.',
+
+    '_set_attributes.error.invalid_repository'
+    =>
+'
+[nest,horizontal.rule]
+
+PROBLEM ENCOUNTERED:
+
+Could not establish a valid EPrints Repository to work with,
+when using the following Archive ID: "[_1]",
+and using the following EPrints Perl Library Path: "[_2]".
+
+Please check for any possible errors that may have caused this.
+
+[nest,horizontal.rule]
+
+HOW TO TEST EPRINTS:
+
+To ensure EPrints is configured correctly,
+and able to connect to its database, you may wish to run...
+
+epadmin test --verbose
+
+...from the bin folder inside your EPrints directory ( see https://wiki.eprints.org/w/Bin/ ).
+
+More information is available by running the perldoc command...
+
+perldoc epadmin
+
+...or by visiting https://metacpan.org/pod2html with a web browser,
+and adding the epadmin file.
+
+The EPrints Wiki may also be helpful:
+
+https://wiki.eprints.org/w/API:bin/epadmin
+
+[nest,horizontal.rule]
+
+VIEW DEBUGGING INFO FOR THIS SCRIPT:
+
+If helpful, to aid understanding of what has occurred,
+you can run ChangeName.pm again,
+with the --debug option.
+
+For example:
+
+perl -CAS ChangeName.pm --debug --lang=en-GB
+
+More documentation on options can be found
+either by running the perldoc command on the script...
+
+perldoc ChangeName.pm
+
+...or by visiting https://metacpan.org/pod2html with a web browser,
+and adding the script.
+
+Should you discover a bug during this process,
+please consider reporting it as an issue on GitHub:
+
+https://github.com/eprintsug/ChangeName/issues
+
+[nest,horizontal.rule]
+',
+
+
 
 # Using q{} instead of single or double quotes in line below, so single and double quote characters are free to use within the string:
 'commandline.config_undefined'  =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
@@ -1707,11 +1890,16 @@ Confirmation | Record To Change...
 ',
 
 
-
-
 );
 
-my  @debug_phrases = (
+}
+
+}
+
+Phrases: {
+
+Debug: {
+@debug_phrases = (
 
     # Commonly used:
     'Entering method.'                          =>  'Entering method.',
@@ -1754,6 +1942,7 @@ my  @debug_phrases = (
     'Set Repository.' => 'Set Repository.',
     'About to add attributes from params...' => 'About to add attributes from params...',
     'Params have been as follows...' => 'Params have been as follows...',
+    'Premature exit - Unable to set valid Repository.' => 'Premature exit - Unable to set valid Repository.',
 
     # ChangeName::Operation::_set_search
     'Set search normally, as no --exact flag provided.' => 'Set search normally, as no --exact flag provided.',
@@ -1887,7 +2076,10 @@ my  @debug_phrases = (
 
 );
 
-my  @verbose_phrases = (
+}
+
+Verbose: {
+@verbose_phrases = (
 
     # ChangeName::Modulino::setup
     'Language set to [nest,language.name].'                             =>  'Language set to [nest,language.name].',
@@ -1905,7 +2097,11 @@ my  @verbose_phrases = (
 
 );
 
-my  @stdout_phrases = (
+}
+
+Stdout: {
+
+@stdout_phrases = (
 
      # ChangeName::Operation::search
     'No Results Found.'         =>  'No Results Found.',
@@ -1920,6 +2116,10 @@ my  @stdout_phrases = (
     'Nothing was found to match.'                                       =>  'Nothing was found to match.',
 
 );
+
+}
+
+}
 
 our %Lexicon = (
     #'_AUTO' => 1, # Commented out the auto for now.
@@ -5030,9 +5230,13 @@ now with C<list_of_results> and C<records_found> object attributes set.
     sub search {
         my  $self                   =   shift;
 
-        $self
-        ->log_debug('Entered method.')->dumper
-        ->log_debug('Using search settings...')->dumper($self->get_search_settings);
+        $self->log_debug('Entered method.')->dumper;
+
+        # Premature Exit:
+        return                          $self->log_debug('Premature exit - Prerequisites not met.')
+                                        unless $self->get_repository;
+
+        $self->log_debug('Using search settings...')->dumper($self->get_search_settings);
 
         say $self->language->localise(
             'Searching fields [_1] ...',
@@ -5739,7 +5943,20 @@ To do.
         ->log_debug         ('About to set Repository.'                                 )
         ->_set_repository   ($params->{archive_id}                                      );
 
-        $self->logger->set_repository($self->get_repository);
+        my  $valid_repository_object=   $self->validate_class(
+                                            $self->get_repository   =>  'EPrints::Repository',
+                                        );
+
+        say                             $self->language->localise('_set_attributes.error.invalid_repository', $self->get_archive, $self->{yaml}->{'EPrints Perl Library Path'})
+                                        unless $valid_repository_object;
+
+        # Premature Exit:
+        return                          $self
+                                        ->log_debug('Premature exit - Unable to set valid Repository.')
+                                        unless $valid_repository_object;
+
+        $self->logger->set_repository($valid_repository_object);
+
 
 #warn 'Self dump2...'.Dumper($self); #die 'enough2';
         #warn 'About to use the logger...';
