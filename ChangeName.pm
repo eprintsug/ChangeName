@@ -1565,68 +1565,146 @@ Long: {
 @tokens_long = (
 
 
-# Style: Fat comma on new line,
-# One line translations on the same line as the fat comma,
-# Multi-line translations the line below the fat comma,
-# and flushed to the left.
+    # Comment Headings Style Guide:
+    # -----------------------------
+    # Class Names if only a few tokens/phrases.
+    # Class Names with subroutine names,
+    # if it makes more sense due to the number of phrases.
+    # Two blank lines above each heading.
+
+    # Key Value Style Guide:
+    # -----------------------------
+    # Fat comma on new line,
+    # One line translations on the same line as the fat comma,
+    # Multi-line translations the line below the fat comma,
+    # and flushed to the left.
+
+    # Ordering Style Guide
+    # -----------------------------
+    # Alphabetical where possible.
+    # Leading underscores ignored, as these may be added
+    # or removed depending on whether the method is made
+    # public or private.
 
 
-    # Utilities:
-
-    'utilities.valid_object.invalid_object'
-    =>  'Error - Not a valid object.',
-
-    'utilities.valid_object.valid_object'
-    =>  'Valid object.',
-
-    'utilities.validate_class.invalid_class'
-    =>
-'Error - Your [_1] object is considered an invalid object
-for this purpose, due to its class.
-The only acceptable object class for this purpose is [_2]
-- so please use an object of this class instead.',
-
-    'utilities.validate_class.valid_class'
-    =>  '[_1] object is a valid class of object for this purpose.',
-
-
-    # Config:
-
-    'config.load.error.custom_external_not_found'
-    =>  'Config file [_1] not found.',
+    # ChangeName::Config
 
     'config.load.debug.default_external_not_found'
     =>  'Default external config file [_1] not found.',
 
-    'config.load.verbose.loaded_file'
-    =>  'Loaded Config from [_1]',
+    'config.load.error.custom_external_not_found'
+    =>  'Config file [_1] not found.',
 
     'config.load.verbose.internal'
     =>  'Loading internal configuration.',
 
+    'config.load.verbose.loaded_file'
+    =>  'Loaded Config from [_1]',
 
-    # Log:
 
-    'log.valid_repository.error.invalid'
-    =>  'Value passed to valid_repository method not a valid repository.',
+    # ChangeName::Log
 
     'log.set_repository.error.bad_value'
     =>  'Value passed to set_repository method not a repository. Value left unchanged.',
 
-    # Modulino:
+    'log.valid_repository.error.invalid'
+    =>  'Value passed to valid_repository method not a valid repository.',
 
-    'modulino.error.perl_lib'
-    =>
-'EPrints Perl Library Path either not defined in YAML config,
-or is a path to a directory that does not appear to exist.',
+    # ChangeName::Modulino::config
 
-    'modulino.perl_lib_path'
+    'commandline.config_undefined'
+    # Using q{} instead of single or double quotes in line below,
+    # so single and double quote characters are free to use within the string:
+    =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
+
+
+    # ChangeName::Modulino::utf8_check
+
+    'commandline.end_program'
+    =>  'This program will now end...'.$new_line,
+
+    'commandline.no_arguments'
+    =>  'No commandline arguments given.',
+
+    'commandline.utf8_enabled'
+    =>  'UTF-8 commandline arguments enabled.',
+
+    'commandline.utf8_not_enabled'
     =>
-'The EPrints Perl Library Path value was:
+'UTF-8 commandline arguments do not appear to be enabled.
+
+To enable UTF-8 arguments,
+please run the script again with, for example, -CAS after perl as such...
+
+    perl -CAS ChangeName.pm
+
+To learn more,
+you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
+or run...
+
+    perldoc perlrun
+
+...and scroll to the Command Switches section,
+and read the -C switch section within that.
+
+Alternatively,
+if you cannot enable UTF-8 commandline arguments in this way,
+consider running the script without arguments,
+and you will be prompted for input instead.
+',
+
+    'commandline.utf8_not_needed'
+    =>  'No UTF-8 critical commandline options or arguments given.',
+
+
+
+    # ChangeName::Operation::change
+
+    # Some tokens are dynamically composed
+    # - i.e. if you search the code for a token - search for
+    # change.from or change.to
+    # because the can or cannot part of the token
+    # is a variable.
+
+    'change.done'
+    =>  'Done - the change has been made for you.',
+
+    'change.dry_run'
+    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
+
+    'change.from.can'       # In the code as: 'change.from.'.$can_or_cannot
+    =>
+'Changing...
+
+[_1]
+',
+
+    'change.from.cannot'    # In the code as: 'change.from.'.$can_or_cannot
+    =>
+'Unable to change...
+
+[_1]
+',
+
+    'change.locked'
+    =>  'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
+
+    'change.to.can'         # In the code as: 'change.to.'.$can_or_cannot
+    =>
+'...to...
+
 [_1]',
 
+    'change.to.cannot'      # In the code as: 'change.to.'.$can_or_cannot
+    =>
+'...to...
 
-    # Operation:
+[_1]
+
+...due to an edit lock on this record (record [_2]).',
+
+
+    # ChangeName::Operation::format_single_line_for_display
 
     'format_single_line_for_display.error.no_params'
     =>
@@ -1636,11 +1714,129 @@ and a string of a field name (i.e. a search field like creators_name),
 to be passed to it as params,
 and no params were passed in.',
 
-    '_stringify_name.error.no_params'
+
+    # ChangeName::Operation::_generate_confirmation_feedback
+
+    '_confirmation_feedback.heading.confirmed_so_far'
     =>
-'Method requires a name hash reference of name parts,
-to be passed in as an argument,
-and no such params were provided.',
+'
+Records you have confirmed for changing so far...
+
+',
+
+    '_confirmation_feedback.heading.unique_name'
+    =>
+'
+For the unique name [_1] ...
+
+Confirmation | Record To Change...
+',
+
+'_confirmation_feedback.record.confirmed_for_changing'  =>
+
+'[_1] | [_2]
+',
+
+
+    # ChangeName::Operation::prompt_for
+
+    'prompt_for.1or2'
+    =>  'Please enter 1 or 2.',
+
+    'prompt_for.archive'
+    =>  'Please specify an Archive ID: ',
+
+    'prompt_for.confirm'
+    =>
+'Confirm to change [_1] name from...
+
+"[_2]"
+
+...to...
+
+"[_3]"
+
+...for name [_4] in field [_5] in the following record...
+
+[_6]
+
+...?',
+
+    'prompt_for.confirm.acceptable_input'
+    =>
+'Enter "Y" for Yes,
+Enter "N" for No,
+Enter "ALL" for Yes to All Remaining for this unique name combination.
+Enter "NONE" for No to All Remaining for this unique name combination.
+',
+
+    'prompt_for.continue'
+    =>  'Press the ENTER or RETURN key to continue...',
+
+    'prompt_for.error.no_prompt_type'
+    =>  'No prompt type argument supplied to prompt_for method, ',
+
+    'prompt_for.find'
+    =>
+'Your change will be performed using find and replace,
+(looking to find full and not partial matches, and with case insensitivity).
+
+What is your find value when matching within [nest,_1]?
+',
+
+    'prompt_for.find.error.no_part'
+    =>
+'A part attribute must be set
+when prompting to find a value
+in a particular name part, ',
+
+    'prompt_for.part'
+    =>
+'
+From your search we found matching records with the following given names associated...
+
+Given Names:
+[_1]
+
+...and the following family names associated...
+
+Family Names:
+[_2]
+
+Which do you wish to perform your change on first?
+    1) Given Name
+    2) Family Name
+',
+
+    'prompt_for.replace'
+    =>  'Please specify a Replace Term: ',
+
+    'prompt_for.search'
+    =>  'Please specify a Search Term: ',
+
+    'prompt_for.replace.prompt_on_blank'
+    =>
+'Did you mean for the replace value to be a blank/null value,
+that if later confirmed would effectively be clearing the field?
+Enter Y or y for Yes, or anything else for No: ',
+
+
+
+    # ChangeName::Operation::_seeking_confirmation
+
+    'seeking_confirmation.display_lines'
+    =>
+'
+For the unique name combination...
+
+[_1]
+
+...the following matching records were found:
+
+[_2]',
+
+
+    # ChangeName::Operation::_set_attributes
 
     '_set_attributes.error.invalid_repository'
     =>
@@ -1710,194 +1906,16 @@ https://github.com/eprintsug/ChangeName/issues
 ',
 
 
-    # Validation:
+    # ChangeName::Operation::_stringify_name
 
-    'validation.errors.invalid'
-    =>  'Invalid [_1] field in [_2] form.'.$new_line,
-
-
-    # Commandline:
-
-    'commandline.config_undefined'
-    # Using q{} instead of single or double quotes in line below,
-    # so single and double quote characters are free to use within the string:
-    =>  q{Attempted to retrieve a modulino instance's "config" attribute, only to find it had not been defined yet.},
-
-    'commandline.end_program'
-    =>  'This program will now end...'.$new_line,
-
-    'commandline.utf8_not_needed'
-    =>  'No UTF-8 critical commandline options or arguments given.',
-
-    'commandline.no_arguments'
-    =>  'No commandline arguments given.',
-
-    'commandline.utf8_enabled'
-    =>  'UTF-8 commandline arguments enabled.',
-
-    'commandline.utf8_not_enabled'
+    '_stringify_name.error.no_params'
     =>
-'UTF-8 commandline arguments do not appear to be enabled.
-
-To enable UTF-8 arguments,
-please run the script again with, for example, -CAS after perl as such...
-
-    perl -CAS ChangeName.pm
-
-To learn more,
-you can view https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
-or run...
-
-    perldoc perlrun
-
-...and scroll to the Command Switches section,
-and read the -C switch section within that.
-
-Alternatively,
-if you cannot enable UTF-8 commandline arguments in this way,
-consider running the script without arguments,
-and you will be prompted for input instead.
-',
+'Method requires a name hash reference of name parts,
+to be passed in as an argument,
+and no such params were provided.',
 
 
-    # Prompt:
-
-    'prompt_for.1or2'
-    =>  'Please enter 1 or 2.',
-
-    'prompt_for.part'
-    =>
-'
-From your search we found matching records with the following given names associated...
-
-Given Names:
-[_1]
-
-...and the following family names associated...
-
-Family Names:
-[_2]
-
-Which do you wish to perform your change on first?
-    1) Given Name
-    2) Family Name
-',
-
-    'prompt_for.confirm'
-    =>
-'Confirm to change [_1] name from...
-
-"[_2]"
-
-...to...
-
-"[_3]"
-
-...for name [_4] in field [_5] in the following record...
-
-[_6]
-
-...?',
-
-    'prompt_for.confirm.acceptable_input'
-    =>
-'Enter "Y" for Yes,
-Enter "N" for No,
-Enter "ALL" for Yes to All Remaining for this unique name combination.
-Enter "NONE" for No to All Remaining for this unique name combination.
-',
-
-    'prompt_for.continue'
-    =>  'Press the ENTER or RETURN key to continue...',
-
-    'prompt_for.archive'
-    =>  'Please specify an Archive ID: ',
-
-    'prompt_for.search'
-    =>  'Please specify a Search Term: ',
-
-    'prompt_for.replace'
-    =>  'Please specify a Replace Term: ',
-
-    'prompt_for.find'
-    =>
-'Your change will be performed using find and replace,
-(looking to find full and not partial matches, and with case insensitivity).
-
-What is your find value when matching within [nest,_1]?
-',
-
-    'prompt_for.find.error.no_part'
-    =>
-'A part attribute must be set
-when prompting to find a value
-in a particular name part, ',
-
-    'prompt_for.replace.prompt_on_blank'
-    =>
-'Did you mean for the replace value to be a blank/null value,
-that if later confirmed would effectively be clearing the field?
-Enter Y or y for Yes, or anything else for No: ',
-
-    'prompt_for.error.no_prompt_type'
-    =>  'No prompt type argument supplied to prompt_for method, ',
-
-
-    # Change:
-
-    'change.locked'
-    =>  'Due to the edit lock presently on Record [_1], changes to Record [_1] were not saved.',
-
-    'change.from.can'
-    =>
-'Changing...
-
-[_1]
-',
-
-    'change.from.cannot'
-    =>
-'Unable to change...
-
-[_1]
-',
-
-    'change.to.can'
-    =>
-'...to...
-
-[_1]',
-
-    'change.to.cannot'
-    =>
-'...to...
-
-[_1]
-
-...due to an edit lock on this record (record [_2]).',
-
-    'change.dry_run'
-    =>  'Not done, because this is a dry run. For changes to count, run the script again with the --live flag added.',
-
-    'change.done'
-    =>  'Done - the change has been made for you.',
-
-
-    # Seeking Confirmation:
-
-    'seeking_confirmation.display_lines'
-    =>
-'
-For the unique name combination...
-
-[_1]
-
-...the following matching records were found:
-
-[_2]',
-
-
-    # _validate:
+    # ChangeName::Operation::_validate
 
     '_validate.error.four_byte_character'
     =>
@@ -1911,33 +1929,25 @@ and thus had no input to validate.
 The method requires at least one thing to validate, ',
 
 
-    # _log:
+    # ChangeName::Utilities
 
-    '_log.error.no_repository'
-    =>  'Private _log method requires a valid EPrints::Repository object set as an attribute of $self.',
+    'utilities.valid_object.invalid_object'
+    =>  'Error - Not a valid object.',
 
+    'utilities.valid_object.valid_object'
+    =>  'Valid object.',
 
-    # _confirmation_feedback:
-
-    '_confirmation_feedback.heading.confirmed_so_far'
+    'utilities.validate_class.invalid_class'
     =>
-'
-Records you have confirmed for changing so far...
+'Error - Your [_1] object is considered an invalid object
+for this purpose, due to its class.
+The only acceptable object class for this purpose is [_2]
+- so please use an object of this class instead.',
 
-',
+    'utilities.validate_class.valid_class'
+    =>  '[_1] object is a valid class of object for this purpose.',
 
-    '_confirmation_feedback.heading.unique_name'
-    =>
-'
-For the unique name [_1] ...
 
-Confirmation | Record To Change...
-',
-
-'_confirmation_feedback.record.confirmed_for_changing'  =>
-
-'[_1] | [_2]
-',
 
 
 );
