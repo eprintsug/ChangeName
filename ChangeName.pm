@@ -1610,6 +1610,7 @@ Long: {
     'log.valid_repository.error.invalid'
     =>  'Value passed to valid_repository method not a valid repository.',
 
+
     # ChangeName::Modulino::config
 
     'commandline.config_undefined'
@@ -1657,14 +1658,13 @@ and you will be prompted for input instead.
     =>  'No UTF-8 critical commandline options or arguments given.',
 
 
-
     # ChangeName::Operation::change
 
     # Some tokens are dynamically composed
     # - i.e. if you search the code for a token - search for
-    # change.from or change.to
+    # change.from or change.to rather than change.from.can or change.to.can
     # because the can or cannot part of the token
-    # is a variable.
+    # is a variable - i.e. 'change.from.'.$can_or_cannot
 
     'change.done'
     =>  'Done - the change has been made for you.',
@@ -1732,8 +1732,8 @@ For the unique name [_1] ...
 Confirmation | Record To Change...
 ',
 
-'_confirmation_feedback.record.confirmed_for_changing'  =>
-
+    '_confirmation_feedback.record.confirmed_for_changing'
+    =>
 '[_1] | [_2]
 ',
 
@@ -1811,15 +1811,14 @@ Which do you wish to perform your change on first?
     'prompt_for.replace'
     =>  'Please specify a Replace Term: ',
 
-    'prompt_for.search'
-    =>  'Please specify a Search Term: ',
-
     'prompt_for.replace.prompt_on_blank'
     =>
 'Did you mean for the replace value to be a blank/null value,
 that if later confirmed would effectively be clearing the field?
 Enter Y or y for Yes, or anything else for No: ',
 
+    'prompt_for.search'
+    =>  'Please specify a Search Term: ',
 
 
     # ChangeName::Operation::_seeking_confirmation
@@ -1946,8 +1945,6 @@ The only acceptable object class for this purpose is [_2]
 
     'utilities.validate_class.valid_class'
     =>  '[_1] object is a valid class of object for this purpose.',
-
-
 
 
 );
