@@ -809,72 +809,150 @@ Kurz: {
 }
 
 Lang: {
+
 @tokens_long = (
 
 
-# Style: Fat comma on new line,
-# One line translations on the same line as the fat comma,
-# Multi-line translations the line below the fat comma,
-# and flushed to the left.
+    # Stilrichtlinien für Kommentarüberschriften:
+    # -----------------------------
+    # Klassennamen, wenn sie nur aus wenigen Token/Phrasen bestehen.
+    # Klassennamen mit Unterprogrammnamen,
+    # wenn dies aufgrund der Anzahl der Phrasen sinnvoller ist.
+    # Zwei Leerzeilen über jeder Überschrift.
+
+    # Stilrichtlinien für Schlüsselwerte:
+    # -----------------------------
+    # Fettes Komma (=>) in neuer Zeile,
+    # Einzeilige Übersetzungen in derselben Zeile wie das fette Komma,
+    # Mehrzeilige Übersetzungen in der Zeile unter dem fetten Komma,
+    # und linksbündig.
+
+    # Stilrichtlinien für die Sortierung
+    # -----------------------------
+    # Alphabetisch, soweit möglich.
+    # Führende Unterstriche werden ignoriert, da diese hinzugefügt
+    # oder entfernt werden können, je nachdem,
+    # ob die Methode öffentlich oder privat ist.
 
 
-
-    # Utilities:
-
-    'utilities.valid_object.invalid_object'
-    =>  'Fehler – Kein gültiges Objekt.',
-
-    'utilities.valid_object.valid_object'
-    =>  'Gültiges Objekt.',
-
-    'utilities.validate_class.invalid_class'
-    =>
-'Fehler - Ihr [_1] Objekt wird aufgrund seiner Klasse
-für diesen Zweck als ungültiges Objekt betrachtet.
-Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
-- verwenden Sie stattdessen ein Objekt dieser Klasse.',
-
-    'utilities.validate_class.valid_class'
-    =>  '[_1] Objekt ist eine gültige Objektklasse für diesen Zweck.',
-
-
-    # Config:
-
-    'config.load.error.custom_external_not_found'
-    =>  'Konfigurationsdatei [_1] nicht gefunden.',
+    # ChangeName::Config
 
     'config.load.debug.default_external_not_found'
     =>  'Standard-externe Konfigurationsdatei [_1] nicht gefunden.',
 
-    'config.load.verbose.loaded_file'
-    =>  'Konfiguration von [_1] geladen',
+    'config.load.error.custom_external_not_found'
+    =>  'Konfigurationsdatei [_1] nicht gefunden.',
 
     'config.load.verbose.internal'
     =>  'Interne Konfiguration wird geladen.',
 
+    'config.load.verbose.loaded_file'
+    =>  'Konfiguration von [_1] geladen',
 
-    # Log:
 
-    'log.valid_repository.error.invalid'
-    =>  'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
+    # ChangeName::Log
 
     'log.set_repository.error.bad_value'
     =>  'Der an die Methode „set_repository“ übergebene Wert ist kein Repository. Der Wert bleibt unverändert.',
 
-    # Modulino:
+    'log.valid_repository.error.invalid'
+    =>  'An die Methode valid_repository übergebener Wert ist kein gültiges Repository.',
 
-    'modulino.error.perl_lib'
-    =>
-'Der Pfad zur EPrints Perl-Bibliothek ist entweder nicht in der YAML-Konfiguration definiert
-oder ist ein Pfad zu einem Verzeichnis, das scheinbar nicht existiert.',
 
-    'modulino.perl_lib_path'
+    # ChangeName::Modulino::config
+
+    'commandline.config_undefined'
+    =>  'Beim Versuch, das „Config“-Attribut einer Modulino-Instanz abzurufen, wurde festgestellt, dass es noch nicht definiert war.',
+
+
+    # ChangeName::Modulino::utf8_check
+
+    'commandline.end_program'
+    =>  'Dieses Programm wird nun beendet...'.$new_line,
+
+    'commandline.no_arguments'
+    =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
+
+    'commandline.utf8_enabled'
+    =>  'UTF-8-Befehlszeilenargumente aktiviert.',
+
+    'commandline.utf8_not_enabled'
     =>
-'Der Wert des EPrints Perl-Bibliothekspfads war:
+'UTF-8-Befehlszeilenargumente scheinen nicht aktiviert zu sein.
+
+Um UTF-8-Argumente zu aktivieren,
+führen Sie das Skript bitte erneut aus,
+beispielsweise mit -CAS nach Perl als solchem ...
+
+     perl -CAS ChangeName.pm
+
+Um mehr zu erfahren,
+können Sie
+https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
+anzeigen oder ausführen...
+
+     perldoc perlrun
+
+...und scrollen Sie zum Abschnitt „Befehlsschalter“
+und lesen Sie den Abschnitt zum Schalter „-C“ darin.
+
+Wenn Sie alternativ
+UTF-8-Befehlszeilenargumente auf diese Weise nicht aktivieren können,
+erwägen Sie, das Skript ohne Argumente auszuführen.
+Stattdessen werden Sie zur Eingabe aufgefordert.
+',
+
+    'commandline.utf8_not_needed'
+    =>  'Keine UTF-8-kritischen Befehlszeilenoptionen oder Argumente als Eingabe angegeben.',
+
+
+    # ChangeName::Operation::change
+
+    # Manche Token werden dynamisch zusammengesetzt.
+    # – d. h., wenn Sie im Code nach einem Token suchen, suchen Sie nach
+    # change.from oder change.to statt change.from.can oder change.to.can
+    # weil der „can“- oder „cannot“-Teil des Tokens
+    # eine Variable ist – d. h. 'change.from.'.$can_or_cannot
+
+    'change.done'
+    =>  'Fertig – die Änderung wurde für Sie vorgenommen.',
+
+    'change.dry_run'
+    =>  'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
+
+    'change.from.can'       # Im Code als: 'change.from.'.$can_or_cannot
+    =>
+'Ändern...
+
+[_1]
+',
+
+    'change.from.cannot'    # Im Code als: 'change.from.'.$can_or_cannot
+    =>
+'Änderung nicht möglich...
+
+[_1]
+',
+
+    'change.locked'
+    =>  'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
+
+    'change.to.can'         # Im Code als: 'change.to.'.$can_or_cannot
+    =>
+'...zu...
+
 [_1]',
 
+    'change.to.cannot'      # Im Code als: 'change.to.'.$can_or_cannot
+    =>
+'...zu...
 
-    # Operation:
+[_1]
+
+..aufgrund einer Bearbeitungssperre für diesen Datensatz (Datensatz [_2]).',
+
+
+    # ChangeName::Operation::format_single_line_for_display
 
     'format_single_line_for_display.error.no_params'
     =>
@@ -884,11 +962,131 @@ und eine Zeichenfolge eines Feldnamens (d. h. ein Suchfeld wie Erstellername)
 als Parameter übergeben werden,
 und es wurden keine Parameter übergeben.',
 
-    '_stringify_name.error.no_params'
+
+    # ChangeName::Operation::_generate_confirmation_feedback
+
+    '_confirmation_feedback.heading.confirmed_so_far'
     =>
-'Die Methode erfordert die Übergabe
-einer Namens-Hash-Referenz von Namensteilen als Argument,
-und es wurden keine derartigen Parameter bereitgestellt.',
+'
+Die von Ihnen bestätigten Datensätze sollen bisher geändert werden...
+
+',
+
+    '_confirmation_feedback.heading.unique_name'
+    =>
+'
+Für den einzigartigen Namen [_1]...
+
+Bestätigung | Zum Ändern aufzeichnen...
+',
+
+    '_confirmation_feedback.record.confirmed_for_changing'
+    =>
+'[_1] | [_2]
+',
+
+
+    # ChangeName::Operation::prompt_for
+
+    'prompt_for.1or2'
+    =>  'Bitte geben Sie 1 oder 2 ein.',
+
+    'prompt_for.archive'
+    =>  'Bitte geben Sie eine Archiv-ID an: ',
+
+    'prompt_for.confirm'
+    =>
+'Bestätigen Sie, um den Namen von [_1] zu ändern von...
+
+„[_2]“
+
+...Zu...
+
+"[_3]"
+
+...für den Namen [_4] im Feld [_5] im folgenden Datensatz...
+
+[_6]
+
+...?',
+
+    'prompt_for.confirm.acceptable_input'
+    =>
+'Geben Sie „J“ für „Ja“ ein.
+Geben Sie „N“ für „Nein“ ein.
+Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige Namenskombination ein.
+Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
+',
+
+    'prompt_for.continue'
+    =>  'Drücken Sie die ENTER- oder RETURN-Taste, um fortzufahren...',
+
+    'prompt_for.error.no_prompt_type'
+    =>  'Kein Eingabeaufforderungstypargument für die Methode prompt_for bereitgestellt.',
+
+    'prompt_for.find'
+    =>
+'Ihre Änderung wird mithilfe von „Suchen und Ersetzen“ durchgeführt
+(wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
+und die Groß-/Kleinschreibung nicht beachtet wird).
+
+Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
+',
+
+    'prompt_for.find.error.no_part'
+    =>
+'Bei der Aufforderung,
+einen Wert in einem bestimmten namensteil zu finden,
+muss ein teil-Attribut festgelegt werden.',
+
+    'prompt_for.part'
+    =>
+'
+Bei Ihrer Suche haben wir übereinstimmende Datensätze gefunden,
+die den folgenden Vornamen zugeordnet sind ...
+
+Vornamen:
+[_1]
+
+...und die folgenden damit verbundenen Familiennamen...
+
+Familiennamen:
+[_2]
+
+Wo möchten Sie Ihre Änderung zuerst durchführen?
+     1) Vorname
+     2) Familienname
+',
+
+    'prompt_for.replace'
+    =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
+
+    'prompt_for.replace.prompt_on_blank'
+    =>
+'Wollten Sie absichtlich, dass der „Ersetzen“-Wert ein Leer-/Nullwert ist,
+der, wenn er später während des Bestätigungsprozesses als Änderung bestätigt wird,
+das Feld effektiv löscht?
+Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
+
+    'prompt_for.search'
+    =>  'Bitte geben Sie einen Suchbegriff ein:  ',
+
+
+    # ChangeName::Operation::_seeking_confirmation
+
+    'seeking_confirmation.display_lines'
+    =>
+'
+Für die eindeutige Namenskombination...
+
+[_1]
+
+... wurden die folgenden übereinstimmenden Datensätze gefunden:
+
+[_2]',
+
+
+    # ChangeName::Operation::_set_attributes
 
     '_set_attributes.error.invalid_repository'
     =>
@@ -958,196 +1156,16 @@ https://github.com/eprintsug/ChangeName/issues
 ',
 
 
-    # Validation:
+    # ChangeName::Operation::_stringify_name
 
-    'validation.errors.invalid'
-    =>  'Ungültiges [_1]-Feld im [_2]-Formular.'.$new_line,
-
-
-    # Commandline:
-
-    'commandline.config_undefined'
-    =>  'Beim Versuch, das „Config“-Attribut einer Modulino-Instanz abzurufen, wurde festgestellt, dass es noch nicht definiert war.',
-
-    'commandline.end_program'
-    =>  'Dieses Programm wird nun beendet...'.$new_line,
-
-    'commandline.utf8_not_needed'
-    =>  'Keine UTF-8-kritischen Befehlszeilenoptionen oder Argumente als Eingabe angegeben.',
-
-    'commandline.no_arguments'
-    =>  'Es wurden keine Befehlszeilenargumente bereitgestellt.',
-
-    'commandline.utf8_enabled'
-    =>  'UTF-8-Befehlszeilenargumente aktiviert.',
-
-    'commandline.utf8_not_enabled'
+    '_stringify_name.error.no_params'
     =>
-'UTF-8-Befehlszeilenargumente scheinen nicht aktiviert zu sein.
-
-Um UTF-8-Argumente zu aktivieren,
-führen Sie das Skript bitte erneut aus,
-beispielsweise mit -CAS nach Perl als solchem ...
-
-     perl -CAS ChangeName.pm
-
-Um mehr zu erfahren,
-können Sie
-https://perldoc.perl.org/perlrun#-C-%5Bnumber/list%5D
-anzeigen oder ausführen...
-
-     perldoc perlrun
-
-...und scrollen Sie zum Abschnitt „Befehlsschalter“
-und lesen Sie den Abschnitt zum Schalter „-C“ darin.
-
-Wenn Sie alternativ
-UTF-8-Befehlszeilenargumente auf diese Weise nicht aktivieren können,
-erwägen Sie, das Skript ohne Argumente auszuführen.
-Stattdessen werden Sie zur Eingabe aufgefordert.
-',
+'Die Methode erfordert die Übergabe
+einer Namens-Hash-Referenz von Namensteilen als Argument,
+und es wurden keine derartigen Parameter bereitgestellt.',
 
 
-    # Prompt:
-
-    'prompt_for.1or2'
-    =>  'Bitte geben Sie 1 oder 2 ein.',
-
-    'prompt_for.part'
-    =>
-'
-Bei Ihrer Suche haben wir übereinstimmende Datensätze gefunden,
-die den folgenden Vornamen zugeordnet sind ...
-
-Vornamen:
-[_1]
-
-...und die folgenden damit verbundenen Familiennamen...
-
-Familiennamen:
-[_2]
-
-Wo möchten Sie Ihre Änderung zuerst durchführen?
-     1) Vorname
-     2) Familienname
-',
-
-    'prompt_for.confirm'
-    =>
-'Bestätigen Sie, um den Namen von [_1] zu ändern von...
-
-„[_2]“
-
-...Zu...
-
-"[_3]"
-
-...für den Namen [_4] im Feld [_5] im folgenden Datensatz...
-
-[_6]
-
-...?',
-
-    'prompt_for.confirm.acceptable_input'
-    =>
-'Geben Sie „J“ für „Ja“ ein.
-Geben Sie „N“ für „Nein“ ein.
-Geben Sie „ALLE“ für „Ja für alle verbleibenden“ für diese eindeutige Namenskombination ein.
-Geben Sie „KEINER“ für „Nein zu allen verbleibenden“ für diese eindeutige Namenskombination ein.
-',
-
-    'prompt_for.continue'
-    =>  'Drücken Sie die ENTER- oder RETURN-Taste, um fortzufahren...',
-
-    'prompt_for.archive'
-    =>  'Bitte geben Sie eine Archiv-ID an: ',
-
-    'prompt_for.search'
-    =>  'Bitte geben Sie einen Suchbegriff ein:  ',
-
-    'prompt_for.replace'
-    =>  'Bitte geben Sie einen Ersetzungsbegriff an: ',
-
-    'prompt_for.find'
-    =>
-'Ihre Änderung wird mithilfe von „Suchen und Ersetzen“ durchgeführt
-(wobei nach vollständigen und nicht nach teilweisen Übereinstimmungen gesucht wird
-und die Groß-/Kleinschreibung nicht beachtet wird).
-
-Was ist Ihr Suchwert beim Abgleich innerhalb von [nest,_1]?
-',
-
-    'prompt_for.find.error.no_part'
-    =>
-'Bei der Aufforderung,
-einen Wert in einem bestimmten namensteil zu finden,
-muss ein teil-Attribut festgelegt werden.',
-
-    'prompt_for.replace.prompt_on_blank'
-    =>
-'Wollten Sie absichtlich, dass der „Ersetzen“-Wert ein Leer-/Nullwert ist,
-der, wenn er später während des Bestätigungsprozesses als Änderung bestätigt wird,
-das Feld effektiv löscht?
-Geben Sie J oder j für Ja oder etwas anderes für Nein ein: ',
-
-    'prompt_for.error.no_prompt_type'
-    =>  'Kein Eingabeaufforderungstypargument für die Methode prompt_for bereitgestellt.',
-
-
-    # Change:
-
-    'change.locked'
-    =>  'Aufgrund der aktuellen Bearbeitungssperre für Datensatz [_1] wurden Änderungen an Datensatz [_1] nicht gespeichert.',
-
-    'change.from.can'
-    =>
-'Ändern...
-
-[_1]
-',
-
-    'change.from.cannot'
-    =>
-'Änderung nicht möglich...
-
-[_1]
-',
-
-    'change.to.can'
-    =>
-'...zu...
-
-[_1]',
-
-    'change.to.cannot'
-    =>
-'...zu...
-
-[_1]
-
-..aufgrund einer Bearbeitungssperre für diesen Datensatz (Datensatz [_2]).',
-
-    'change.dry_run'
-    =>  'Nicht erledigt, da dies ein Probelauf ist. Damit die Änderungen übernommen werden, führen Sie das Skript erneut mit hinzugefügtem Flag --live aus.',
-
-    'change.done'
-    =>  'Fertig – die Änderung wurde für Sie vorgenommen.',
-
-
-    # Seeking Confirmation:
-
-    'seeking_confirmation.display_lines'
-    =>
-'
-Für die eindeutige Namenskombination...
-
-[_1]
-
-... wurden die folgenden übereinstimmenden Datensätze gefunden:
-
-[_2]',
-
-    # _validate:
+    # ChangeName::Operation::_validate
 
     '_validate.error.four_byte_character'
     =>
@@ -1161,33 +1179,24 @@ und hatte daher keine Eingaben zur Validierung.
 Die Methode erfordert mindestens eine Sache zur Validierung, ',
 
 
-    # _log:
+    # ChangeName::Utilities
 
-    '_log.error.no_repository'
-    =>  'Für die private _log-Methode ist ein gültiges EPrints::Repository-Objekt erforderlich, das als Attribut von $self festgelegt ist.',
+    'utilities.valid_object.invalid_object'
+    =>  'Fehler – Kein gültiges Objekt.',
 
+    'utilities.valid_object.valid_object'
+    =>  'Gültiges Objekt.',
 
-    # _confirmation_feedback:
-
-    '_confirmation_feedback.heading.confirmed_so_far'
+    'utilities.validate_class.invalid_class'
     =>
-'
-Die von Ihnen bestätigten Datensätze sollen bisher geändert werden...
+'Fehler - Ihr [_1] Objekt wird aufgrund seiner Klasse
+für diesen Zweck als ungültiges Objekt betrachtet.
+Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
+- verwenden Sie stattdessen ein Objekt dieser Klasse.',
 
-',
+    'utilities.validate_class.valid_class'
+    =>  '[_1] Objekt ist eine gültige Objektklasse für diesen Zweck.',
 
-    '_confirmation_feedback.heading.unique_name'
-    =>
-'
-Für den einzigartigen Namen [_1]...
-
-Bestätigung | Zum Ändern aufzeichnen...
-',
-
-    '_confirmation_feedback.record.confirmed_for_changing'
-    =>
-'[_1] | [_2]
-',
 
 );
 
