@@ -1213,17 +1213,17 @@ Debug: {
     'Entered method.'                           =>  'Innerhalb der Methode.',
     'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
     'Leaving method.'                           =>  'Jetzt verlassen wir die Objektmethode.',
-    'Premature exit - Prerequisites not met.'   =>  'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
     'Premature exit - no result passed in.'     =>  'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
-    'Processing Unique name: [_1]'              =>  'Eindeutiger Name für die Verarbeitung: [_1]',
+    'Premature exit - Prerequisites not met.'   =>  'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
     'Processing search field: [_1]'             =>  'Suchfeld wird verarbeitet: [_1]',
+    'Processing Unique name: [_1]'              =>  'Eindeutiger Name für die Verarbeitung: [_1]',
 
     # ChangeName::Modulino::new
     'Params to be used for a new logger are as follows...'  =>  'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
 
     # ChangeName::Modulino::setup
-    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
     'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
+    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
     'Configuration Values are...'       =>  'Konfigurationswerte sind...',
 
     # ChangeName::Modulino::start_change_name_operation
@@ -1245,10 +1245,10 @@ Debug: {
     'Now setting additional instance attributes from params...' =>  'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt...',
     'Params have been as follows...'                            =>  'Die Parameter, mit denen wir gearbeitet haben und weiterhin arbeiten werden, sind die folgenden...',
     'Premature exit - Unable to set valid Repository.'          =>  'Vorzeitiges Beenden – Gültiges Repository konnte nicht festgelegt werden.',
-    'Set Repository.'                                           =>  'Legen Sie das zu verwendende Repository fest.',
-    'Set YAML configurations.'                                  =>  'Legen Sie YAML-Konfigurationen fest.',
     'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
+    'Set Repository.'                                           =>  'Legen Sie das zu verwendende Repository fest.',
     'Set search-fields.'                                        =>  'Legen Suchfelder.',
+    'Set YAML configurations.'                                  =>  'Legen Sie YAML-Konfigurationen fest.',
     'Setting further self-referential attributes...'            =>  'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
     'Setting self-referential instance attributes...'           =>  'Selbstreferenzielle Instanzattribute festlegen...',
 
