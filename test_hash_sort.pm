@@ -37,12 +37,23 @@ my %hash                                =   (
                                             );
 
 my @array                               =   sort {$a cmp $b} keys %hash;
-                                            
+my  $single_quote                       =   q{'};
+my  $new_line                           =   "\n";
 say $ARG for @array;
 
-say (sprintf("%-41s",$ARG).'=>  '.%hash{$ARG}) for @array;
+my  $output                             =   $new_line;
+    ($output                            .=  sprintf(
+                                                "%-41s",
+                                                $single_quote.$ARG.$single_quote
+                                            ).
+                                            '=>  '.
+                                            $single_quote.
+                                            %hash{$ARG}.
+                                            $single_quote.
+                                            $new_line
+    )                                       for @array;
 
-
+say $output;
 
 __END__
 
