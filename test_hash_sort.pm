@@ -40,6 +40,8 @@ my @array                               =   sort {$a cmp $b} keys %hash;
                                             
 say $ARG for @array;
 
+say (sprintf("%-41s",$ARG).'=>  '.%hash{$ARG}) for @array;
+
 
 
 __END__
