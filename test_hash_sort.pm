@@ -29,14 +29,20 @@ our $VERSION                            =   'v2.0.6';
 use English;
 
 my %hash                                =   (
-    'Name parts before we begin:'                                       =>  'Benennen Sie Teile, bevor wir beginnen:',
-    'Set name parts according to language localisation as follows...'   =>  'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest...',
-    'Premature exit - name parts already populated.'                    =>  'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
-    'Invalid name parts filter regex as follows...'                     =>  'Ungültige Namensteile filtern reguläre Ausdrücke wie folgt...',
+    # ChangeName::Utilities::process_commandline_arguments
+    'Validated copy of arguments is as follows...'                              =>  'Eine validierte Kopie der Argumente lautet wie folgt...',
+    'Flattened list of default options are as follows...'                       =>  'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
+    'Option Specifications have been determined as being as follows...'         =>  'Die Optionsspezifikationen wurden wie folgt festgelegt...',
+    'Options after processing the commandline arguments are now as follows...'  =>  'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
+    'Arguments after processing the commandline arguments are as follows...'    =>  'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
+    'The no_input flag will be returned with the value: "[_1]".'                =>  'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
+
 
 
                                             );
 
+my  $col                                =   81;
+my  $col_calculation                    =   $col - 5;
 my @array                               =   sort {fc $a cmp fc $b} keys %hash;
 my  $single_quote                       =   q{'};
 my  $new_line                           =   "\n";
@@ -46,7 +52,7 @@ my  $new_line                           =   "\n";
 my  $output                             =   $new_line;
     ($output                            .=  '    '. # four spaces
                                             sprintf(
-                                                "%-68s",
+                                                '%-'.$col_calculation.'s',
                                                 $single_quote.$ARG.$single_quote
                                             ).
                                             '=>  '.
@@ -279,3 +285,106 @@ a:
     'Name parts before we begin:'                                       =>  'Benennen Sie Teile, bevor wir beginnen:',
     'Premature exit - name parts already populated.'                    =>  'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
     'Set name parts according to language localisation as follows...'   =>  'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest...',
+    
+b:
+
+    'Generating lists, and setting values.'                                 =>  'Derzeit werden Listen erstellt und Werte festgelegt.',
+    'Leaving prepare method.'                                               =>  'Verlassen der „prepare“-Methode.',
+    'Premature exit - No search results to narrow down.'                    =>  'Vorzeitiger Ausstieg – Keine Suchergebnisse zum Eingrenzen.',
+    'Premature Exit - our operation is already specific to a name part.'    =>  'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
+    
+a:
+    'Generating lists, and setting values.'                                 =>  'Derzeit werden Listen erstellt und Werte festgelegt.',
+    'Leaving prepare method.'                                               =>  'Verlassen der „prepare“-Methode.',
+    'Premature exit - No search results to narrow down.'                    =>  'Vorzeitiger Ausstieg – Keine Suchergebnisse zum Eingrenzen.',
+    'Premature Exit - our operation is already specific to a name part.'    =>  'Vorzeitiger Ausstieg – unser Vorgang ist bereits spezifisch für einen Namensteil.',
+    
+b:
+
+    # ChangeName::Operation::_seeking_confirmation
+    'Checking if display lines have been shown.'    =>  'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
+    'Setting confirmation'                          =>  'Bestätigungswert festlegen.',
+    'Added details to what_to_change'               =>  'Details zu what_to_change hinzugefügt',
+    'Processing confirmation ([_1])'                =>  'Bestätigungswert wird jetzt verarbeitet ([_1])',
+    'Displaying generated confirmation feedback.'   =>  'Zeigt nun das generierte Bestätigungsfeedback an.',
+    'Detected [nest,input.none].'                   =>  '„[nest,input.none]“ erkannt.', # [nest,input.none] is a function and parameter not to be translated.
+    'Detected [nest,input.all].'                    =>  '„[nest,input.all]“ erkannt.', # [nest,input.all] is a function and parameter not to be translated.
+    'Detected [nest,input.yes_letter].'             =>  'Erkannt „[nest,input.yes_letter]“.', # [nest,input.yes_letter] is a function and parameter not to be translated.
+
+a:
+    'Added details to what_to_change'               =>  'Details zu what_to_change hinzugefügt',
+    'Checking if display lines have been shown.'    =>  'Prüfe gerade, ob Anzeigezeilen angezeigt wurden.',
+    'Detected [nest,input.all].'                    =>  '„[nest,input.all]“ erkannt.',
+    'Detected [nest,input.none].'                   =>  '„[nest,input.none]“ erkannt.',
+    'Detected [nest,input.yes_letter].'             =>  'Erkannt „[nest,input.yes_letter]“.',
+    'Displaying generated confirmation feedback.'   =>  'Zeigt nun das generierte Bestätigungsfeedback an.',
+    'Processing confirmation ([_1])'                =>  'Bestätigungswert wird jetzt verarbeitet ([_1])',
+    'Setting confirmation'                          =>  'Bestätigungswert festlegen.',
+    
+b:
+    # ChangeName::Operation::_generate_confirmation_feedback
+    'Generated confirmation feedback.'          =>  'Generiertes Bestätigungs-Feedback.',
+    'No confirmation feedback generated.'       =>  'Es wurde kein Bestätigungsfeedback generiert.',
+    'Matched unique name.'                      =>  'Der aktuelle Name stimmte mit dem eindeutigen Namen überein.',
+    'Added record to confirmation feedback.'    =>  'Der Datensatz wurde unserer Bestätigungs-Feedback hinzugefügt.',
+    'Exited unique name loop.'                  =>  'Aus der Schleife für eindeutige Namen ausgebrochen.',
+    
+b:
+    'Match found for: [_1]'                                         =>  'Übereinstimmung gefunden für: [_1]',
+    'No match found.'                                               =>  'Keine Übereinstimmung gefunden.',
+    'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Entspricht „[_1]“ im „[_2]“-Teil des folgenden eindeutigen Namens...',
+a:
+    'Match found for: [_1]'                                         =>  'Übereinstimmung gefunden für: [_1]',
+    'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Entspricht „[_1]“ im „[_2]“-Teil des folgenden eindeutigen Namens...',
+    'No match found.'                                               =>  'Keine Übereinstimmung gefunden.',
+    
+b:
+    # ChangeName::Log::replace_language_object
+    'Current language object is as follows...'                      =>  'Das aktuelle Sprachobjekt ist wie folgt...',
+    'Leaving method prematurely due to no replacement provided.'    =>  'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
+    'Proposed replacement language object is as follows...'         =>  'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
+    'Proposed replacement was found to be a valid language object.' =>  'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
+    'Replacement operation performed.'                              =>  'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
+    
+a:
+    'Current language object is as follows...'                      =>  'Das aktuelle Sprachobjekt ist wie folgt...',
+    'Leaving method prematurely due to no replacement provided.'    =>  'Methode vorzeitig verlassen, da kein Ersatz bereitgestellt wurde.',
+    'Proposed replacement language object is as follows...'         =>  'Das vorgeschlagene Ersatzsprachobjekt ist wie folgt...',
+    'Proposed replacement was found to be a valid language object.' =>  'Der vorgeschlagene Ersatz wurde erfolgreich als gültiges Sprachobjekt validiert.',
+    'Replacement operation performed.'                              =>  'Der Ersetzungsvorgang wurde erfolgreich abgeschlossen.',
+    
+    SAME!!!
+    
+b:
+
+    # ChangeName::Utilities::_multilingual_option_specification
+    'Starting subroutine.'                                      =>  'Unterprogramm wird gestartet.',
+    'Multilingual variations of [_1] are as dumped below...'    =>  'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind...',
+    'Initial option translation...'                             =>  'Anfängliche Optionsübersetzung...',
+    'Option string is: [_1]'                                    =>  'Optionszeichenfolge ist: [_1]',
+    'Leaving subroutine.'                                       =>  'Im Begriff, das Unterprogramm zu verlassen.',
+    
+a:
+    'Initial option translation...'                             =>  'Anfängliche Optionsübersetzung...',
+    'Leaving subroutine.'                                       =>  'Im Begriff, das Unterprogramm zu verlassen.',
+    'Multilingual variations of [_1] are as dumped below...'    =>  'Mehrsprachige Varianten von [_1] finden Sie weiter unten, solange die Datendumps auf die Anzeige eingestellt sind...',
+    'Option string is: [_1]'                                    =>  'Optionszeichenfolge ist: [_1]',
+    'Starting subroutine.'                                      =>  'Unterprogramm wird gestartet.',
+    
+b:
+    # ChangeName::Utilities::process_commandline_arguments
+    'Validated copy of arguments is as follows...'                              =>  'Eine validierte Kopie der Argumente lautet wie folgt...',
+    'Flattened list of default options are as follows...'                       =>  'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
+    'Option Specifications have been determined as being as follows...'         =>  'Die Optionsspezifikationen wurden wie folgt festgelegt...',
+    'Options after processing the commandline arguments are now as follows...'  =>  'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
+    'Arguments after processing the commandline arguments are as follows...'    =>  'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
+    'The no_input flag will be returned with the value: "[_1]".'                =>  'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
+
+a:
+
+    'Arguments after processing the commandline arguments are as follows...'    =>  'Die Argumente nach der Verarbeitung der Befehlszeilenargumente lauten wie folgt...',
+    'Flattened list of default options are as follows...'                       =>  'Die abgeflachte Liste der Standardoptionen lautet wie folgt...',
+    'Option Specifications have been determined as being as follows...'         =>  'Die Optionsspezifikationen wurden wie folgt festgelegt...',
+    'Options after processing the commandline arguments are now as follows...'  =>  'Die Optionen nach der Verarbeitung der Befehlszeilenargumente sind jetzt wie folgt...',
+    'The no_input flag will be returned with the value: "[_1]".'                =>  'Das Flag no_input wird mit dem Wert „[_1]“ zurückgegeben.',
+    'Validated copy of arguments is as follows...'                              =>  'Eine validierte Kopie der Argumente lautet wie folgt...',
