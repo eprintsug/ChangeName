@@ -28,13 +28,19 @@ our $VERSION                            =   'v2.0.6';
 
 use English;
 
-my @array                               =   (
-                                                key1 =>  'value',
-                                                key3 =>  'value',
-                                                key2 =>  'value',
+my %hash                                =   (
+                                                key1    =>  'value',
+                                                key3    =>  'value',
+                                                key2    =>  'value',
+                                                abc     =>  'crikey!',
+                                                xyz     =>  'crikey also!',
                                             );
+
+my @array                               =   sort {$a cmp $b} keys %hash;
                                             
 say $ARG for @array;
+
+
 
 __END__
 
