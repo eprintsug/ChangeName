@@ -761,48 +761,48 @@ Token: {
 Kurz: {
 @tokens_short = (
 
-'language.name'                         =>  'Deutsch (Deutschland)',
-'language.error.set_language_handle'    =>  'Probleme beim Finden einer zu verwendenden Sprache.',
-
-'nest.error.language'                   =>  'Ungültiger Sprach-Handle zum Aufrufen der Methode „maketext“.',
-'nest.error.key'                        =>  'Fehler beim Verschachteln eines Lexikonwerts.',
-
-'options.language'                      =>  'sprache spr',
-'options.config'                        =>  'konfig konfiguration',
-'options.live'                          =>  'live',
-'options.verbose'                       =>  'ausführlich ausführl',
-'options.debug'                         =>  'debug',
-'options.trace'                         =>  'stacktrace trace',
-'options.no_dumper'                     =>  'kein_dumper kein_dump keindumper keindump',
-'options.no_trace'                      =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
-'options.exact'                         =>  'exakt genau genaue',
-'options.help'                          =>  'hilfe',
-
-'input.yes_letter'                      =>  'J',
-'input.no_letter'                       =>  'N',
-'input.all'                             =>  'ALLE',
-'input.none'                            =>  'KEINER',
-'input.given'                           =>  'vorname',
-'input.family'                          =>  'familienname',
-'input.1'                               =>  '1',
-'input.2'                               =>  '2',
-
-'name.given'                            =>  'Vorname',
-'name.family'                           =>  'Familienname',
-'name.honourific'                       =>  'Ehrenname',
-'name.lineage'                          =>  'Abstammungsname', # Unsure about this one - it's literally Ancestral Name
-
 'display_line'                          =>  'Datensatz [_1]: [_2].',
-
-'log.type.verbose'                      =>  'ausführlich',
-'log.type.log'                          =>  'protokoll',
-'log.type.debug'                        =>  'debug',
-'log.type.dumper'                       =>  'dumper',
-'log.type.trace'                        =>  'stacktrace',
 
 'finish.change'                         =>  '[quant,_1,Änderung] von [quant,_2,Änderungen] abgeschlossen.',
 'finish.no_change'                      =>  'Keine Änderungen vorgenommen.',
 'finish.thank_you'                      =>  'Vielen Dank, dass Sie dieses Skript verwenden.',
+
+'input.1'                               =>  '1',
+'input.2'                               =>  '2',
+'input.all'                             =>  'ALLE',
+'input.family'                          =>  'familienname',
+'input.given'                           =>  'vorname',
+'input.no_letter'                       =>  'N',
+'input.none'                            =>  'KEINER',
+'input.yes_letter'                      =>  'J',
+
+'language.error.set_language_handle'    =>  'Probleme beim Finden einer zu verwendenden Sprache.',
+'language.name'                         =>  'Deutsch (Deutschland)',
+
+'log.type.debug'                        =>  'debug',
+'log.type.dumper'                       =>  'dumper',
+'log.type.log'                          =>  'protokoll',
+'log.type.trace'                        =>  'stacktrace',
+'log.type.verbose'                      =>  'ausführlich',
+
+'name.family'                           =>  'Familienname',
+'name.given'                            =>  'Vorname',
+'name.honourific'                       =>  'Ehrenname',
+'name.lineage'                          =>  'Abstammungsname',  # Unsure about this one - it's literally Ancestral Name
+
+'nest.error.key'                        =>  'Fehler beim Verschachteln eines Lexikonwerts.',
+'nest.error.language'                   =>  'Ungültiger Sprach-Handle zum Aufrufen der Methode „maketext“.',
+
+'options.config'                        =>  'konfig konfiguration',
+'options.debug'                         =>  'debug',
+'options.exact'                         =>  'exakt genau genaue',
+'options.help'                          =>  'hilfe',
+'options.language'                      =>  'sprache spr',
+'options.live'                          =>  'live',
+'options.no_dumper'                     =>  'kein_dumper kein_dump keindumper keindump',
+'options.no_trace'                      =>  'kein_stacktrace keinstacktrace kein_trace keintrace',
+'options.trace'                         =>  'stacktrace trace',
+'options.verbose'                       =>  'ausführlich ausführl',
 
 );
 
@@ -1522,48 +1522,48 @@ Short: {
 
 @tokens_short = (
 
-'language.name'                         =>  'English (United Kingdom)',
-'language.error.set_language_handle'    =>  'Trouble finding a language to use.',
-
-'nest.error.language'                   =>  'Not a valid language handle from which to call the maketext method.',
-'nest.error.key'                        =>  'Error nesting a Lexicon value.',
-
-'options.language'                      =>  'language lang',
-'options.config'                        =>  'config configuration',
-'options.live'                          =>  'live',
-'options.verbose'                       =>  'verbose',
-'options.debug'                         =>  'debug',
-'options.trace'                         =>  'trace stacktrace',
-'options.no_dumper'                     =>  'no_dumper no_dump nodumper nodump',
-'options.no_trace'                      =>  'no_trace notrace no_stacktrace nostacktrace',
-'options.exact'                         =>  'exact',
-'options.help'                          =>  'help',
-
-'input.yes_letter'                      =>  'Y',
-'input.no_letter'                       =>  'N',
-'input.all'                             =>  'ALL',
-'input.none'                            =>  'NONE',
-'input.given'                           =>  'given',
-'input.family'                          =>  'family',
-'input.1'                               =>  '1',
-'input.2'                               =>  '2',
-
-'name.given'                            =>  'Given Name',
-'name.family'                           =>  'Family Name',
-'name.honourific'                       =>  'Honorific Name',
-'name.lineage'                          =>  'Lineage Name',
-
 'display_line'                          =>  'Record [_1]: [_2].',
-
-'log.type.verbose'                      =>  'verbose',
-'log.type.log'                          =>  'log',
-'log.type.debug'                        =>  'debug',
-'log.type.dumper'                       =>  'dumper',
-'log.type.trace'                        =>  'trace',
 
 'finish.change'                         =>  '[quant,_1,change] out of [quant,_2,change] completed.',
 'finish.no_change'                      =>  'No changes made.',
 'finish.thank_you'                      =>  'Thank you for using this script.',
+
+'input.1'                               =>  '1',
+'input.2'                               =>  '2',
+'input.all'                             =>  'ALL',
+'input.family'                          =>  'family',
+'input.given'                           =>  'given',
+'input.no_letter'                       =>  'N',
+'input.none'                            =>  'NONE',
+'input.yes_letter'                      =>  'Y',
+
+'language.error.set_language_handle'    =>  'Trouble finding a language to use.',
+'language.name'                         =>  'English (United Kingdom)',
+
+'log.type.debug'                        =>  'debug',
+'log.type.dumper'                       =>  'dumper',
+'log.type.log'                          =>  'log',
+'log.type.trace'                        =>  'trace',
+'log.type.verbose'                      =>  'verbose',
+
+'name.family'                           =>  'Family Name',
+'name.given'                            =>  'Given Name',
+'name.honourific'                       =>  'Honorific Name',
+'name.lineage'                          =>  'Lineage Name',
+
+'nest.error.key'                        =>  'Error nesting a Lexicon value.',
+'nest.error.language'                   =>  'Not a valid language handle from which to call the maketext method.',
+
+'options.config'                        =>  'config configuration',
+'options.debug'                         =>  'debug',
+'options.exact'                         =>  'exact',
+'options.help'                          =>  'help',
+'options.language'                      =>  'language lang',
+'options.live'                          =>  'live',
+'options.no_dumper'                     =>  'no_dumper no_dump nodumper nodump',
+'options.no_trace'                      =>  'no_trace notrace no_stacktrace nostacktrace',
+'options.trace'                         =>  'trace stacktrace',
+'options.verbose'                       =>  'verbose',
 
 );
 
