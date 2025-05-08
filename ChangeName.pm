@@ -1210,13 +1210,13 @@ Debug: {
 @debug_phrases = (
 
     # Commonly used:
-    'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
     'Entered method.'                           =>  'Innerhalb der Methode.',
+    'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
     'Leaving method.'                           =>  'Jetzt verlassen wir die Objektmethode.',
-    'Processing search field: [_1]'             =>  'Suchfeld wird verarbeitet: [_1]',
-    'Processing Unique name: [_1]'              =>  'Eindeutiger Name für die Verarbeitung: [_1]',
     'Premature exit - Prerequisites not met.'   =>  'Vorzeitiger Ausstieg – Voraussetzungen nicht erfüllt.',
     'Premature exit - no result passed in.'     =>  'Vorzeitiges Beenden – kein Ergebnis wird an die Unterroutine übergeben.',
+    'Processing Unique name: [_1]'              =>  'Eindeutiger Name für die Verarbeitung: [_1]',
+    'Processing search field: [_1]'             =>  'Suchfeld wird verarbeitet: [_1]',
 
     # ChangeName::Modulino::new
     'Params to be used for a new logger are as follows...'  =>  'Die für einen neuen Logger in Kürze zu verwendenden Parameter sind wie folgt...',
@@ -1227,30 +1227,30 @@ Debug: {
     'Configuration Values are...'       =>  'Konfigurationswerte sind...',
 
     # ChangeName::Modulino::start_change_name_operation
-    'In subroutine.'                                            =>  'Im Unterprogramm.',
-    'Creating object params for ChangeName::Operation'          =>  'Erstellen von Objektparametern für ChangeName::Operation',
-    'Object params as follows...'                               =>  'Objektparameter wie folgt...',
     'About to call start method on ChangeName::Operation class' =>  'Im Begriff, die Methode „start“ der Klasse „ChangeName::Operation“ aufzurufen',
-    'Options we will use are as follows...'                     =>  'Die von uns verwendeten Optionen sind die folgenden...',
     'Arguments we will use are as follows...'                   =>  'Wir werden die folgenden Argumente verwenden...',
+    'Creating object params for ChangeName::Operation'          =>  'Erstellen von Objektparametern für ChangeName::Operation',
+    'In subroutine.'                                            =>  'Im Unterprogramm.',
+    'Object params as follows...'                               =>  'Objektparameter wie folgt...',
+    'Options we will use are as follows...'                     =>  'Die von uns verwendeten Optionen sind die folgenden...',
 
     # ChangeName::Operation::new
     'Constructed New Object Instance.'  =>  'Neue Objektinstanz erstellt.',
 
     # ChangeName::Operation::_set_attributes
-    'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
-    'Now setting additional instance attributes from params...' =>  'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt...',
-    'Setting self-referential instance attributes...'           =>  'Selbstreferenzielle Instanzattribute festlegen...',
-    'Set YAML configurations.'                                  =>  'Legen Sie YAML-Konfigurationen fest.',
-    'Set search-fields.'                                        =>  'Legen Suchfelder.',
-    'Setting further self-referential attributes...'            =>  'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
+    'About to add attributes from params...'                    =>  'Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
+    'About to set Repository.'                                  =>  'Der nächste Schritt besteht darin, das Repository einzurichten.',
     'In method.'                                                =>  'In der Methode.',
     'Language and Logger attributes set.'                       =>  'Sprach- und Logger-Attribute festgelegt.',
-    'About to set Repository.'                                  =>  'Der nächste Schritt besteht darin, das Repository einzurichten.',
-    'Set Repository.'                                           =>  'Legen Sie das zu verwendende Repository fest.',
-    'About to add attributes from params...'                    =>  'Der nächste Schritt besteht darin, Attribute aus Parametern hinzuzufügen...',
+    'Now setting additional instance attributes from params...' =>  'Jetzt werden zusätzliche Instanzattribute aus Parametern festgelegt...',
     'Params have been as follows...'                            =>  'Die Parameter, mit denen wir gearbeitet haben und weiterhin arbeiten werden, sind die folgenden...',
     'Premature exit - Unable to set valid Repository.'          =>  'Vorzeitiges Beenden – Gültiges Repository konnte nicht festgelegt werden.',
+    'Set Repository.'                                           =>  'Legen Sie das zu verwendende Repository fest.',
+    'Set YAML configurations.'                                  =>  'Legen Sie YAML-Konfigurationen fest.',
+    'Set initial instance attributes using params or defaults.' =>  'Legen Sie anfängliche Instanzattribute mithilfe von Parametern oder Standardwerten fest.',
+    'Set search-fields.'                                        =>  'Legen Suchfelder.',
+    'Setting further self-referential attributes...'            =>  'Derzeit werden weitere selbstreferenzielle Attribute gesetzt...',
+    'Setting self-referential instance attributes...'           =>  'Selbstreferenzielle Instanzattribute festlegen...',
 
     # ChangeName::Operation::_set_search
     'Set search normally, as no --exact flag provided.' =>  'Suche normal einstellen, da kein --exact-Flag bereitgestellt wird.',
@@ -1260,10 +1260,10 @@ Debug: {
     'Search attribute set to ([_1]).'   =>  'Das Attribut „search“ wurde ([_1]) gesetzt.',
 
     # ChangeName::Operation::set_name_parts
-    'Name parts before we begin:'                                       =>  'Benennen Sie Teile, bevor wir beginnen:',
-    'Set name parts according to language localisation as follows...'   =>  'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest...',
-    'Premature exit - name parts already populated.'                    =>  'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
     'Invalid name parts filter regex as follows...'                     =>  'Ungültige Namensteile filtern reguläre Ausdrücke wie folgt...',
+    'Name parts before we begin:'                                       =>  'Benennen Sie Teile, bevor wir beginnen:',
+    'Premature exit - name parts already populated.'                    =>  'Vorzeitiges Beenden – Listenvariable name_parts bereits gefüllt.',
+    'Set name parts according to language localisation as follows...'   =>  'Legen Sie Namensteile entsprechend der Sprachlokalisierung wie folgt fest...',
 
     # ChangeName::Operation::_set_repository
     'Archive attribute of [_1] instance is now "[_2]".'             =>  'Das Archivattribut der [_1] Instanz ist jetzt "[_2]".',
