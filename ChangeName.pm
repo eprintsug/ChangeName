@@ -820,7 +820,7 @@ Lang: {
     # wenn dies aufgrund der Anzahl der Phrasen sinnvoller ist.
     # Zwei Leerzeilen über jeder Überschrift.
 
-    # Stilrichtlinien für Schlüsselwerte:
+    # Stilrichtlinien für Schlüssel => Wert:
     # -----------------------------
     # Fettes Komma (=>) in neuer Zeile,
     # Einzeilige Übersetzungen in derselben Zeile wie das fette Komma,
@@ -1205,6 +1205,38 @@ Die einzige zulässige Objektklasse für diesen Zweck ist [_2]
 }
 
 Phrasen: {
+
+# Stilrichtlinien für Kommentarüberschriften:
+# -----------------------------
+# Verwenden Sie die Überschrift „Häufig verwendet:“
+# für gängige Ausdrücke.
+# Verwenden Sie für alle anderen 
+# Überschriften Klassennamen mit Unterprogrammnamen.
+# Lassen Sie zwischen den Überschriften zwei Leerzeilen.
+
+# Stilrichtlinien für Schlüssel => Wert:
+# -----------------------------
+# Schlüssel und Wert in derselben Zeile, sofern der Schlüssel nicht lang ist.
+# Die „=>“-Zeichen in den Zeilen sollten ausgerichtet sein.
+# Verwenden Sie dazu eine vier Leerzeichen lange Tabulatoren.
+# Lange Schlüssel und Werte (und mehrzeilige Elemente)
+# sollten unter kurzen Schlüsseln und Werten sortiert
+# und durch Leerzeilen getrennt werden.
+# Lange Schlüssel und Werte sollten unabhängig
+# von den kurzen Schlüsseln und Werten alphabetisch sortiert werden.
+# Zusätzlich sollte eine Leerzeile eingefügt werden,
+# um anzuzeigen, wo die kurzen Schlüssel und Werte enden
+# und die langen Schlüssel und Werte beginnen.
+# D. h. alphabetisch sortierte kurze Schlüssel und Werte,
+# darunter alphabetisch sortierte lange Schlüssel und Werte.
+# Eine Leerzeile zwischen dem Abschnitt mit den kurzen Phrasen
+# und allen folgenden langen Phrasen.
+
+# Sortierungs-Styleguide
+# -----------------------------
+# Alphabetisch, soweit möglich.
+# Unter jeder Überschrift sind die kurzen und langen
+# Sätze unabhängig voneinander sortiert.
 
 Debug: {
 @debug_phrases = (
@@ -1998,13 +2030,13 @@ Phrases: {
     # Comment Headings Style Guide:
     # -----------------------------
     # Use heading 'Commonly used:' for common phrases.
-    # For all else use Class Names with subroutine names.
+    # For all other headings use class names with subroutine names.
     # Leave two blank lines between headings.
 
     # Key Value Style Guide:
     # -----------------------------
     # Key and value on same line unless key is long.
-    # Lines should have their fat commas space aligned.
+    # Lines should have their fat commas space-aligned.
     # Long keys and values and anything multi-lined,
     # one blank line down from the short keys and values,
     # and alphabetically ordered independently.
