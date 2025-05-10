@@ -1241,7 +1241,7 @@ Phrasen: {
 Debug: {
 @debug_phrases = (
 
-    # Commonly used:
+    # Häufig verwendet:
     'Entered method.'                           =>  'Innerhalb der Methode.',
     'Entering method.'                          =>  'Jetzt innerhalb der Objektmethode.',
     'Leaving method.'                           =>  'Jetzt verlassen wir die Objektmethode.',
@@ -2036,13 +2036,16 @@ Phrases: {
     # Key Value Style Guide:
     # -----------------------------
     # Key and value on same line unless key is long.
-    # Lines should have their fat commas space-aligned.
+    # Lines should have their fat commas space-aligned
+    # via four-space tabbing.
     # Long keys and values and anything multi-lined,
-    # one blank line down from the short keys and values,
-    # and alphabetically ordered independently.
-    # I.e. alphabetically sorted short keys and values,
-    # then alphabetically sorted long keys and values below.
-    # A blank line between short and long.
+    # to be collated in a section one blank line down
+    # from the previous short keys and values.
+    # Both alphabetically ordered independent of one another.
+    # I.e. Under a single heading,
+    # alphabetically sorted short keys and values,
+    # followed by alphabetically sorted long keys and values below,
+    # with a blank line between short phrases and long phrases.
 
     # Ordering Style Guide
     # -----------------------------
