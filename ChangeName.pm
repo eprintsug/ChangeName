@@ -1224,9 +1224,9 @@ Debug: {
 
 
     # ChangeName::Modulino::setup
-    'Commandline Arguments are...'      =>  'Befehlszeilenargumente sind...',
-    'Commandline Options are...'        =>  'Befehlszeilenoptionen sind...',
-    'Configuration Values are...'       =>  'Konfigurationswerte sind...',
+    'Commandline Arguments are...'  =>  'Befehlszeilenargumente sind...',
+    'Commandline Options are...'    =>  'Befehlszeilenoptionen sind...',
+    'Configuration Values are...'   =>  'Konfigurationswerte sind...',
 
 
     # ChangeName::Modulino::start_change_name_operation
@@ -1414,6 +1414,7 @@ Debug: {
     =>  'Ungültiges Listenobjekt. Das Standardergebnis wird zurückgegeben – eine leere Liste, die im Skalarkontext „False“ zurückgibt.',
 
 );
+
 }
 
 Ausführlich: {
@@ -1423,12 +1424,15 @@ Ausführlich: {
     'Language set to [nest,language.name].'                             =>  'Sprache auf [nest,language.name] eingestellt.',
     'No specific language set. Using all supported languages: [_1].'    =>  'Kein bestimmter Sprachsatz. Es werden alle unterstützten Sprachen verwendet: [_1].',
 
+
     # ChangeName::Operation::_set_search
     'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'
     =>  'Der Suchbegriff „[_1]“ wird als exakte (wenn auch nicht zwischen Groß- und Kleinschreibung unterscheidende) Zeichenfolge interpretiert, die gesucht werden soll.',
 
+
     # ChangeName::Operation::search
     'Found Results.'    =>  'Gefundene Ergebnisse.',
+
 
     # ChangeName::Operation::prepare
     'Narrowing search to a specific part...'    =>  'Die Suche auf ein bestimmtes Teil eingrenzen...',
@@ -1445,9 +1449,11 @@ Standardausgabe: {
     'No Results Found.'         =>  'Keine Ergebnisse gefunden.',
     'Searching fields [_1] ...' =>  'Derzeit verwenden wir die folgenden Suchfelder, um unsere Suche durchzuführen [_1] ...',
 
+
     # ChangeName::Operation::_set_attributes
     'DRY RUN mode - no changes will be made.'                           =>  'DRY RUN-Modus – in diesem Modus werden tatsächlich keine Änderungen vorgenommen.',
     'LIVE mode - changes will be made at the end after confirmation.'   =>  'LIVE-Modus – Änderungen werden am Ende nach Bestätigung vorgenommen.',
+
 
     # ChangeName::Operation::display
     'Nothing was found to match.'                                       =>  'Es wurde keine Übereinstimmung festgestellt.',
@@ -2007,9 +2013,9 @@ Debug: {
 
 
     # ChangeName::Modulino::setup
-    'Commandline Arguments are...'      =>  'Commandline Arguments are...',
-    'Commandline Options are...'        =>  'Commandline Options are...',
-    'Configuration Values are...'       =>  'Configuration Values are...',
+    'Commandline Arguments are...'  =>  'Commandline Arguments are...',
+    'Commandline Options are...'    =>  'Commandline Options are...',
+    'Configuration Values are...'   =>  'Configuration Values are...',
 
 
     # ChangeName::Modulino::start_change_name_operation
@@ -2026,23 +2032,23 @@ Debug: {
 
 
     # ChangeName::Operation::_set_attributes
-    'About to add attributes from params...'                                    =>  'About to add attributes from params...',
-    'About to set Repository.'                                                  =>  'About to set Repository.',
-    'In method.'                                                                =>  'In method.',
-    'Language and Logger attributes set.'                                       =>  'Language and Logger attributes set.',
-    'Now setting additional instance attributes from params...'                 =>  'Now setting additional instance attributes from params...',
-    'Params have been as follows...'                                            =>  'Params have been as follows...',
-    'Premature exit - Unable to set valid Repository.'                          =>  'Premature exit - Unable to set valid Repository.',
-    'Set initial instance attributes using params or defaults.'                 =>  'Set initial instance attributes using params or defaults.',
-    'Set Repository.'                                                           =>  'Set Repository.',
-    'Set search-fields.'                                                        =>  'Set search-fields.',
-    'Set YAML configurations.'                                                  =>  'Set YAML configurations.',
-    'Setting further self-referential attributes...'                            =>  'Setting further self-referential attributes...',
-    'Setting self-referential instance attributes...'                           =>  'Setting self-referential instance attributes...',
+    'About to add attributes from params...'                    =>  'About to add attributes from params...',
+    'About to set Repository.'                                  =>  'About to set Repository.',
+    'In method.'                                                =>  'In method.',
+    'Language and Logger attributes set.'                       =>  'Language and Logger attributes set.',
+    'Now setting additional instance attributes from params...' =>  'Now setting additional instance attributes from params...',
+    'Params have been as follows...'                            =>  'Params have been as follows...',
+    'Premature exit - Unable to set valid Repository.'          =>  'Premature exit - Unable to set valid Repository.',
+    'Set initial instance attributes using params or defaults.' =>  'Set initial instance attributes using params or defaults.',
+    'Set Repository.'                                           =>  'Set Repository.',
+    'Set search-fields.'                                        =>  'Set search-fields.',
+    'Set YAML configurations.'                                  =>  'Set YAML configurations.',
+    'Setting further self-referential attributes...'            =>  'Setting further self-referential attributes...',
+    'Setting self-referential instance attributes...'           =>  'Setting self-referential instance attributes...',
 
 
     # ChangeName::Operation::_set_search
-    'Set search normally, as no --exact flag provided.' => 'Set search normally, as no --exact flag provided.',
+    'Set search normally, as no --exact flag provided.' =>  'Set search normally, as no --exact flag provided.',
 
 
     # ChangeName::Operation::_set_search_exact
@@ -2051,15 +2057,15 @@ Debug: {
 
 
     # ChangeName::Operation::set_name_parts
-    'Invalid name parts filter regex as follows...'                             =>  'Invalid name parts filter regex as follows...',
-    'Name parts before we begin:'                                               =>  'Name parts before we begin:',
-    'Premature exit - name parts already populated.'                            =>  'Premature exit - name parts already populated.',
-    'Set name parts according to language localisation as follows...'           =>  'Set name parts according to language localisation as follows...',
+    'Invalid name parts filter regex as follows...'                     =>  'Invalid name parts filter regex as follows...',
+    'Name parts before we begin:'                                       =>  'Name parts before we begin:',
+    'Premature exit - name parts already populated.'                    =>  'Premature exit - name parts already populated.',
+    'Set name parts according to language localisation as follows...'   =>  'Set name parts according to language localisation as follows...',
 
 
     # ChangeName::Operation::_set_repository
-    'Archive attribute of [_1] instance is now "[_2]".'                         =>  'Archive attribute of [_1] instance is now "[_2]".',
-    'Repository attribute of [_1] instance is now of class "[_2]".'             =>  'Repository attribute of [_1] instance is now of class "[_2]".',
+    'Archive attribute of [_1] instance is now "[_2]".'             =>  'Archive attribute of [_1] instance is now "[_2]".',
+    'Repository attribute of [_1] instance is now of class "[_2]".' =>  'Repository attribute of [_1] instance is now of class "[_2]".',
 
     'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'
     =>  'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
@@ -2070,10 +2076,10 @@ Debug: {
 
 
     # ChangeName::Operation::prepare
-    'Generating lists, and setting values.'                                     =>  'Generating lists, and setting values.',
-    'Leaving prepare method.'                                                   =>  'Leaving prepare method.',
-    'Premature exit - No search results to narrow down.'                        =>  'Premature exit - No search results to narrow down.',
-    'Premature Exit - our operation is already specific to a name part.'        =>  'Premature Exit - our operation is already specific to a name part.',
+    'Generating lists, and setting values.'                                 =>  'Generating lists, and setting values.',
+    'Leaving prepare method.'                                               =>  'Leaving prepare method.',
+    'Premature exit - No search results to narrow down.'                    =>  'Premature exit - No search results to narrow down.',
+    'Premature Exit - our operation is already specific to a name part.'    =>  'Premature Exit - our operation is already specific to a name part.',
 
 
     # ChangeName::Operation::display
@@ -2094,14 +2100,14 @@ Debug: {
 
 
     # ChangeName::Operation::_seeking_confirmation
-    'Added details to what_to_change'                                           =>  'Added details to what_to_change',
-    'Checking if display lines have been shown.'                                =>  'Checking if display lines have been shown.',
-    'Detected [nest,input.all].'                                                =>  'Detected [nest,input.all].',           # [nest,input.all] is a function and parameter not to be translated.
-    'Detected [nest,input.none].'                                               =>  'Detected [nest,input.none].',          # [nest,input.none] is a function and parameter not to be translated.
-    'Detected [nest,input.yes_letter].'                                         =>  'Detected [nest,input.yes_letter].',    # [nest,input.yes_letter] is a function and parameter not to be translated.
-    'Displaying generated confirmation feedback.'                               =>  'Displaying generated confirmation feedback.',
-    'Processing confirmation ([_1])'                                            =>  'Processing confirmation ([_1])',
-    'Setting confirmation'                                                      =>  'Setting confirmation',
+    'Added details to what_to_change'               =>  'Added details to what_to_change',
+    'Checking if display lines have been shown.'    =>  'Checking if display lines have been shown.',
+    'Detected [nest,input.all].'                    =>  'Detected [nest,input.all].',           # [nest,input.all] is a function and parameter not to be translated.
+    'Detected [nest,input.none].'                   =>  'Detected [nest,input.none].',          # [nest,input.none] is a function and parameter not to be translated.
+    'Detected [nest,input.yes_letter].'             =>  'Detected [nest,input.yes_letter].',    # [nest,input.yes_letter] is a function and parameter not to be translated.
+    'Displaying generated confirmation feedback.'   =>  'Displaying generated confirmation feedback.',
+    'Processing confirmation ([_1])'                =>  'Processing confirmation ([_1])',
+    'Setting confirmation'                          =>  'Setting confirmation',
 
     'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'
     =>  'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
@@ -2111,11 +2117,11 @@ Debug: {
 
 
     # ChangeName::Operation::_generate_confirmation_feedback
-    'Added record to confirmation feedback.'                                    =>  'Added record to confirmation feedback.',
-    'Exited unique name loop.'                                                  =>  'Exited unique name loop.',
-    'Generated confirmation feedback.'                                          =>  'Generated confirmation feedback.',
-    'Matched unique name.'                                                      =>  'Matched unique name.',
-    'No confirmation feedback generated.'                                       =>  'No confirmation feedback generated.',
+    'Added record to confirmation feedback.'    =>  'Added record to confirmation feedback.',
+    'Exited unique name loop.'                  =>  'Exited unique name loop.',
+    'Generated confirmation feedback.'          =>  'Generated confirmation feedback.',
+    'Matched unique name.'                      =>  'Matched unique name.',
+    'No confirmation feedback generated.'       =>  'No confirmation feedback generated.',
 
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'
     =>  'Since unique names are unique, we can leave unique name loop now we have processed a match.',
@@ -2156,11 +2162,11 @@ Debug: {
 
 
     # ChangeName::Utilities::_multilingual_option_specification
-    'Initial option translation...'                                             =>  'Initial option translation...',
-    'Leaving subroutine.'                                                       =>  'Leaving subroutine.',
-    'Multilingual variations of [_1] are as dumped below...'                    =>  'Multilingual variations of [_1] are as dumped below...',
-    'Option string is: [_1]'                                                    =>  'Option string is: [_1]',
-    'Starting subroutine.'                                                      =>  'Starting subroutine.',
+    'Initial option translation...'                             =>  'Initial option translation...',
+    'Leaving subroutine.'                                       =>  'Leaving subroutine.',
+    'Multilingual variations of [_1] are as dumped below...'    =>  'Multilingual variations of [_1] are as dumped below...',
+    'Option string is: [_1]'                                    =>  'Option string is: [_1]',
+    'Starting subroutine.'                                      =>  'Starting subroutine.',
 
     'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].'
     =>  'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', # [nest,language.name] is a function and parameter not to be translated.
