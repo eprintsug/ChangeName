@@ -41,7 +41,7 @@ my %hash_to_sort                        =   (
 
                                             );
                                             
-my  @key_order_for_english              =   (
+my  %key_order_for_english              =   (
 
          # Commonly used:
     'Entered method.'                           =>  'Innerhalb der Methode.',
@@ -520,7 +520,7 @@ my  $output_for_english                 =   $new_line;
                                             $single_quote.
                                             ','.
                                             $new_line
-    )                                       for (keys @key_order_for_english);
+    )                                       for (keys %key_order_for_english);
 
 say $output;
 
