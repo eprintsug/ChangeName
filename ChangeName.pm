@@ -2044,8 +2044,8 @@ Phrases: {
     # Both alphabetically ordered independent of one another.
     # I.e. Under a single heading,
     # alphabetically sorted short keys and values,
-    # followed by alphabetically sorted long keys and values below,
-    # with a blank line between short phrases and long phrases.
+    # followed by alphabetically sorted long keys and values,
+    # with a blank line between short and long.
 
     # Ordering Style Guide
     # -----------------------------
