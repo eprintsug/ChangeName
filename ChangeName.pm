@@ -1210,7 +1210,7 @@ Phrasen: {
 # -----------------------------
 # Verwenden Sie die Überschrift „Häufig verwendet:“
 # für gängige Ausdrücke.
-# Verwenden Sie für alle anderen 
+# Verwenden Sie für alle anderen
 # Überschriften Klassennamen mit Unterprogrammnamen.
 # Lassen Sie zwischen den Überschriften zwei Leerzeilen.
 
