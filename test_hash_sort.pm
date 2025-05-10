@@ -509,11 +509,21 @@ my  $output                             =   $new_line;
 # Phrases Formatting:
 my  $output_for_english                 =   $new_line;
 my  $skip_or_not                        =   0;
+my  @keys_to_use                        =   map {
+                                                my  $skip       =   $skip_or_not;
+                                                $skip_or_not    =   $skip_or_not eq 1? 0:
+                                                                    1;
+                                                $skip?  ():
+                                                $ARG
+                                            } @key_order_for_english;
+
     ($output_for_english                .=  
                                             '    '. # four spaces
                                             sprintf(
-                                                (length($ARG)>$col_calculation)? '%s    ':
-                                                '%-'.$col_calculation.'s',
+                                                (
+                                                    (length($ARG)>$col_calculation)?    '%s    ':
+                                                    '%-'.$col_calculation.'s'
+                                                ),
                                                 $single_quote.$ARG.$single_quote
                                             ).
                                             '=>  '.
@@ -522,15 +532,7 @@ my  $skip_or_not                        =   0;
                                             $single_quote.
                                             ','.
                                             $new_line
-    )                                       for (
-                                                    map {
-                                                            my  $skip           =   $skip_or_not;
-                                                            $skip_or_not    =   0
-                                                                                if $skip_or_not;
-                                                            $skip?  ():
-                                                            $ARG
-                                                        } @key_order_for_english
-                                                );
+    )                                       for @keys_to_use;
 
 say $output_for_english;
 
