@@ -24,7 +24,7 @@ $ENV{'PERL_UNICODE'}                    =   'AS';               # A = Expect @AR
                                                                 # S = Shortcut for I+O+E - Standard input, output and error, will be UTF-8.
                                                                 # ENV settings are global for current thread and any forked processes.
 
-our $VERSION                            =   'v2.0.6';
+our $VERSION                            =   'v2.0.7';
 
 =pod LANGUAGES - List of Links to POD Languages - Guidance - try to use symbols and language native terms.
 
@@ -45,7 +45,7 @@ our $VERSION                            =   'v2.0.6';
 =cut
 LOAD_LANGUAGE_CLASSES_AT_COMPILE_TIME: BEGIN {
 
-package ChangeName::Languages::de_de v2.0.6 {
+package ChangeName::Languages::de_de v2.0.7 {
 
 # Use --lang=de-DE at the commandline to use it.
 
@@ -1515,7 +1515,7 @@ our %Lexicon = (
 
 }
 
-package ChangeName::Languages::en_gb v2.0.6 {
+package ChangeName::Languages::en_gb v2.0.7 {
 
 # Use --lang=en-GB at the commandline to use it.
 
@@ -2724,7 +2724,7 @@ English (United Kingdom).
 Package storing useful utilities and functions, used by other packages in this C<ChangeName.pm> file.
 
 =cut
-package ChangeName::Utilities v2.0.6 {
+package ChangeName::Utilities v2.0.7 {
 
     # Standard:
     use English qw(
@@ -2768,7 +2768,7 @@ ChangeName::Utilities - a collection of useful utilities and functions.
 
 =head4 VERSION (ChangeName::Utilities en-GB)
 
-v2.0.6
+v2.0.7
 
 =cut
 
@@ -3686,7 +3686,7 @@ Package storing YAML formatted default configuration settings.
 Used if no external C<.yml> file is provided, or for default values should any external file omit a setting.
 
 =cut
-package ChangeName::Config::YAML v2.0.6 {
+package ChangeName::Config::YAML v2.0.7 {
 
 =pod Name, Version
 
@@ -3698,7 +3698,7 @@ ChangeName::Config::YAML - Class containing default configuration settings for C
 
 =head4 VERSION (ChangeName::Config::YAML en-GB)
 
-v2.0.6
+v2.0.7
 
 =cut
 
@@ -3854,7 +3854,7 @@ Search Field Merge Type: ANY
 Package that loads configuration.
 
 =cut
-package ChangeName::Config v2.0.6 {
+package ChangeName::Config v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -4029,7 +4029,7 @@ package ChangeName::Config v2.0.6 {
 L<Locale::Maketext> project class for loading language classes.
 
 =cut
-package ChangeName::Languages v2.0.6 {
+package ChangeName::Languages v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -4279,7 +4279,7 @@ Our own language class for the language we will use.
 Its C<language_handle> attribute can be left undefined to use all supported languages.
 
 =cut
-package ChangeName::Language v2.0.6 {
+package ChangeName::Language v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -4465,7 +4465,7 @@ verbose, debug, stacktrace, and L<Data::Dumper> output
 to an C<EPrints::Repository>'s C<log> method, or C<STDERR>.
 
 =cut
-package ChangeName::Log v2.0.6 {
+package ChangeName::Log v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -4933,7 +4933,7 @@ Runs the script from the commandline,
 or starts the operation via a new Modulino class instance.
 
 =cut
-package ChangeName::Modulino v2.0.6 {
+package ChangeName::Modulino v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -5216,7 +5216,7 @@ package ChangeName::Modulino v2.0.6 {
 Performs the change name operation.
 
 =cut
-package ChangeName::Operation v2.0.6 {
+package ChangeName::Operation v2.0.7 {
 
     # Standard:
     use     English qw(
@@ -5259,7 +5259,7 @@ ChangeName::Operation - changes the name of a dataset record.
 
 =head4 VERSION (ChangeName::Operation en-GB)
 
-v2.0.6
+v2.0.7
 
 =cut
 
