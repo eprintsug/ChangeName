@@ -41,7 +41,7 @@ my %hash_to_sort                        =   (
 
                                             );
                                             
-my  %key_order_for_english              =   (
+my  @key_order_for_english              =   (
 
          # Commonly used:
     'Entered method.'                           =>  'Innerhalb der Methode.',
@@ -508,7 +508,9 @@ my  $output                             =   $new_line;
     
 # Phrases Formatting:
 my  $output_for_english                 =   $new_line;
-    ($output_for_english                .=  '    '. # four spaces
+my  $skip_or_not                        =   0;
+    ($output_for_english                .=  
+                                            '    '. # four spaces
                                             sprintf(
                                                 (length($ARG)>$col_calculation)? '%s    ':
                                                 '%-'.$col_calculation.'s',
@@ -520,7 +522,15 @@ my  $output_for_english                 =   $new_line;
                                             $single_quote.
                                             ','.
                                             $new_line
-    )                                       for (keys %key_order_for_english);
+    )                                       for (
+                                                    map {
+                                                            my  $skip           =   $skip_or_not;
+                                                            $skip_or_not    =   0
+                                                                                if $skip_or_not;
+                                                            $skip?  ():
+                                                            $ARG
+                                                        } @key_order_for_english
+                                                );
 
 say $output_for_english;
 
