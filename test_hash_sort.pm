@@ -277,7 +277,7 @@ my  @key_order_for_english              =   (
     'Thank you for your patience. Your request is being processed...'   =>  'Vielen Dank für Ihre Geduld. Ihre Anfrage wird bearbeitet...',
                                             );
                                             
-my  @english_value_look_up              =   (
+my  %english_value_look_up              =   (
     # Commonly used:
     'Entering method.'                          =>  'Entering method.',
     'Entered method.'                           =>  'Entered method.',
