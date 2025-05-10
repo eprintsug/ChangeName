@@ -1992,24 +1992,25 @@ Phrases: {
 Debug: {
 @debug_phrases = (
 
-
-
     # Commonly used:
-    'Entered method.'                                                           =>  'Entered method.',
-    'Entering method.'                                                          =>  'Entering method.',
-    'Leaving method.'                                                           =>  'Leaving method.',
-    'Premature exit - no result passed in.'                                     =>  'Premature exit - no result passed in.',
-    'Premature exit - Prerequisites not met.'                                   =>  'Premature exit - Prerequisites not met.',
-    'Processing search field: [_1]'                                             =>  'Processing search field: [_1]',
-    'Processing Unique name: [_1]'                                              =>  'Processing Unique name: [_1]',
+    'Entered method.'                           =>  'Entered method.',
+    'Entering method.'                          =>  'Entering method.',
+    'Leaving method.'                           =>  'Leaving method.',
+    'Premature exit - no result passed in.'     =>  'Premature exit - no result passed in.',
+    'Premature exit - Prerequisites not met.'   =>  'Premature exit - Prerequisites not met.',
+    'Processing search field: [_1]'             =>  'Processing search field: [_1]',
+    'Processing Unique name: [_1]'              =>  'Processing Unique name: [_1]',
+
 
     # ChangeName::Modulino::new
     'Params to be used for a new logger are as follows...'  =>  'Params to be used for a new logger are as follows...',
+
 
     # ChangeName::Modulino::setup
     'Commandline Arguments are...'      =>  'Commandline Arguments are...',
     'Commandline Options are...'        =>  'Commandline Options are...',
     'Configuration Values are...'       =>  'Configuration Values are...',
+
 
     # ChangeName::Modulino::start_change_name_operation
     'About to call start method on ChangeName::Operation class' =>  'About to call start method on ChangeName::Operation class',
@@ -2019,8 +2020,10 @@ Debug: {
     'Object params as follows...'                               =>  'Object params as follows...',
     'Options we will use are as follows...'                     =>  'Options we will use are as follows...',
 
+
     # ChangeName::Operation::new
     'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
+
 
     # ChangeName::Operation::_set_attributes
     'About to add attributes from params...'                                    =>  'About to add attributes from params...',
@@ -2037,12 +2040,15 @@ Debug: {
     'Setting further self-referential attributes...'                            =>  'Setting further self-referential attributes...',
     'Setting self-referential instance attributes...'                           =>  'Setting self-referential instance attributes...',
 
+
     # ChangeName::Operation::_set_search
     'Set search normally, as no --exact flag provided.' => 'Set search normally, as no --exact flag provided.',
+
 
     # ChangeName::Operation::_set_search_exact
     'Find attribute set to ([_1]).'     =>  'Find attribute set to ([_1]).',
     'Search attribute set to ([_1]).'   =>  'Search attribute set to ([_1]).',
+
 
     # ChangeName::Operation::set_name_parts
     'Invalid name parts filter regex as follows...'                             =>  'Invalid name parts filter regex as follows...',
@@ -2058,8 +2064,10 @@ Debug: {
     'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'
     =>  'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
 
+
     # ChangeName::Operation::search
     'Using search settings...'  =>  'Using search settings...',
+
 
     # ChangeName::Operation::prepare
     'Generating lists, and setting values.'                                     =>  'Generating lists, and setting values.',
@@ -2067,19 +2075,23 @@ Debug: {
     'Premature exit - No search results to narrow down.'                        =>  'Premature exit - No search results to narrow down.',
     'Premature Exit - our operation is already specific to a name part.'        =>  'Premature Exit - our operation is already specific to a name part.',
 
+
     # ChangeName::Operation::display
     'Called display method.'    =>  'Called display method.',
     'Leaving display method.'   =>  'Leaving display method.',
 
+
     # ChangeName::Operation::confirm
     'Called confirm method.'    =>  'Called confirm method.',
     'Leaving confirm method.'   =>  'Leaving confirm method.',
+
 
     # ChangeName::Operation::change
     'Called change method.'                                     =>  'Called change method.',
     'Premature exit - Nothing to change.'                       =>  'Premature exit - Nothing to change.',
     'Changed our fresh result - this will be committed.'        =>  'Changed our fresh result - this will be committed.',
     'Changed our working result - this will not be committed.'  =>  'Changed our working result - this will not be committed.',
+
 
     # ChangeName::Operation::_seeking_confirmation
     'Added details to what_to_change'                                           =>  'Added details to what_to_change',
@@ -2108,23 +2120,28 @@ Debug: {
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'
     =>  'Since unique names are unique, we can leave unique name loop now we have processed a match.',
 
+
     # ChangeName::Operation::_add_relevant_display_lines
     'Entered method. Attribute display_lines is...' =>  'Entered method. Attribute display_lines is...',
     'Leaving method. Attribute display_lines is...' =>  'Leaving method. Attribute display_lines is...',
     'Set display flags and added display line:'     =>  'Set display flags and added display line:',
+
 
     # ChangeName::Operation::_match
     'Match found for: [_1]'                                         =>  'Match found for: [_1]',
     'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Matched "[_1]" in "[_2]" part of the following unique name...',
     'No match found.'                                               =>  'No match found.',
 
+
     # ChangeName::Operation::format_single_line_for_display
     'Found params, and about to process them...'                =>  'Found params, and about to process them...',
     'Returning localised display line as we leave the method.'  =>  'Returning localised display line as we leave the method.',
     'Stringified names for use in a localised display line.'    =>  'Stringified names for use in a localised display line.',
 
+
     # ChangeName::Log::New
     'Constructed New Logger Object Instance.'   =>  'Constructed New Logger Object Instance.',
+
 
     # ChangeName::Log::replace_language_object
     'Current language object is as follows...'                      =>  'Current language object is as follows...',
@@ -2133,8 +2150,10 @@ Debug: {
     'Proposed replacement was found to be a valid language object.' =>  'Proposed replacement was found to be a valid language object.',
     'Replacement operation performed.'                              =>  'Replacement operation performed.',
 
+
     # ChangeName::Log::dumper
     'Data dump prevented by no_dumper option.'  =>  'Data dump prevented by no_dumper option.',
+
 
     # ChangeName::Utilities::_multilingual_option_specification
     'Initial option translation...'                                             =>  'Initial option translation...',
@@ -2153,6 +2172,7 @@ Debug: {
     # ChangeName::Utilities::_get_default_options
     'Default options set as follows...' =>  'Default options set as follows...',
 
+
     # ChangeName::Utilities::process_commandline_arguments
     'Arguments after processing the commandline arguments are as follows...'    =>  'Arguments after processing the commandline arguments are as follows...',
     'Flattened list of default options are as follows...'                       =>  'Flattened list of default options are as follows...',
@@ -2163,6 +2183,7 @@ Debug: {
 
     'Passed in commandline arguments from which to derive both options and arguments from are as follows...'
     =>  'Passed in commandline arguments from which to derive both options and arguments from are as follows...',
+
 
     # ChangeName::Utilities::chunkify
     'Adding a chunk, from a list offset of [_1].'                           =>  'Adding a chunk, from a list offset of [_1].',
@@ -2182,12 +2203,15 @@ Verbose: {
     'Language set to [nest,language.name].'                             =>  'Language set to [nest,language.name].',
     'No specific language set. Using all supported languages: [_1].'    =>  'No specific language set. Using all supported languages: [_1].',
 
+
     # ChangeName::Operation::_set_search
     'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.'
     =>  'Interpreting search term "[_1]" as exact (albeit case insensitive) string to find.',
 
+
     # ChangeName::Operation::search
     'Found Results.'    =>  'Found Results.',
+
 
     # ChangeName::Operation::prepare
     'Narrowing search to a specific part...'    =>  'Narrowing search to a specific part...',
@@ -2204,9 +2228,11 @@ Stdout: {
     'No Results Found.'         =>  'No Results Found.',
     'Searching fields [_1] ...' =>  'Searching fields [_1] ...',
 
+
     # ChangeName::Operation::_set_attributes
     'DRY RUN mode - no changes will be made.'                           =>  'DRY RUN mode - no changes will be made.',
     'LIVE mode - changes will be made at the end after confirmation.'   =>  'LIVE mode - changes will be made at the end after confirmation.',
+
 
     # ChangeName::Operation::display
     'Nothing was found to match.'                                       =>  'Nothing was found to match.',
