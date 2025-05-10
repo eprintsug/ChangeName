@@ -5404,7 +5404,7 @@ B<---------------->
 
 B<---------------->
 
-    # Construct an object, and populate its
+    # Construct an object, and populate it.
     my  $object  =   ChangeName::Operation->new(@object_params)->search;
 
 Performs an EPrints search,
