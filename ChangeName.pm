@@ -1992,75 +1992,80 @@ Phrases: {
 Debug: {
 @debug_phrases = (
 
+
+
     # Commonly used:
-    'Entering method.'                          =>  'Entering method.',
-    'Entered method.'                           =>  'Entered method.',
-    'Leaving method.'                           =>  'Leaving method.',
-    'Processing search field: [_1]'             =>  'Processing search field: [_1]',
-    'Processing Unique name: [_1]'              =>  'Processing Unique name: [_1]',
-    'Premature exit - Prerequisites not met.'   =>  'Premature exit - Prerequisites not met.',
-    'Premature exit - no result passed in.'     =>  'Premature exit - no result passed in.',
+    'Entered method.'                                                           =>  'Entered method.',
+    'Entering method.'                                                          =>  'Entering method.',
+    'Leaving method.'                                                           =>  'Leaving method.',
+    'Premature exit - no result passed in.'                                     =>  'Premature exit - no result passed in.',
+    'Premature exit - Prerequisites not met.'                                   =>  'Premature exit - Prerequisites not met.',
+    'Processing search field: [_1]'                                             =>  'Processing search field: [_1]',
+    'Processing Unique name: [_1]'                                              =>  'Processing Unique name: [_1]',
 
     # ChangeName::Modulino::new
-    'Params to be used for a new logger are as follows...'=>'Params to be used for a new logger are as follows...',
+    'Params to be used for a new logger are as follows...'  =>  'Params to be used for a new logger are as follows...',
 
     # ChangeName::Modulino::setup
-    'Commandline Options are...'        =>  'Commandline Options are...',
     'Commandline Arguments are...'      =>  'Commandline Arguments are...',
+    'Commandline Options are...'        =>  'Commandline Options are...',
     'Configuration Values are...'       =>  'Configuration Values are...',
 
     # ChangeName::Modulino::start_change_name_operation
-    'In subroutine.' => 'In subroutine.',
-    'Creating object params for ChangeName::Operation' => 'Creating object params for ChangeName::Operation',
-    'Object params as follows...' => 'Object params as follows...',
-    'About to call start method on ChangeName::Operation class' => 'About to call start method on ChangeName::Operation class',
-    'Options we will use are as follows...' => 'Options we will use are as follows...',
-    'Arguments we will use are as follows...' => 'Arguments we will use are as follows...',
+    'About to call start method on ChangeName::Operation class' =>  'About to call start method on ChangeName::Operation class',
+    'Arguments we will use are as follows...'                   =>  'Arguments we will use are as follows...',
+    'Creating object params for ChangeName::Operation'          =>  'Creating object params for ChangeName::Operation',
+    'In subroutine.'                                            =>  'In subroutine.',
+    'Object params as follows...'                               =>  'Object params as follows...',
+    'Options we will use are as follows...'                     =>  'Options we will use are as follows...',
 
     # ChangeName::Operation::new
-    'Constructed New Object Instance.' => 'Constructed New Object Instance.',
+    'Constructed New Object Instance.'  =>  'Constructed New Object Instance.',
 
     # ChangeName::Operation::_set_attributes
-    'Set initial instance attributes using params or defaults.' => 'Set initial instance attributes using params or defaults.',
-    'Now setting additional instance attributes from params...' => 'Now setting additional instance attributes from params...',
-    'Setting self-referential instance attributes...' => 'Setting self-referential instance attributes...',
-    'Set YAML configurations.' => 'Set YAML configurations.',
-    'Set search-fields.' => 'Set search-fields.',
-    'Setting further self-referential attributes...' => 'Setting further self-referential attributes...',
-    'In method.' => 'In method.',
-    'Language and Logger attributes set.' => 'Language and Logger attributes set.',
-    'About to set Repository.' => 'About to set Repository.',
-    'Set Repository.' => 'Set Repository.',
-    'About to add attributes from params...' => 'About to add attributes from params...',
-    'Params have been as follows...' => 'Params have been as follows...',
-    'Premature exit - Unable to set valid Repository.' => 'Premature exit - Unable to set valid Repository.',
+    'About to add attributes from params...'                                    =>  'About to add attributes from params...',
+    'About to set Repository.'                                                  =>  'About to set Repository.',
+    'In method.'                                                                =>  'In method.',
+    'Language and Logger attributes set.'                                       =>  'Language and Logger attributes set.',
+    'Now setting additional instance attributes from params...'                 =>  'Now setting additional instance attributes from params...',
+    'Params have been as follows...'                                            =>  'Params have been as follows...',
+    'Premature exit - Unable to set valid Repository.'                          =>  'Premature exit - Unable to set valid Repository.',
+    'Set initial instance attributes using params or defaults.'                 =>  'Set initial instance attributes using params or defaults.',
+    'Set Repository.'                                                           =>  'Set Repository.',
+    'Set search-fields.'                                                        =>  'Set search-fields.',
+    'Set YAML configurations.'                                                  =>  'Set YAML configurations.',
+    'Setting further self-referential attributes...'                            =>  'Setting further self-referential attributes...',
+    'Setting self-referential instance attributes...'                           =>  'Setting self-referential instance attributes...',
 
     # ChangeName::Operation::_set_search
     'Set search normally, as no --exact flag provided.' => 'Set search normally, as no --exact flag provided.',
 
     # ChangeName::Operation::_set_search_exact
-    'Find attribute set to ([_1]).' => 'Find attribute set to ([_1]).',
-    'Search attribute set to ([_1]).' => 'Search attribute set to ([_1]).',
+    'Find attribute set to ([_1]).'     =>  'Find attribute set to ([_1]).',
+    'Search attribute set to ([_1]).'   =>  'Search attribute set to ([_1]).',
 
     # ChangeName::Operation::set_name_parts
-    'Name parts before we begin:' => 'Name parts before we begin:',
-    'Set name parts according to language localisation as follows...' => 'Set name parts according to language localisation as follows...',
-    'Premature exit - name parts already populated.' => 'Premature exit - name parts already populated.',
-    'Invalid name parts filter regex as follows...' => 'Invalid name parts filter regex as follows...',
+    'Invalid name parts filter regex as follows...'                             =>  'Invalid name parts filter regex as follows...',
+    'Name parts before we begin:'                                               =>  'Name parts before we begin:',
+    'Premature exit - name parts already populated.'                            =>  'Premature exit - name parts already populated.',
+    'Set name parts according to language localisation as follows...'           =>  'Set name parts according to language localisation as follows...',
+
 
     # ChangeName::Operation::_set_repository
-    'Archive attribute of [_1] instance is now "[_2]".' => 'Archive attribute of [_1] instance is now "[_2]".',
-    'Repository attribute of [_1] instance is now of class "[_2]".' => 'Repository attribute of [_1] instance is now of class "[_2]".',
-    'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...' => 'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
+    'Archive attribute of [_1] instance is now "[_2]".'                         =>  'Archive attribute of [_1] instance is now "[_2]".',
+    'Repository attribute of [_1] instance is now of class "[_2]".'             =>  'Repository attribute of [_1] instance is now of class "[_2]".',
+
+    'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...'
+    =>  'Repository attribute of [_1] instance is not a blessed object. Dumped contents are as follows...',
 
     # ChangeName::Operation::search
-    'Using search settings...' => 'Using search settings...',
+    'Using search settings...'  =>  'Using search settings...',
 
     # ChangeName::Operation::prepare
-    'Generating lists, and setting values.' => 'Generating lists, and setting values.',
-    'Leaving prepare method.' => 'Leaving prepare method.',
-    'Premature exit - No search results to narrow down.' => 'Premature exit - No search results to narrow down.',
-    'Premature Exit - our operation is already specific to a name part.' => 'Premature Exit - our operation is already specific to a name part.',
+    'Generating lists, and setting values.'                                     =>  'Generating lists, and setting values.',
+    'Leaving prepare method.'                                                   =>  'Leaving prepare method.',
+    'Premature exit - No search results to narrow down.'                        =>  'Premature exit - No search results to narrow down.',
+    'Premature Exit - our operation is already specific to a name part.'        =>  'Premature Exit - our operation is already specific to a name part.',
 
     # ChangeName::Operation::display
     'Called display method.'    =>  'Called display method.',
@@ -2073,31 +2078,32 @@ Debug: {
     # ChangeName::Operation::change
     'Called change method.'                                     =>  'Called change method.',
     'Premature exit - Nothing to change.'                       =>  'Premature exit - Nothing to change.',
-    'Changed our working result - this will not be committed.'  =>  'Changed our working result - this will not be committed.',
     'Changed our fresh result - this will be committed.'        =>  'Changed our fresh result - this will be committed.',
+    'Changed our working result - this will not be committed.'  =>  'Changed our working result - this will not be committed.',
 
     # ChangeName::Operation::_seeking_confirmation
-    'Checking if display lines have been shown.'    =>  'Checking if display lines have been shown.',
-    'Setting confirmation'                          =>  'Setting confirmation',
-    'Added details to what_to_change'               =>  'Added details to what_to_change',
-    'Processing confirmation ([_1])'                =>  'Processing confirmation ([_1])',
-    'Displaying generated confirmation feedback.'   =>  'Displaying generated confirmation feedback.',
-    'Detected [nest,input.none].'                   =>  'Detected [nest,input.none].', # [nest,input.none] is a function and parameter not to be translated.
-    'Detected [nest,input.all].'                    =>  'Detected [nest,input.all].', # [nest,input.all] is a function and parameter not to be translated.
-    'Detected [nest,input.yes_letter].'             =>  'Detected [nest,input.yes_letter].', # [nest,input.yes_letter] is a function and parameter not to be translated.
-
-    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'
-    =>  'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+    'Added details to what_to_change'                                           =>  'Added details to what_to_change',
+    'Checking if display lines have been shown.'                                =>  'Checking if display lines have been shown.',
+    'Detected [nest,input.all].'                                                =>  'Detected [nest,input.all].',           # [nest,input.all] is a function and parameter not to be translated.
+    'Detected [nest,input.none].'                                               =>  'Detected [nest,input.none].',          # [nest,input.none] is a function and parameter not to be translated.
+    'Detected [nest,input.yes_letter].'                                         =>  'Detected [nest,input.yes_letter].',    # [nest,input.yes_letter] is a function and parameter not to be translated.
+    'Displaying generated confirmation feedback.'                               =>  'Displaying generated confirmation feedback.',
+    'Processing confirmation ([_1])'                                            =>  'Processing confirmation ([_1])',
+    'Setting confirmation'                                                      =>  'Setting confirmation',
 
     'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.'
     =>  'Have determined that confirmation is not to be set automatically to yes or no. Instead we\'ll now prompt the user for a confirmation value.',
 
+    'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...'
+    =>  'Will check matches auto no result ([_1]) and matches auto yes result ([_2])...',
+
+
     # ChangeName::Operation::_generate_confirmation_feedback
-    'Generated confirmation feedback.'          =>  'Generated confirmation feedback.',
-    'No confirmation feedback generated.'       =>  'No confirmation feedback generated.',
-    'Matched unique name.'                      =>  'Matched unique name.',
-    'Added record to confirmation feedback.'    =>  'Added record to confirmation feedback.',
-    'Exited unique name loop.'                  =>  'Exited unique name loop.',
+    'Added record to confirmation feedback.'                                    =>  'Added record to confirmation feedback.',
+    'Exited unique name loop.'                                                  =>  'Exited unique name loop.',
+    'Generated confirmation feedback.'                                          =>  'Generated confirmation feedback.',
+    'Matched unique name.'                                                      =>  'Matched unique name.',
+    'No confirmation feedback generated.'                                       =>  'No confirmation feedback generated.',
 
     'Since unique names are unique, we can leave unique name loop now we have processed a match.'
     =>  'Since unique names are unique, we can leave unique name loop now we have processed a match.',
@@ -2109,13 +2115,13 @@ Debug: {
 
     # ChangeName::Operation::_match
     'Match found for: [_1]'                                         =>  'Match found for: [_1]',
-    'No match found.'                                               =>  'No match found.',
     'Matched "[_1]" in "[_2]" part of the following unique name...' =>  'Matched "[_1]" in "[_2]" part of the following unique name...',
+    'No match found.'                                               =>  'No match found.',
 
     # ChangeName::Operation::format_single_line_for_display
     'Found params, and about to process them...'                =>  'Found params, and about to process them...',
-    'Stringified names for use in a localised display line.'    =>  'Stringified names for use in a localised display line.',
     'Returning localised display line as we leave the method.'  =>  'Returning localised display line as we leave the method.',
+    'Stringified names for use in a localised display line.'    =>  'Stringified names for use in a localised display line.',
 
     # ChangeName::Log::New
     'Constructed New Logger Object Instance.'   =>  'Constructed New Logger Object Instance.',
@@ -2131,11 +2137,11 @@ Debug: {
     'Data dump prevented by no_dumper option.'  =>  'Data dump prevented by no_dumper option.',
 
     # ChangeName::Utilities::_multilingual_option_specification
-    'Starting subroutine.'                                      =>  'Starting subroutine.',
-    'Multilingual variations of [_1] are as dumped below...'    =>  'Multilingual variations of [_1] are as dumped below...',
-    'Initial option translation...'                             =>  'Initial option translation...',
-    'Option string is: [_1]'                                    =>  'Option string is: [_1]',
-    'Leaving subroutine.'                                       =>  'Leaving subroutine.',
+    'Initial option translation...'                                             =>  'Initial option translation...',
+    'Leaving subroutine.'                                                       =>  'Leaving subroutine.',
+    'Multilingual variations of [_1] are as dumped below...'                    =>  'Multilingual variations of [_1] are as dumped below...',
+    'Option string is: [_1]'                                                    =>  'Option string is: [_1]',
+    'Starting subroutine.'                                                      =>  'Starting subroutine.',
 
     'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].'
     =>  'No list of translation values to add alongside codebase\'s existing option key "[_1]" for language [nest,language.name].', # [nest,language.name] is a function and parameter not to be translated.
@@ -2148,19 +2154,19 @@ Debug: {
     'Default options set as follows...' =>  'Default options set as follows...',
 
     # ChangeName::Utilities::process_commandline_arguments
-    'Validated copy of arguments is as follows...'                              =>  'Validated copy of arguments is as follows...',
+    'Arguments after processing the commandline arguments are as follows...'    =>  'Arguments after processing the commandline arguments are as follows...',
     'Flattened list of default options are as follows...'                       =>  'Flattened list of default options are as follows...',
     'Option Specifications have been determined as being as follows...'         =>  'Option Specifications have been determined as being as follows...',
     'Options after processing the commandline arguments are now as follows...'  =>  'Options after processing the commandline arguments are now as follows...',
-    'Arguments after processing the commandline arguments are as follows...'    =>  'Arguments after processing the commandline arguments are as follows...',
     'The no_input flag will be returned with the value: "[_1]".'                =>  'The no_input flag will be returned with the value: "[_1]".',
+    'Validated copy of arguments is as follows...'                              =>  'Validated copy of arguments is as follows...',
 
     'Passed in commandline arguments from which to derive both options and arguments from are as follows...'
     =>  'Passed in commandline arguments from which to derive both options and arguments from are as follows...',
 
     # ChangeName::Utilities::chunkify
-    'Valid list object. Proceeding to chunkify using chunk size [_1]...'    =>  'Valid list object. Proceeding to chunkify using chunk size [_1]...',
     'Adding a chunk, from a list offset of [_1].'                           =>  'Adding a chunk, from a list offset of [_1].',
+    'Valid list object. Proceeding to chunkify using chunk size [_1]...'    =>  'Valid list object. Proceeding to chunkify using chunk size [_1]...',
 
     'Invalid list object. Returning the default result - an empty list that will return false in scalar context.'
     =>  'Invalid list object. Returning the default result - an empty list that will return false in scalar context.',
@@ -2203,8 +2209,8 @@ Stdout: {
     'LIVE mode - changes will be made at the end after confirmation.'   =>  'LIVE mode - changes will be made at the end after confirmation.',
 
     # ChangeName::Operation::display
-    'Thank you for your patience. Your request is being processed...'   =>  'Thank you for your patience. Your request is being processed...',
     'Nothing was found to match.'                                       =>  'Nothing was found to match.',
+    'Thank you for your patience. Your request is being processed...'   =>  'Thank you for your patience. Your request is being processed...',
 
 );
 
