@@ -1995,6 +1995,30 @@ The only acceptable object class for this purpose is [_2]
 
 Phrases: {
 
+    # Comment Headings Style Guide:
+    # -----------------------------
+    # Use heading 'Commonly used:' for common phrases.
+    # For all else use Class Names with subroutine names.
+    # Leave two blank lines between headings.
+
+    # Key Value Style Guide:
+    # -----------------------------
+    # Key and value on same line unless key is long.
+    # Lines should have their fat commas space aligned.
+    # Long keys and values and anything multi-lined,
+    # one blank line down from the short keys and values,
+    # and alphabetically ordered independently.
+    # I.e. alphabetically sorted short keys and values,
+    # then alphabetically sorted long keys and values below.
+    # A blank line between short and long.
+
+    # Ordering Style Guide
+    # -----------------------------
+    # Alphabetical where possible.
+    # Under each heading, the set of short phrases
+    # and set of long phrases,
+    # are each sorted independently from one another.
+
 Debug: {
 @debug_phrases = (
 
